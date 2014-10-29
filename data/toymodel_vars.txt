@@ -1,0 +1,5 @@
+name   value    unit    description
+"v"    1.e+06   "m3"    "storage volume of the reactor"
+"c_z"  1        "g/m3"  "concentration of degradable matter (z)"
+"c_do" 9.022    "g/m3"  "concentration of dissolved oxygen (do); 9.022 = sat. level at 20°C"
+
