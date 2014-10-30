@@ -1,0 +1,34 @@
+# Example parameters
+
+name               value     unit       description
+
+# Rate constants
+rminF              0.1       "1/day"      "rate of mineralization for fast-degradable organic matter"
+rminS              0.01      "1/day"      "rate of mineralization for slowly-degradable organic matter"
+rnitrif            2.        "1/day"      "rate of denitrification"
+rODUox             2.        "1/day"      "rate of re-oxidation of reduced matter"
+
+# Half saturation constants
+hsatNO3_minAnox    1.        "mmol/m3"    "half-sat. const.; inhibition of anaerobic mineralization by NO3"
+hsatNO3_minDeni    30.       "mmol/m3"    "half-sat. const.; acceleration of NO3-based mineralization by NO3"
+hsatO2_minAnox     1.        "mmol/m3"    "half-sat. const.; inhibition of anaerobic mineralization by O2"
+hsatO2_minDeni     1.        "mmol/m3"    "half-sat. const.; inhibition of NO3-based mineralization by O2"
+hsatO2_minOxic     3.        "mmol/m3"    "half-sat. const.; acceleration of oxic mineralization by O2"
+hsatO2_nitrif      1.        "mmol/m3"    "half-sat. const.; acceleration of nitrification by O2"
+hsatO2_ODUox       1.        "mmol/m3"    "half-sat. const.; acceleration of re-oxidation of reduced matter by O2"
+
+# Stoichiometric ratios (molar)
+stoi_N_C_OCF       0.156     "mol/mol"    "N:C ratio in fast-degradable organic matter"
+stoi_N_C_OCS       0.156     "mol/mol"    "N:C ratio in slowly-degradable organic matter"
+stoi_NO3_C         0.8       "mol/mol"    "units of NO3 consumed per unit of organic carbon in NO3-baded mineralization"
+stoi_NO3_NH3       1.        "mol/mol"    "units of NO3 produced per units of NH3 in nitrification"
+stoi_O2_NH3        2.        "mol/mol"    "units of O2 consumed per unit of NH3 in nitrification"
+stoi_O2_ODU        1.        "mol/mol"    "units of O2 consumed per unit of reduced matter in re-oxidation of the latter"
+stoi_O2_C          1.        "mol/mol"    "units of O2 consumed per unit of organic carbon in oxic mineralization"
+stoi_ODU_C         1.        "mol/mol"    "units of reduced matter produced per unit of organic carbon in anoxic mineralization"
+
+# Other dimensionless parameters
+adsNH3             1.3       "-"          "adsorption coeffcient for ammonium (linear isotherm)"
+pODUdepo           0.1846    "-"          "fraction of newly produced reduced matter being (irreversibly) deposited"
+por                0.4       "-"          "sediment porosity"
+
