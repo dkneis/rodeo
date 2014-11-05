@@ -15,8 +15,8 @@ A reference class to represent an ODE-based model.
 \item{\code{stox}}{A data frame holding character strings to represent the
 stoichiometry factors (colums = variables, rows = processes).}
 
-\item{\code{expr}}{A named vector of character strings holding expressions being referenced
-in \code{proc} and/or \code{stox}.}
+\item{\code{auxx}}{A named vector of character strings holding auxiliary expressions being referenced
+in, e.g., \code{proc} and/or \code{stox}.}
 
 \item{\code{vars}}{A named numerical vector holding state variables.}
 
@@ -24,7 +24,7 @@ in \code{proc} and/or \code{stox}.}
 
 \item{\code{funs}}{A named vector of character strings holding the names of functions
   appearing in any of the model's expressions, i.e. \code{proc}, \code{stox},
-  and \code{expr}.}
+  and \code{auxx}.}
 }}
 \section{Methods}{
 
@@ -35,9 +35,9 @@ function; \code{size}: An integer (default 1) specifying the number of
 instances of each state variable, e.g. in spatially distributed models. \bold{Returns:}
 The generated function as a character string.}
 
-\item{\code{getExpr()}}{Returns a named vector of expressions refenced in \code{stox} or \code{proc}}
+\item{\code{getAuxx()}}{Returns a named vector of auxiliary expressions referenced in, e.g., \code{stox} or \code{proc}}
 
-\item{\code{getFuns()}}{Returns a vector of function names appearing in \code{expr}, \code{stox}, or \code{proc}}
+\item{\code{getFuns()}}{Returns a vector of function names appearing in \code{auxx}, \code{stox}, or \code{proc}}
 
 \item{\code{getPars()}}{Returns the values of parameters in a named vector}
 

@@ -5,7 +5,7 @@ rodeo$methods(
     if (!is.character(file) || !(length(file) == 1) || !file.exists(file))
       stop("argument must be a valid file name")
     x= fromJSON(file=file)
-    if ((!is.list(x)) || (!all(c("expr", "proc","stox") %in% names(x))))
+    if ((!is.list(x)) || (!all(c("auxx", "proc","stox") %in% names(x))))
       stop("missing components in initialization data")
     m= matrix(rep("0", length(x$stox)*length(x$proc)), ncol=length(x$stox), nrow=length(x$proc))
     m= data.frame(m, stringsAsFactors=FALSE, row.names=names(x$proc))
@@ -19,7 +19,7 @@ rodeo$methods(
       }
     }
     # Initialize all fields
-    expr <<- unlist(x$expr)
+    auxx <<- unlist(x$auxx)
     proc <<- unlist(x$proc)
     stox <<- m
     nam= names(m)

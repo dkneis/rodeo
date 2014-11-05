@@ -10,13 +10,13 @@ library("rjson")
 #' @field proc A named vector of character strings holding process rate expressions.
 #' @field stox A data frame holding character strings to represent the
 #'   stoichiometry factors (colums = variables, rows = processes). 
-#' @field expr A named vector of character strings holding expressions being referenced
-#'   in \code{proc} and/or \code{stox}.
+#' @field auxx A named vector of character strings holding auxiliary expressions being referenced
+#'   in, e.g., \code{proc} and/or \code{stox}.
 #' @field vars A named numerical vector holding state variables.
 #' @field pars A named numerical vector holding parameters.
 #' @field funs A named vector of character strings holding the names of functions
 #'   appearing in any of the model's expressions, i.e. \code{proc}, \code{stox},
-#'   and \code{expr}.
+#'   and \code{auxx}.
 #'
 #' @examples
 #' # Create file with model definition in json format
@@ -45,7 +45,7 @@ library("rjson")
 #' @export
 rodeo= setRefClass(
   Class = "rodeo",
-  fields = c(expr="vector", proc="vector", stox="data.frame",
+  fields = c(auxx="vector", proc="vector", stox="data.frame",
     vars="vector", pars="vector", funs="vector")
 )
 

@@ -22,7 +22,7 @@ rodeo$methods( plot_stox = function() {
     sep="=", col.names=FALSE, row.names=FALSE, quote=FALSE)
   write.table(file=f, x=data.frame(names(pars),pars,stringsAsFactors=FALSE),
     sep="=", col.names=FALSE, row.names=FALSE, quote=FALSE, append=TRUE)
-  write.table(file=f, x=data.frame(names(expr),expr,stringsAsFactors=FALSE),
+  write.table(file=f, x=data.frame(names(auxx),auxx,stringsAsFactors=FALSE),
     sep="=", col.names=FALSE, row.names=FALSE, quote=FALSE, append=TRUE)
   sys.source(file=f,envir=env)
   triang= function(x,y,d,val) {

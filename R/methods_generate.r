@@ -2,7 +2,7 @@
 
 # Specific comments:
 #
-# In the generated code, expressions (expr) are replaced by their values. On the one
+# In the generated code, auxiliary expressions (auxx) are replaced by their values. On the one
 # hand, this increases the number of terms to be computed for process rates and
 # stoichiometry factors (and this may slow down computations). On the other hand
 # this avoids memory allocation for additional constants inside the function
@@ -22,7 +22,7 @@ rodeo$methods( generate = function(name="derivs", size=1) {
     "
 
   # We work with local copies here!
-  EXPR= expr
+  AUXX= auxx
   PROC= proc
   STOX= stox
 
@@ -30,25 +30,26 @@ rodeo$methods( generate = function(name="derivs", size=1) {
   rangeOpen="["
   rangeClose="]"
 
-  # Replace expressions in other expressions in a forward manner, i.e. assuming
-  # that an expression is defined BEFORE it is referenced. To be sure, 
-  for (i in 1:length(EXPR)) {
-    if (i < length(EXPR)) {
-      EXPR[(i+1):length(EXPR)]= gsub(pattern=names(EXPR)[i],
-        replacement=paste0("(",EXPR[i],")"), x=EXPR[(i+1):length(EXPR)], fixed=TRUE)
+  # Replace aux. expressions in other aux. expressions in a forward manner, i.e. assuming
+  # that an aux. expression is defined BEFORE it is referenced.
+  for (i in 1:length(AUXX)) {
+    if (i < length(AUXX)) {
+      AUXX[(i+1):length(AUXX)]= gsub(pattern=names(AUXX)[i],
+        replacement=paste0("(",AUXX[i],")"), x=AUXX[(i+1):length(AUXX)], fixed=TRUE)
     }
   }
-  for (i in 1:length(EXPR)) {
-    if (any(grepl(pattern=names(EXPR)[i], x=EXPR, fixed=TRUE))) {
-      stop(paste0("expression '",names(EXPR)[i],"' is referenced before it is defined"))
+  # Check whether the above assumption was actually fulfilled.
+  for (i in 1:length(AUXX)) {
+    if (any(grepl(pattern=names(AUXX)[i], x=AUXX, fixed=TRUE))) {
+      stop(paste0("auxiliary expression '",names(AUXX)[i],"' is referenced before it is defined"))
     }
   }
 
-  # Substitute expression names by their values
-  for (i in 1:length(EXPR)) {
-    PROC= gsub(pattern=names(EXPR)[i], replacement=paste0("(",EXPR[i],")"), x=PROC, fixed=TRUE)
+  # Substitute aux. expression names by their values
+  for (i in 1:length(AUXX)) {
+    PROC= gsub(pattern=names(AUXX)[i], replacement=paste0("(",AUXX[i],")"), x=PROC, fixed=TRUE)
     for (p in 1:ncol(STOX)) {
-      STOX[,p]= gsub(pattern=names(EXPR)[i], replacement=paste0("(",EXPR[i],")"), x=STOX[,p], fixed=TRUE)
+      STOX[,p]= gsub(pattern=names(AUXX)[i], replacement=paste0("(",AUXX[i],")"), x=STOX[,p], fixed=TRUE)
     }
   }
 
@@ -74,7 +75,7 @@ rodeo$methods( generate = function(name="derivs", size=1) {
     }
   }  
 
-  # Assemble code
+  # Create code
   newline= ifelse(.Platform$OS.type=="windows","\r\n","\n")
   code=paste0("# THIS IS A GENERATED FILE - EDITING DOESN'T MAKE SENSE",newline)
   code=paste0(code,newline)
@@ -106,12 +107,13 @@ rodeo$methods( generate = function(name="derivs", size=1) {
             x=local_STOX[,p], fixed=TRUE)
         }
       }
+      # Remove dummy character
       local_PROC= gsub(pattern=paste0("vars@["),replacement=paste0("vars["), x=local_PROC, fixed=TRUE)
       for (p in 1:ncol(STOX)) {
         local_STOX[,p]= gsub(pattern=paste0("vars@["),replacement=paste0("vars["), x=local_STOX[,p], fixed=TRUE)
       }
-
-      buffer=""      
+      # Assemble expressions
+      buffer=""
       for (k in 1:length(local_PROC)) {
         if (grepl(pattern="[^0]", x=local_STOX[k,n])) { # Suppress terms where a stoichiometry factor is zero
           if (nchar(buffer) > 0) {
@@ -127,7 +129,10 @@ rodeo$methods( generate = function(name="derivs", size=1) {
 
     }
   }
-  code=paste0(code,"  ))",newline)
+  code=paste0(code,"  ))",newline) # End of derivatives vector
+
+#TODO Was wird noch ausgegeben? Idee: Raten-Ausdrücke und die aux. expressions, jeweils als separate komponenten der Return-Liste
+
   code=paste0(code,"}",newline)
   return(code)
 })

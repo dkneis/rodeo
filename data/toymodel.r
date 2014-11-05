@@ -1,6 +1,6 @@
 toymodel='
 {
-  "expr" : {
+  "auxx" : {
      "lim_do" : "c_do/(c_do + h_do)"
   },
   "proc" : {
