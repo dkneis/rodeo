@@ -28,36 +28,47 @@ rodeo$methods( generate = function(name="derivs", size=1, return_proc=TRUE) {
   STOX= stox
 
   # Constants
+  ## Type of parenthesis used for array subscripts
   rangeOpen="["
   rangeClose="]"
+  # Regexp patterns that preceed/follow valid identifier names. These patterns
+  # are important to avoid partial matches, e.g. to properly distinguish between
+  # two identifiers "temp" and "temperature". 
+  beforeName= "(^|[^a-zA-Z0-9_])"
+  afterName= "([^a-zA-Z0-9_]|$)"
 
   # Replace aux. expressions in other aux. expressions in a forward manner, i.e. assuming
   # that an aux. expression is defined BEFORE it is referenced.
   for (i in 1:length(AUXX)) {
     if (i < length(AUXX)) {
-      AUXX[(i+1):length(AUXX)]= gsub(pattern=names(AUXX)[i],
-        replacement=paste0("(",AUXX[i],")"), x=AUXX[(i+1):length(AUXX)], fixed=TRUE)
+      patt= paste0(beforeName,names(AUXX)[i],afterName)
+      repl= paste0("\\1","(",AUXX[i],")","\\2")
+      AUXX[(i+1):length(AUXX)]= gsub(pattern=patt, replacement=repl,
+        x=AUXX[(i+1):length(AUXX)])
     }
   }
   # Check whether the above assumption was actually fulfilled.
   for (i in 1:length(AUXX)) {
-    if (any(grepl(pattern=names(AUXX)[i], x=AUXX, fixed=TRUE))) {
+    patt= paste0(beforeName,names(AUXX)[i],afterName)
+    if (any(grepl(pattern=patt, x=AUXX))) {
       stop(paste0("auxiliary expression '",names(AUXX)[i],"' is referenced before it is defined"))
     }
   }
 
   # Substitute aux. expression names by their values
   for (i in 1:length(AUXX)) {
-    PROC= gsub(pattern=names(AUXX)[i], replacement=paste0("(",AUXX[i],")"), x=PROC, fixed=TRUE)
+    patt= paste0(beforeName,names(AUXX)[i],afterName)
+    repl= paste0("\\1","(",AUXX[i],")","\\2")
+    PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (p in 1:ncol(STOX)) {
-      STOX[,p]= gsub(pattern=names(AUXX)[i], replacement=paste0("(",AUXX[i],")"), x=STOX[,p], fixed=TRUE)
+      STOX[,p]= gsub(pattern=patt, replacement=repl, x=STOX[,p])
     }
   }
 
   # Turn names of variables into references to vector elements
   # Here, the index is set for the case of a 0D-model - it is reset later
   for (i in 1:ncol(STOX)) {
-    patt= paste0("(^|[^a-zA-Z0-9_])",names(STOX)[i],"([^a-zA-Z0-9_]|$)")
+    patt= paste0(beforeName,names(STOX)[i],afterName)
     repl= paste0("\\1","vars",rangeOpen,i,rangeClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
@@ -68,7 +79,7 @@ rodeo$methods( generate = function(name="derivs", size=1, return_proc=TRUE) {
   # Turn names of parameters into references to vector elements
   # Here, the index is set for the case of a 0D-model - it is reset later
   for (i in 1:length(pars)) {
-    patt= paste0("(^|[^a-zA-Z0-9_])",names(pars)[i],"([^a-zA-Z0-9_]|$)")
+    patt= paste0(beforeName,names(pars)[i],afterName)
     repl= paste0("\\1","pars",rangeOpen,i,rangeClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
