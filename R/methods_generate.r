@@ -13,12 +13,13 @@
 # state variable (with all derivatives being zero).
 
 
-rodeo$methods( generate = function(name="derivs", size=1) {
+rodeo$methods( generate = function(name="derivs", size=1, return_proc=TRUE) {
     "Generate code to compute the variables' derivatives with respect to time.
     \\bold{Arguments:} \\code{name}: A string giving the name for the generated
     function; \\code{size}: An integer (default 1) specifying the number of
-    instances of each state variable, e.g. in spatially distributed models. \\bold{Returns:}
-    The generated function as a character string.
+    instances of each state variable, e.g. in spatially distributed models.
+    \\code{return_proc}: If TRUE, the generated function also returns the values of process rates.
+    \\bold{Returns:} The generated function as a character string.
     "
 
   # We work with local copies here!
@@ -79,9 +80,16 @@ rodeo$methods( generate = function(name="derivs", size=1) {
   newline= ifelse(.Platform$OS.type=="windows","\r\n","\n")
   code=paste0("# THIS IS A GENERATED FILE - EDITING DOESN'T MAKE SENSE",newline)
   code=paste0(code,newline)
-  code=paste0(code,"# Computes the state variables' derivatives with respect to time",newline)
+  code=paste0(code,"# This function returns the state variables' derivatives with resp. to time.",newline)
+  code=paste0(code,"# Does it also return the values of process rates? : ",ifelse(return_proc,"Yes","No"),newline)
+  code=paste0(code,newline)  
   code=paste0(code,name," = function(time,vars,pars) {",newline)
-  code=paste0(code,"  unname(c(",newline)
+  code=paste0(code,"list(",newline) # return values is wrapped into a list
+
+  ##############################################################################
+  # Derivatives of state variables
+  ##############################################################################
+  code=paste0(code,"  dytd= unname(c(",newline)
   for (n in 1:ncol(STOX)) {
     if (n > 1) {
       code=paste0(code,"    ,",newline)
@@ -91,8 +99,6 @@ rodeo$methods( generate = function(name="derivs", size=1) {
       if (iunit > 1) {
         code=paste0(code,"      ,",newline)
       }
-      ##code=paste0(code,"    ",paste0("ddt.",names(STOX)[n],".",iunit,"="),newline)
-
       # Update index of variables, accounting for the spatial unit
       # Note: A dummy character '@' is inserted on value replacement in order to
       #   avoid continued substitution of already updated indices. The dummy
@@ -131,8 +137,36 @@ rodeo$methods( generate = function(name="derivs", size=1) {
   }
   code=paste0(code,"  ))",newline) # End of derivatives vector
 
-#TODO Was wird noch ausgegeben? Idee: Raten-Ausdrücke und die aux. expressions, jeweils als separate komponenten der Return-Liste
+  ##############################################################################
+  # Process rates (optional output)
+  ##############################################################################
+  if (return_proc) {
+    code=paste0(code,"  ,proc= unname(c(",newline)
+    for (n in 1:length(PROC)) {
+      if (n > 1) {
+        code=paste0(code,"    ,",newline)
+      }
+      code=paste0(code,"    # Process rate '",names(proc)[n],"' with ",size," level",ifelse(size>1,"s",""),newline)
+      for (iunit in 1:size) {
+        if (iunit > 1) {
+          code=paste0(code,"      ,",newline)
+        }
+        # Update index of variables, accounting for the spatial unit
+        # Note: See comments for the same procedure in the section dealing with derivatives
+        local_PROC_n= PROC[n]
+        for (q in 1:ncol(STOX)) {
+          local_PROC_n= gsub(pattern=paste0("vars[",q,"]"),replacement=paste0("vars@[",(q-1)*size+iunit,"]"),
+            x=local_PROC_n, fixed=TRUE)
+        }
+        local_PROC_n= gsub(pattern=paste0("vars@["),replacement=paste0("vars["), x=local_PROC_n, fixed=TRUE)
+        # Add to code
+        code= paste0(code,local_PROC_n,newline)
+      }
+    }
+    code=paste0(code,"  ))",newline) # End of process rates vector
+  }
 
+  code=paste0(code,")",newline) # End of list
   code=paste0(code,"}",newline)
   return(code)
 })

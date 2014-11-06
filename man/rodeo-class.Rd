@@ -29,11 +29,12 @@ in, e.g., \code{proc} and/or \code{stox}.}
 \section{Methods}{
 
 \describe{
-\item{\code{generate(name = "derivs", size = 1)}}{Generate code to compute the variables' derivatives with respect to time.
+\item{\code{generate(name = "derivs", size = 1, return_proc = TRUE)}}{Generate code to compute the variables' derivatives with respect to time.
 \bold{Arguments:} \code{name}: A string giving the name for the generated
 function; \code{size}: An integer (default 1) specifying the number of
-instances of each state variable, e.g. in spatially distributed models. \bold{Returns:}
-The generated function as a character string.}
+instances of each state variable, e.g. in spatially distributed models.
+\code{return_proc}: If TRUE, the generated function also returns the values of process rates.
+\bold{Returns:} The generated function as a character string.}
 
 \item{\code{getAuxx()}}{Returns a named vector of auxiliary expressions referenced in, e.g., \code{stox} or \code{proc}}
 

@@ -14,34 +14,44 @@ rm(tmp)
 #x$plot_stox()
 
 # generate a function to compute the derivatives at SIZE spatial levels
-SIZE=1
+SIZE=2
 tf=tempfile()
-write(file=tf, x=x$generate(name="derivs",size=SIZE))
+write(file=tf, x=x$generate(name="derivs",size=SIZE,return_proc=TRUE))
 source(tf)
 print(paste0("Generated code is in file '",tf,"'"))
 # deactivate next statement to see the generated code
 if (file.remove(tf)) print("... but now it's already removed.")
 
-# wrapper for compatibility with deSolve integrators
-# --> This is where the transport terms can be added later
-dydt= function(t,y,p) { list(derivs(t,y,p)) }
-
 # integrate
 library(deSolve)
-nDays= 2
-result= lsoda(y=rep(x$getVars(),each=SIZE), times=seq(0, nDays, 1/1440),
-  func=dydt, parms=x$getPars())
+nDays= 10
+initial= rep(x$getVars(),each=SIZE)
+result= lsoda(y=initial, times=seq(0, nDays, 1/24),
+  func=derivs, parms=x$getPars())
 if (attr(result,which="istate",exact=TRUE)[1] != 2) stop("Integration failed.")
 
-# visualize
+# adapt format and names of output
+result= as.data.frame(result)
+names(result)= c("time",
+  paste(rep(names(x$getVars()),each=SIZE),rep(1:length(x$getVars()),length=SIZE),sep="_"),
+  paste(rep(names(x$getProc()),each=SIZE),rep(1:length(x$getProc()),length=SIZE),sep="_")
+)
+
+# plot states
 LEVEL=1
 if (LEVEL > SIZE)
   stop(paste0("plotting was requested for level ",LEVEL," but model has only ",SIZE))
-result= as.data.frame(result)
 layout(matrix(1:length(x$getVars()), nrow=2, byrow=TRUE))
 for (i in 1:length(x$getVars())) {
-  col= match(names(x$getVars())[i], names(result)) - 1 + LEVEL
+  col= paste(names(x$getVars())[i], LEVEL, sep="_")
   plot(result$time, result[,col], type="l", bty="n",
-    xlab="Days",ylab=names(result)[i])
+    xlab="Days",ylab=col)
+}
+# plot process rates
+layout(matrix(1:length(x$getProc()), nrow=2, byrow=TRUE))
+for (i in 1:length(x$getProc())) {
+  col= paste(names(x$getProc())[i], LEVEL, sep="_")
+  plot(result$time, result[,col], type="l", bty="n",
+    xlab="Days",ylab=col)
 }
 

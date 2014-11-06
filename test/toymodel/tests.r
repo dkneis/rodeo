@@ -14,19 +14,15 @@ k2= function(u, d) {(0.728*sqrt(u) - 0.317*u + 0.0372*u^2) / d / 86400}
 
 # generate code and test
 SIZE=4
-f= "/home/dkneis/temp/gen.r"
-write(file=f, x=x$generate(name="derivs",size=SIZE))
-source(f)
-dydt= function(t,y,p) {
-  list(derivs(time=t, vars=y, pars=p))
-}
+tf= tempfile()
+write(file=tf, x=x$generate(name="derivs",size=SIZE))
+source(tf)
 
 y= rep(x$getVars(),each=SIZE)
 p= x$getPars()
 
-
 library(deSolve)
-result= lsoda(y=y, times=seq(0, 30*86400, 3600), func=dydt, parms=p)
+result= lsoda(y=y, times=seq(0, 30*86400, 3600), func=derivs, parms=p)
 if (attr(result,which="istate",exact=TRUE)[1] != 2) stop("Integration failed.")
 result= as.data.frame(result)
 result$time= result$time / 86400

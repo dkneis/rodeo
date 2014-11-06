@@ -1,6 +1,6 @@
 {
 
-"expr" : {
+"auxx" : {
   "solid2liquid" : "(1 - por)/por",
   "lim_minOxic" : "O2/(O2 + hsatO2_minOxic)",
   "lim_minAnox" : "(1 - O2/(O2 + hsatO2_minAnox )) * (1 - NO3/(NO3 + hsatNO3_minAnox))",
