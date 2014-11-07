@@ -117,17 +117,19 @@ rodeo$methods( generate = function(name="derivs", size=1, return_proc=TRUE) {
       local_PROC= PROC
       local_STOX= STOX
       for (q in 1:ncol(STOX)) {
-        local_PROC= gsub(pattern=paste0("vars[",q,"]"),replacement=paste0("vars@[",(q-1)*size+iunit,"]"),
+        local_PROC= gsub(pattern=paste0("vars",rangeOpen,q,rangeClose),
+          replacement=paste0("vars@",rangeOpen,(q-1)*size+iunit,rangeClose),
           x=local_PROC, fixed=TRUE)
         for (p in 1:ncol(STOX)) {
-          local_STOX[,p]= gsub(pattern=paste0("vars[",q,"]"),replacement=paste0("vars@[",(q-1)*size+iunit,"]"),
+          local_STOX[,p]= gsub(pattern=paste0("vars",rangeOpen,q,rangeClose),
+            replacement=paste0("vars@",rangeOpen,(q-1)*size+iunit,rangeClose),
             x=local_STOX[,p], fixed=TRUE)
         }
       }
       # Remove dummy character
-      local_PROC= gsub(pattern=paste0("vars@["),replacement=paste0("vars["), x=local_PROC, fixed=TRUE)
+      local_PROC= gsub(pattern=paste0("vars@",rangeOpen),replacement=paste0("vars",rangeOpen), x=local_PROC, fixed=TRUE)
       for (p in 1:ncol(STOX)) {
-        local_STOX[,p]= gsub(pattern=paste0("vars@["),replacement=paste0("vars["), x=local_STOX[,p], fixed=TRUE)
+        local_STOX[,p]= gsub(pattern=paste0("vars@",rangeOpen),replacement=paste0("vars",rangeOpen), x=local_STOX[,p], fixed=TRUE)
       }
       # Assemble expressions
       buffer=""
@@ -166,10 +168,11 @@ rodeo$methods( generate = function(name="derivs", size=1, return_proc=TRUE) {
         # Note: See comments for the same procedure in the section dealing with derivatives
         local_PROC_n= PROC[n]
         for (q in 1:ncol(STOX)) {
-          local_PROC_n= gsub(pattern=paste0("vars[",q,"]"),replacement=paste0("vars@[",(q-1)*size+iunit,"]"),
+          local_PROC_n= gsub(pattern=paste0("vars",rangeOpen,q,rangeClose),
+            replacement=paste0("vars@",rangeOpen,(q-1)*size+iunit,rangeClose),
             x=local_PROC_n, fixed=TRUE)
         }
-        local_PROC_n= gsub(pattern=paste0("vars@["),replacement=paste0("vars["), x=local_PROC_n, fixed=TRUE)
+        local_PROC_n= gsub(pattern=paste0("vars@",rangeOpen),replacement=paste0("vars",rangeOpen), x=local_PROC_n, fixed=TRUE)
         # Add to code
         code= paste0(code,local_PROC_n,newline)
       }
