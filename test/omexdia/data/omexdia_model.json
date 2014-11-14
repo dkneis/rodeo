@@ -1,7 +1,7 @@
 {
 
 "auxx" : {
-  "solid2liquid" : "(1 - por)/por",
+  "solid2liquid" : "(1 - POR)/POR",
   "lim_minOxic" : "O2/(O2 + hsatO2_minOxic)",
   "lim_minAnox" : "(1 - O2/(O2 + hsatO2_minAnox )) * (1 - NO3/(NO3 + hsatNO3_minAnox))",
   "lim_minDeni" : "(1 - O2/(O2 + hsatO2_minDeni)) * NO3/(NO3 + hsatNO3_minDeni)",
@@ -54,6 +54,9 @@
     "minAnoxF": "(1 - pODUdepo) * stoi_ODU_C",
     "minAnoxS": "(1 - pODUdepo) * stoi_ODU_C",
     "odu_reox": "-1"
+  },
+  "POR" : {
+    "minOxicF" : 0
   }
 }
 

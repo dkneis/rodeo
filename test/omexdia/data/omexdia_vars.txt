@@ -1,9 +1,15 @@
 # Example values of state variables
 
 name      value   unit       description
+
+# simulated species
 OCF       1       "mmol/m3"  "organic carbon, fast degradable"
 OCS       1       "mmol/m3"  "organic carbon, slowly degradable"
 O2        10      "mmol/m3"  "oxygen"
 NH3       0.5     "mmol/m3"  "ammonium-N"
 NO3       0.02    "mmol/m3"  "nitrate-N"
 ODU       100     "mmol/m3"  "reduced matter expressed in units of oxygen demand"
+
+# sediment porosity
+POR       0.4     "-"        "porosity, i.e. volume of liquid / bulk volume"
+
