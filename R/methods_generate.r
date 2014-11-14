@@ -1,4 +1,22 @@
 
+breakline= function(text, conti="&", newline="\n") {
+  minlen= 65
+  buf=""
+  from=1
+  k= 0
+  for (i in 1:nchar(text)) {
+    k= k+1
+    if (substr(text,i,i) %in% c("+","-","*","/",",") && (k >= minlen)) {
+      k= 0
+      buf= paste0(buf,substr(text,from,i),conti,newline)
+      from=i+1
+    }
+  }
+  if (from <= nchar(text))
+    buf= paste0(buf,substr(text,from,nchar(text)))
+  return(buf) 
+}
+
 
 # Specific comments:
 #
@@ -61,7 +79,7 @@ rodeo$methods( generate = function(name="derivs", size=1, lang="R") {
       lstOpen="",
       lstClose="",
       lstAppend="",
-      cont=" &",
+      cont="&",
       com= "!"
     )
   } else {
@@ -175,7 +193,7 @@ rodeo$methods( generate = function(name="derivs", size=1, lang="R") {
       for (k in 1:length(local_PROC)) {
         if (grepl(pattern="[^0]", x=local_STOX[k,n])) { # Suppress terms where a stoichiometry factor is zero
           if (nchar(buffer) > 0) {
-            buffer= paste0(buffer," +",L$cont,newline)
+            buffer= paste0(buffer," + ")
           }
           buffer=paste0(buffer,"      (",local_PROC[k],") * (",local_STOX[k,n],")")
         }
@@ -183,6 +201,13 @@ rodeo$methods( generate = function(name="derivs", size=1, lang="R") {
       if (nchar(buffer) == 0) {
         buffer= "      0"  # treat case where all stoichiometry factors are zero
       }
+
+      # Break fortran lines
+      if (lang == "f") {
+        buffer= breakline(text=buffer, conti=L$cont, newline=newline)
+      }
+
+      # Add to code
       code= paste0(code,buffer,L$cont,newline)
 
     }
@@ -211,6 +236,12 @@ rodeo$methods( generate = function(name="derivs", size=1, lang="R") {
           x=local_PROC_n, fixed=TRUE)
       }
       local_PROC_n= gsub(pattern=paste0("vars@",L$eleOpen),replacement=paste0("vars",L$eleOpen), x=local_PROC_n, fixed=TRUE)
+
+      # Break fortran lines
+      if (lang == "f") {
+        local_PROC_n= breakline(text=local_PROC_n, conti=L$cont, newline=newline)
+      }
+
       # Add to code
       code= paste0(code,"      ",local_PROC_n,L$cont,newline)
     }
