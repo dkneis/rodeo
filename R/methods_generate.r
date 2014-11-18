@@ -1,22 +1,4 @@
 
-breakline= function(text, conti="&", newline="\n") {
-  minlen= 65
-  buf=""
-  from=1
-  k= 0
-  for (i in 1:nchar(text)) {
-    k= k+1
-    if (substr(text,i,i) %in% c("+","-","*","/",",") && (k >= minlen)) {
-      k= 0
-      buf= paste0(buf,substr(text,from,i),conti,newline)
-      from=i+1
-    }
-  }
-  if (from <= nchar(text))
-    buf= paste0(buf,substr(text,from,nchar(text)))
-  return(buf) 
-}
-
 
 # Specific comments:
 #
@@ -31,10 +13,10 @@ breakline= function(text, conti="&", newline="\n") {
 # state variable (with all derivatives being zero).
 
 
-rodeo$methods( generate = function(name="derivs", size=1, lang="R") {
+rodeo$methods( generate = function(name="derivs", nLevels=1, lang="R") {
     "Generate code to compute the variables' derivatives with respect to time.
     \\bold{Arguments:} \\code{name}: A string giving the name for the generated
-    function; \\code{size}: An integer (default 1) specifying the number of
+    function; \\code{nLevels}: An integer (default 1) specifying the number of
     instances of each state variable, e.g. in spatially distributed models.
     \\code{lang}: The language of generated code (currently 'R' or 'F').
     \\bold{Returns:} The generated function as a character string.
@@ -43,47 +25,33 @@ rodeo$methods( generate = function(name="derivs", size=1, lang="R") {
   newline= ifelse(.Platform$OS.type=="windows","\r\n","\n")
   nameVecDrvs= "dydt"
   nameVecProc= "proc"
+  nameSpatialLevelIndex= "i_"
 
-  # Set language-specific constants
-  lang= substr(tolower(lang),1,1)
+  # Language-specific code features
   if (lang == "r") {
-    L= list(
-      funOpen= paste0(name," = function(time, vars, pars) {"),
-      argDecl="",
-      funClose= "}",
-      vecOpen= "unname(c(",
-      vecClose="))",
-      eleOpen= "[",
-      eleClose="]",
-      lstOpen="list(",
-      lstClose=")",
-      lstAppend=",",
-      cont="",
-      com= "#"
-    )
+    L= list(com="#", cont="", eleOpen="[", eleClose="]", vecOpen="c(", vecClose=")")
   } else if (lang == "f") {
-    L= list(
-      funOpen= paste0("subroutine ",name,"(time, vars, pars, ",nameVecDrvs,", ",nameVecProc,")"),
-      funClose= "end subroutine",
-      argDecl=paste0(ifelse(length(funs) > 0,paste0("  use functions",newline),""),
-                     "  implicit none",newline,
-                     "  double precision, intent(in):: time",newline,
-                     "  double precision, dimension(",length(vars)*size,"), intent(in):: vars",newline,
-                     "  double precision, dimension(",length(pars),"), intent(in):: pars",newline,
-                     "  double precision, dimension(",length(vars)*size,"), intent(out):: ",nameVecDrvs,newline,
-                     "  double precision, dimension(",length(proc)*size,"), intent(out):: ",nameVecProc,newline),
-      vecOpen= "(/",
-      vecClose="/)",
-      eleOpen= "(",
-      eleClose=")",
-      lstOpen="",
-      lstClose="",
-      lstAppend="",
-      cont="&",
-      com= "!"
-    )
+    L= list(com="!", cont="&", eleOpen="(", eleClose=")", vecOpen="(/", vecClose="/)")
   } else {
-    stop("requested language not supported")
+    stop("Requested language not supported.")
+  }
+  # Function to break long lines in Fortran
+  breakline= function(text, conti, newline) {
+    minlen= 65
+    buf=""
+    from=1
+    k= 0
+    for (i in 1:nchar(text)) {
+      k= k+1
+      if (substr(text,i,i) %in% c("+","-","*","/",",") && (k >= minlen)) {
+        k= 0
+        buf= paste0(buf,substr(text,from,i),conti,newline)
+        from=i+1
+      }
+    }
+    if (from <= nchar(text))
+      buf= paste0(buf,substr(text,from,nchar(text)))
+    return(buf) 
   }
 
   # We work with local copies (since this is a reference class!)
@@ -97,8 +65,10 @@ rodeo$methods( generate = function(name="derivs", size=1, lang="R") {
   beforeName= "(^|[^a-zA-Z0-9_])"
   afterName= "([^a-zA-Z0-9_]|$)"
 
-  # Replace aux. expressions in other aux. expressions in a forward manner, i.e. assuming
-  # that an aux. expression is defined BEFORE it is referenced.
+################################################################################
+
+  # Replace aux. expressions in other aux. expressions in a forward manner,
+  #  i.e. assuming that an aux. expression is defined BEFORE it is referenced.
   for (i in 1:length(AUXX)) {
     if (i < length(AUXX)) {
       patt= paste0(beforeName,names(AUXX)[i],afterName)
@@ -111,7 +81,8 @@ rodeo$methods( generate = function(name="derivs", size=1, lang="R") {
   for (i in 1:length(AUXX)) {
     patt= paste0(beforeName,names(AUXX)[i],afterName)
     if (any(grepl(pattern=patt, x=AUXX))) {
-      stop(paste0("auxiliary expression '",names(AUXX)[i],"' is referenced before it is defined"))
+      stop(paste0("auxiliary expression '",names(AUXX)[i],
+        "' is referenced before it is defined"))
     }
   }
 
@@ -125,11 +96,44 @@ rodeo$methods( generate = function(name="derivs", size=1, lang="R") {
     }
   }
 
+################################################################################
+
+# NOTE: This is de-activated. This implementation does not properly deal with
+#       numbers in scientific format like, e.g. "1.e-06". This is not trivial.
+#       As a workaround, the input is expected not to contain numeric constants.
+#       Named constants must be used instead.
+#  # In case of Fortran code: Convert numerical constants to double precision
+#  if (lang == "f") {
+#    for (i in 1:ncol(STOX)) {
+#      patt= "(^|[-+*/^(, ])([0123456789.]+)($|[-+*/^), ])"
+#      repl= "\\1dble(\\2)\\3"
+#      PROC= gsub(pattern=patt, replacement=repl, x=PROC)
+#      for (n in 1:ncol(STOX)) {
+#        STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
+#      }
+#    }
+#  }
+
+################################################################################
+
   # Turn names of variables into references to vector elements
-  # Here, the index is set for the case of a 0D-model - it is reset later
+  #
+  # Notes:
+  # - The original indices of variables refer to 0-dimensional case.
+  #
+  # - In a spatially distributed model with k variables and n spatial levels,
+  #   the array holding the variables is organized as follows:
+  #   { var[1,1], var[1,2], ... var[1,n],
+  #     var[2,1]  var[2,2], ... var[2,n],
+  #     ... ,
+  #     var[k,1]  var[k,2], ... var[k,n] }
+  #
+  # - Consequently, the position of the i-th variable at the p-th spatial level
+  #   is computed as "(i-1)*n+p"
+
   for (i in 1:ncol(STOX)) {
     patt= paste0(beforeName,names(STOX)[i],afterName)
-    repl= paste0("\\1","vars",L$eleOpen,i,L$eleClose,"\\2")
+    repl= paste0("\\1","vars",L$eleOpen,"(",i,"-1)*",nLevels,"+",nameSpatialLevelIndex,L$eleClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
@@ -137,7 +141,7 @@ rodeo$methods( generate = function(name="derivs", size=1, lang="R") {
   }
 
   # Turn names of parameters into references to vector elements
-  # Here, the index is set for the case of a 0D-model - it is reset later
+  # Note: Parameters don't have a spatial resolution (as opposed to state vars)
   for (i in 1:length(pars)) {
     patt= paste0(beforeName,names(pars)[i],afterName)
     repl= paste0("\\1","pars",L$eleOpen,i,L$eleClose,"\\2")
@@ -147,108 +151,67 @@ rodeo$methods( generate = function(name="derivs", size=1, lang="R") {
     }
   }  
 
-  # Create code
-  code=paste0(L$com," THIS IS A GENERATED FILE - EDITING DOESN'T MAKE SENSE",newline)
-  code=paste0(code,newline)  
-  code=paste0(code,L$funOpen,newline)
-  code=paste0(code,L$argDecl,newline)
-  code=paste0(code,L$lstOpen,newline)
+################################################################################
 
-  ##############################################################################
-  # Derivatives of state variables
-  ##############################################################################
-  code=paste0(code,"  ",nameVecDrvs,"= ",L$vecOpen,L$cont,newline)
+  # Generate constructor code for the derivatives vector
+  # Note: The length of the vector equals the number of state variables
+  code_drvs=""
+  code_drvs=paste0(code_drvs,"  ",nameVecDrvs,"0D","= ",L$vecOpen,L$cont,newline)
   for (n in 1:ncol(STOX)) {
     if (n > 1) {
-      code=paste0(code,"    ,",L$cont,newline)
+      code_drvs=paste0(code_drvs,"    ,",L$cont,newline)
     }
-    code=paste0(code,"    ",L$com," Variable '",names(STOX)[n],"' with ",size," level",ifelse(size>1,"s",""),newline)
-    for (iunit in 1:size) {
-      if (iunit > 1) {
-        code=paste0(code,"      ,",L$cont,newline)
-      }
-      # Update index of variables, accounting for the spatial unit
-      # Note: A dummy character '@' is inserted on value replacement in order to
-      #   avoid continued substitution of already updated indices. The dummy
-      #   character is removed after all substitutions have been performed.
-      local_PROC= PROC
-      local_STOX= STOX
-      for (q in 1:ncol(STOX)) {
-        local_PROC= gsub(pattern=paste0("vars",L$eleOpen,q,L$eleClose),
-          replacement=paste0("vars@",L$eleOpen,(q-1)*size+iunit,L$eleClose),
-          x=local_PROC, fixed=TRUE)
-        for (p in 1:ncol(STOX)) {
-          local_STOX[,p]= gsub(pattern=paste0("vars",L$eleOpen,q,L$eleClose),
-            replacement=paste0("vars@",L$eleOpen,(q-1)*size+iunit,L$eleClose),
-            x=local_STOX[,p], fixed=TRUE)
+    code_drvs=paste0(code_drvs,"    ",L$com," Variable '",names(STOX)[n],"'",newline)
+    # Assemble expressions
+    buffer=""
+    for (k in 1:length(PROC)) {
+      if (grepl(pattern="[^0]", x=STOX[k,n])) { # Suppress terms where a stoichiometry factor is zero
+        if (nchar(buffer) > 0) {
+          buffer= paste0(buffer," + ")
         }
+        buffer=paste0(buffer,"      (",PROC[k],") * (",STOX[k,n],")")
       }
-      # Remove dummy character
-      local_PROC= gsub(pattern=paste0("vars@",L$eleOpen),replacement=paste0("vars",L$eleOpen), x=local_PROC, fixed=TRUE)
-      for (p in 1:ncol(STOX)) {
-        local_STOX[,p]= gsub(pattern=paste0("vars@",L$eleOpen),replacement=paste0("vars",L$eleOpen), x=local_STOX[,p], fixed=TRUE)
-      }
-      # Assemble expressions
-      buffer=""
-      for (k in 1:length(local_PROC)) {
-        if (grepl(pattern="[^0]", x=local_STOX[k,n])) { # Suppress terms where a stoichiometry factor is zero
-          if (nchar(buffer) > 0) {
-            buffer= paste0(buffer," + ")
-          }
-          buffer=paste0(buffer,"      (",local_PROC[k],") * (",local_STOX[k,n],")")
-        }
-      }
-      if (nchar(buffer) == 0) {
-        buffer= "      0"  # treat case where all stoichiometry factors are zero
-      }
-
-      # Break fortran lines
-      if (lang == "f") {
-        buffer= breakline(text=buffer, conti=L$cont, newline=newline)
-      }
-
-      # Add to code
-      code= paste0(code,buffer,L$cont,newline)
-
     }
+    if (nchar(buffer) == 0) {
+      buffer= "      0"  # treat case where all stoichiometry factors are zero
+    }
+    # Break fortran lines
+    if (lang == "f") { buffer= breakline(text=buffer, conti=L$cont, newline=newline) }
+    # Add to code
+    code_drvs= paste0(code_drvs,buffer,L$cont,newline)
   }
-  code=paste0(code,"  ",L$vecClose,newline) # End of derivatives vector
+  code_drvs=paste0(code_drvs,"  ",L$vecClose,newline) # End of derivatives vector
 
-  ##############################################################################
-  # Process rates
-  ##############################################################################
-  code=paste0(code,"  ",L$lstAppend,nameVecProc,"=",L$vecOpen,L$cont,newline)
+  # Generate constructor code for the processes vector
+  # Note: The length of the vector equals the number of processes
+  code_proc=""
+  code_proc=paste0(code_proc,"  ",nameVecProc,"0D","=",L$vecOpen,L$cont,newline)
   for (n in 1:length(PROC)) {
     if (n > 1) {
-      code=paste0(code,"    ,",L$cont,newline)
+      code_proc=paste0(code_proc,"    ,",L$cont,newline)
     }
-    code=paste0(code,"    ",L$com," Process rate '",names(proc)[n],"' with ",size," level",ifelse(size>1,"s",""),newline)
-    for (iunit in 1:size) {
-      if (iunit > 1) {
-        code=paste0(code,"      ,",L$cont,newline)
-      }
-      # Update index of variables, accounting for the spatial unit
-      # Note: See comments for the same procedure in the section dealing with derivatives
-      local_PROC_n= PROC[n]
-      for (q in 1:ncol(STOX)) {
-        local_PROC_n= gsub(pattern=paste0("vars",L$eleOpen,q,L$eleClose),
-          replacement=paste0("vars@",L$eleOpen,(q-1)*size+iunit,L$eleClose),
-          x=local_PROC_n, fixed=TRUE)
-      }
-      local_PROC_n= gsub(pattern=paste0("vars@",L$eleOpen),replacement=paste0("vars",L$eleOpen), x=local_PROC_n, fixed=TRUE)
-
-      # Break fortran lines
-      if (lang == "f") {
-        local_PROC_n= breakline(text=local_PROC_n, conti=L$cont, newline=newline)
-      }
-
-      # Add to code
-      code= paste0(code,"      ",local_PROC_n,L$cont,newline)
-    }
+    code_proc=paste0(code_proc,"    ",L$com," Process rate '",names(proc)[n],"'",newline)
+    buffer= PROC[n]
+    # Break fortran lines
+    if (lang == "f") { buffer= breakline(text=buffer, conti=L$cont, newline=newline) }
+    # Add to code
+    code_proc= paste0(code_proc,"      ",buffer,L$cont,newline)
   }
-  code=paste0(code,"  ",L$vecClose,newline)
-  code=paste0(code,L$lstClose,newline)
-  code=paste0(code,L$funClose,newline)
-  return(code)
+  code_proc=paste0(code_proc,"  ",L$vecClose,newline)
+
+################################################################################
+
+  # Embed the vector constructor codes in appropriate functions
+  if (lang == "r") {
+    return(generate_r(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex,
+      nLevels, code_drvs, code_proc, nVars=length(vars), nProc=length(proc), newline))
+  } else if (lang == "f") {
+    return(generate_f(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex,
+      nLevels, code_drvs, code_proc, nVars=length(vars), nPars=length(pars),
+      nFuns=length(funs), nProc=length(proc), newline))
+  } else {
+    stop("Requested language not supported.")
+  }
+
 })
 
