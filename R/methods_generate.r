@@ -165,15 +165,19 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="R") {
     # Assemble expressions
     buffer=""
     for (k in 1:length(PROC)) {
-      if (grepl(pattern="[^0]", x=STOX[k,n])) { # Suppress terms where a stoichiometry factor is zero
+      if (grepl(pattern="[^0]", x=STOX[k,n])) { # Suppress terms where a stoichiometry factor is exactly zero
         if (nchar(buffer) > 0) {
           buffer= paste0(buffer," + ")
         }
-        buffer=paste0(buffer,"      (",PROC[k],") * (",STOX[k,n],")")
+        buffer=paste0(buffer," (",PROC[k],") * (",STOX[k,n],")")
       }
     }
-    if (nchar(buffer) == 0) {
-      buffer= "      0"  # treat case where all stoichiometry factors are zero
+    if (nchar(buffer) == 0) { # treat case where all stoichiometry factors are zero
+      if (lang == "f") {
+        buffer= " 0.0d0"  # double precision zero
+      } else {
+        buffer= " 0"
+      }
     }
     # Break fortran lines
     if (lang == "f") { buffer= breakline(text=buffer, conti=L$cont, newline=newline) }
