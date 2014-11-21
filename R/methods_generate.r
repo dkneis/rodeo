@@ -13,12 +13,12 @@
 # state variable (with all derivatives being zero).
 
 
-rodeo$methods( generate = function(name="derivs", nLevels=1, lang="R") {
+rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r") {
     "Generate code to compute the variables' derivatives with respect to time.
     \\bold{Arguments:} \\code{name}: A string giving the name for the generated
     function; \\code{nLevels}: An integer (default 1) specifying the number of
     instances of each state variable, e.g. in spatially distributed models.
-    \\code{lang}: The language of generated code (currently 'R' or 'F').
+    \\code{lang}: The language of generated code (currently 'r' or 'f').
     \\bold{Returns:} The generated function as a character string.
     "
   # Constants
@@ -154,7 +154,8 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="R") {
 ################################################################################
 
   # Generate constructor code for the derivatives vector
-  # Note: The length of the vector equals the number of state variables
+  # Note: The length of the vector equals the number of state variables in the
+  #       0-dimensional case, i.e. a spatially lumped model
   code_drvs=""
   code_drvs=paste0(code_drvs,"  ",nameVecDrvs,"0D","= ",L$vecOpen,L$cont,newline)
   for (n in 1:ncol(STOX)) {
@@ -187,7 +188,8 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="R") {
   code_drvs=paste0(code_drvs,"  ",L$vecClose,newline) # End of derivatives vector
 
   # Generate constructor code for the processes vector
-  # Note: The length of the vector equals the number of processes
+  # Note: The length of the vector equals the number of processes in the
+  #       0-dimensional case, i.e. a spatially lumped model
   code_proc=""
   code_proc=paste0(code_proc,"  ",nameVecProc,"0D","=",L$vecOpen,L$cont,newline)
   for (n in 1:length(PROC)) {
@@ -205,7 +207,7 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="R") {
 
 ################################################################################
 
-  # Embed the vector constructor codes in appropriate functions
+  # Embed the vector constructor codes in appropriate language-specific functions
   if (lang == "r") {
     return(generate_r(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex,
       nLevels, code_drvs, code_proc, nVars=length(vars), nProc=length(proc), newline))
