@@ -13,7 +13,10 @@
 # state variable (with all derivatives being zero).
 
 
-rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r") {
+rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
+  nameVecVars= "Y_", nameVecPars= "P_", nameSpatialLevelIndex= "i_", 
+  nameVecDrvs= "dYdt",   nameVecProc= "proc"
+) {
     "Generate code to compute the variables' derivatives with respect to time.
     \\bold{Arguments:} \\code{name}: A string giving the name for the generated
     function; \\code{nLevels}: An integer (default 1) specifying the number of
@@ -23,10 +26,6 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r") {
     "
   # Constants
   newline= ifelse(.Platform$OS.type=="windows","\r\n","\n")
-  nameVecDrvs= "dydt"
-  nameVecProc= "proc"
-  nameSpatialLevelIndex= "i_"
-
   # Language-specific code features
   if (lang == "r") {
     L= list(com="#", cont="", eleOpen="[", eleClose="]", vecOpen="c(", vecClose=")")
@@ -133,7 +132,7 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r") {
 
   for (i in 1:ncol(STOX)) {
     patt= paste0(beforeName,names(STOX)[i],afterName)
-    repl= paste0("\\1","vars",L$eleOpen,"(",i,"-1)*",nLevels,"+",nameSpatialLevelIndex,L$eleClose,"\\2")
+    repl= paste0("\\1",nameVecVars,L$eleOpen,"(",i,"-1)*",nLevels,"+",nameSpatialLevelIndex,L$eleClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
@@ -144,7 +143,7 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r") {
   # Note: Parameters don't have a spatial resolution (as opposed to state vars)
   for (i in 1:length(pars)) {
     patt= paste0(beforeName,names(pars)[i],afterName)
-    repl= paste0("\\1","pars",L$eleOpen,i,L$eleClose,"\\2")
+    repl= paste0("\\1","nameVecPars",L$eleOpen,i,L$eleClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])

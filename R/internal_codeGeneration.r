@@ -2,13 +2,13 @@
 generate_f= function(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex, nLevels, code_drvs, code_proc, nVars, nPars, nFuns, nProc, newline) {
   # Create code
   code=paste0("! THIS IS A GENERATED FILE - EDITING DOESN'T MAKE SENSE",newline)
-  code=paste0(code,"subroutine ",name,"(time, vars, pars, ",nameVecDrvs,", ",nameVecProc,")",newline)
+  code=paste0(code,"subroutine ",name,"(time, ",nameVecVars,", ",nameVecPars,", ",nameVecDrvs,", ",nameVecProc,")",newline)
   code=paste0(code,ifelse(nFuns > 0,paste0("  use functions",newline),""))
   code=paste0(code,"  implicit none",newline)
   code=paste0(code,"  ! Inputs",newline)
   code=paste0(code,"  double precision, intent(in):: time",newline)
-  code=paste0(code,"  double precision, dimension(",nVars*nLevels,"), intent(in):: vars",newline)
-  code=paste0(code,"  double precision, dimension(",nPars,"), intent(in):: pars",newline)
+  code=paste0(code,"  double precision, dimension(",nVars*nLevels,"), intent(in):: ",nameVecVars,newline)
+  code=paste0(code,"  double precision, dimension(",nPars,"), intent(in):: ",nameVecPars,newline)
   code=paste0(code,"  ! Outputs",newline)
   code=paste0(code,"  double precision, dimension(",nVars*nLevels,"), intent(out):: ",nameVecDrvs,newline)
   code=paste0(code,"  double precision, dimension(",nProc*nLevels,"), intent(out):: ",nameVecProc,newline)
@@ -55,7 +55,7 @@ generate_f= function(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex, nLev
 generate_r= function(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex, nLevels, code_drvs, code_proc, nVars, nProc, newline) {
   # Create code
   code=paste0("# THIS IS A GENERATED FILE - EDITING DOESN'T MAKE SENSE",newline)
-  code=paste0(code,name," = function(time, vars, pars) {",newline)
+  code=paste0(code,name," = function(time, ",nameVecVars,", ",nameVecPars,") {",newline)
   code=paste0(code,"  # Internal function to compute the derivatives at a particular level",newline)
   code=paste0(code,"  fun_",nameVecDrvs,"0D = function(",nameSpatialLevelIndex,") {",newline)
   code=paste0(code,"  ",code_drvs,newline)
