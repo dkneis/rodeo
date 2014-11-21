@@ -13,7 +13,7 @@ DOSAT= function(t) {14.652 - 0.41022*t + 0.007991*t^2 - 0.000077774*t^3}
 k2= function(u, d) {(0.728*sqrt(u) - 0.317*u + 0.0372*u^2) / d / 86400}
 
 # generate code and test
-SIZE=4
+SIZE=1
 tf= tempfile()
 write(file=tf, x=x$generate(name="derivs",nLevels=SIZE, lang="r"))
 source(tf)

@@ -143,13 +143,37 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
   # Note: Parameters don't have a spatial resolution (as opposed to state vars)
   for (i in 1:length(pars)) {
     patt= paste0(beforeName,names(pars)[i],afterName)
-    repl= paste0("\\1","nameVecPars",L$eleOpen,i,L$eleClose,"\\2")
+    repl= paste0("\\1",nameVecPars,L$eleOpen,i,L$eleClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
     }
   }  
 
+  # In a spatially distributed model, the righthand side of each derivative
+  # should contain a reference to a (spatially resolved) state variable.
+  #
+  # Reason: In a spatially distributed model (nLevels > 1), the derivative of a
+  #   particular state variable must, on evaluation, expand to vectors of
+  #   length nLevels (for the sake of computationally efficient R code).
+  #   This expansion is (implicitly) caused by the appearance of a state variable
+  #   on the righthand side.
+  #
+  # Note:  It is reasonable to assume that variables are referenced in the
+  #   process rate expressions rather than in the stoichiometry factors.
+  #
+  # Hint: In cases where a process rate expression is a constant, one can make
+  #   the expression compliant with the above-mentioned requirement by adding a
+  #   term like '+ X * ZERO' where 'X' is an existing state variable and ZERO is
+  #   a constant initialized to zero. 
+  if (nLevels > 1) {
+    patt=paste0(nameVecVars,L$eleOpen)
+    if (!all(grepl(pattern=patt, x=PROC, fixed=TRUE))) {
+      stop("in a spatially distributed model, a reference to a state variable",
+        " must appear at the righthand side of any process rate expression")
+    }
+  }
+ 
 ################################################################################
 
   # Generate constructor code for the derivatives vector
@@ -165,19 +189,22 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
     # Assemble expressions
     buffer=""
     for (k in 1:length(PROC)) {
-      if (grepl(pattern="[^0]", x=STOX[k,n])) { # Suppress terms where a stoichiometry factor is exactly zero
+      # Suppress terms where a stoichiometry factor is exactly zero (usually because
+      # it has not been set explicitly)
+      if (grepl(pattern="[^0]", x=STOX[k,n])) {
         if (nchar(buffer) > 0) {
           buffer= paste0(buffer," + ")
         }
         buffer=paste0(buffer," (",PROC[k],") * (",STOX[k,n],")")
       }
     }
-    if (nchar(buffer) == 0) { # treat case where all stoichiometry factors are zero
-      if (lang == "f") {
-        buffer= " 0.0d0"  # double precision zero
-      } else {
-        buffer= " 0"
-      }
+    # Treat case where all stoichiometry factors are zero. Note: We cannot simply
+    # set the derivative to a constant of zero because, in a distributed model,
+    # the value of the derivative would not automatically expand to a vector of
+    # length nLevels.
+    if (nchar(buffer) == 0) {
+      stop(paste0("expecting at least one non-zero stoichiometry factor",
+        " for state variable '",names(STOX)[n],"'"))
     }
     # Break fortran lines
     if (lang == "f") { buffer= breakline(text=buffer, conti=L$cont, newline=newline) }
@@ -208,10 +235,12 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
 
   # Embed the vector constructor codes in appropriate language-specific functions
   if (lang == "r") {
-    return(generate_r(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex,
+    return(generate_r(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
+      nameSpatialLevelIndex,
       nLevels, code_drvs, code_proc, nVars=length(vars), nProc=length(proc), newline))
   } else if (lang == "f") {
-    return(generate_f(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex,
+    return(generate_f(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
+      nameSpatialLevelIndex,
       nLevels, code_drvs, code_proc, nVars=length(vars), nPars=length(pars),
       nFuns=length(funs), nProc=length(proc), newline))
   } else {

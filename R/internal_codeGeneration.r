@@ -1,5 +1,8 @@
 
-generate_f= function(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex, nLevels, code_drvs, code_proc, nVars, nPars, nFuns, nProc, newline) {
+generate_f= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
+  nameSpatialLevelIndex, nLevels, code_drvs, code_proc,
+  nVars, nPars, nFuns, nProc, newline
+) {
   # Create code
   code=paste0("! THIS IS A GENERATED FILE - EDITING DOESN'T MAKE SENSE",newline)
   code=paste0(code,"subroutine ",name,"(time, ",nameVecVars,", ",nameVecPars,", ",nameVecDrvs,", ",nameVecProc,")",newline)
@@ -52,7 +55,9 @@ generate_f= function(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex, nLev
   return(code)
 }
 
-generate_r= function(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex, nLevels, code_drvs, code_proc, nVars, nProc, newline) {
+generate_r= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
+  nameSpatialLevelIndex, nLevels, code_drvs, code_proc, nVars, nProc, newline
+) {
   # Create code
   code=paste0("# THIS IS A GENERATED FILE - EDITING DOESN'T MAKE SENSE",newline)
   code=paste0(code,name," = function(time, ",nameVecVars,", ",nameVecPars,") {",newline)
@@ -71,11 +76,13 @@ generate_r= function(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex, nLev
   code=paste0(code,"  #  ",nameVecDrvs,"[seq(from=spatial_level, by=",nLevels,
     ", length.out=",nVars,")]","= fun_",nameVecDrvs,"0D(spatial_level)",newline)
   code=paste0(code,"  #}",newline)
-  code=paste0(code,"  # NOTE: Next line is a replacement for the above loop code",newline)
-  code=paste0(code,"  ",nameVecDrvs," = c(t(apply(X=matrix(1:",nLevels,", ncol=1), MARGIN=1, FUN=fun_",nameVecDrvs,"0D)))",newline)
-  code=paste0(code,"  # We can't use the simpler statement",newline)
-  code=paste0(code,"  #",nameVecDrvs," = unname(fun_",nameVecDrvs,"0D(1:",nLevels,"))",newline)
-  code=paste0(code,"  # because level-independent derivatives would not be replicated.",newline)
+  code=paste0(code,"  # Next line is a replacement for the above loop code",newline)
+  code=paste0(code,"  # ",nameVecDrvs," = c(t(apply(X=matrix(1:",nLevels,", ncol=1), MARGIN=1, FUN=fun_",nameVecDrvs,"0D)))",newline)
+  code=paste0(code,"  # Next line is probably even more efficient. Note that the result vector ",newline)
+  code=paste0(code,"  # has the correct length (number of levels * number of variables) only if",newline)
+  code=paste0(code,"  # the derivative of each variable explicitly depends on a variable's value.",newline)
+  code=paste0(code,"  # Then, each derivative is also a function of the spatial level.",newline)
+  code=paste0(code,"  ",nameVecDrvs," = unname(fun_",nameVecDrvs,"0D(1:",nLevels,"))",newline)
   code=paste0(code,"  ",newline)
   code=paste0(code,"  # Set vector of process rates (all spatial levels)",newline)
   code=paste0(code,"  #",nameVecProc,"= vector('numeric',",nProc*nLevels,")",newline)
@@ -83,11 +90,13 @@ generate_r= function(name, nameVecDrvs, nameVecProc, nameSpatialLevelIndex, nLev
   code=paste0(code,"  #  ",nameVecProc,"[seq(from=spatial_level, by=",nLevels,
     ", length.out=",nProc,")]","= fun_",nameVecProc,"0D(spatial_level)",newline)
   code=paste0(code,"  #}",newline)
-  code=paste0(code,"  # NOTE: Next line is a replacement for the above loop code",newline)
-  code=paste0(code,"  ",nameVecProc," = c(t(apply(X=matrix(1:",nLevels,", ncol=1), MARGIN=1, FUN=fun_",nameVecProc,"0D)))",newline)
-  code=paste0(code,"  # We can't use the simpler statement",newline)
-  code=paste0(code,"  #",nameVecProc," = unname(fun_",nameVecProc,"0D(1:",nLevels,"))",newline)
-  code=paste0(code,"  # because level-independent process rates would not be replicated.",newline)
+  code=paste0(code,"  # Next line is a replacement for the above loop code",newline)
+  code=paste0(code,"  #",nameVecProc," = c(t(apply(X=matrix(1:",nLevels,", ncol=1), MARGIN=1, FUN=fun_",nameVecProc,"0D)))",newline)
+  code=paste0(code,"  # Next line is probably even more efficient. Note that the result vector ",newline)
+  code=paste0(code,"  # has the correct length (number of levels * number of processes) only if",newline)
+  code=paste0(code,"  # each process rate explicitly depends on a variable's value.",newline)
+  code=paste0(code,"  # Then, each process rate is also a function of the spatial level.",newline)
+  code=paste0(code,"  ",nameVecProc," = unname(fun_",nameVecProc,"0D(1:",nLevels,"))",newline)
   code=paste0(code,"  # Return a list",newline)
   code=paste0(code,"  return(list(",nameVecDrvs,"=",nameVecDrvs,",",nameVecProc,"=",nameVecProc,"))",newline)
   code=paste0(code,"}",newline)
