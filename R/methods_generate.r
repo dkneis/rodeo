@@ -32,7 +32,7 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
   } else if (lang == "f") {
     L= list(com="!", cont="&", eleOpen="(", eleClose=")", vecOpen="(/", vecClose="/)")
   } else {
-    stop("Requested language not supported.")
+    stop("requested language not supported")
   }
   # Function to break long lines in Fortran
   breakline= function(text, conti, newline) {
@@ -90,8 +90,8 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
     patt= paste0(beforeName,names(AUXX)[i],afterName)
     repl= paste0("\\1","(",AUXX[i],")","\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
-    for (p in 1:ncol(STOX)) {
-      STOX[,p]= gsub(pattern=patt, replacement=repl, x=STOX[,p])
+    for (n in 1:ncol(STOX)) {
+      STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
     }
   }
 
@@ -103,13 +103,11 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
 #       Named constants must be used instead.
 #  # In case of Fortran code: Convert numerical constants to double precision
 #  if (lang == "f") {
-#    for (i in 1:ncol(STOX)) {
-#      patt= "(^|[-+*/^(, ])([0123456789.]+)($|[-+*/^), ])"
-#      repl= "\\1dble(\\2)\\3"
-#      PROC= gsub(pattern=patt, replacement=repl, x=PROC)
-#      for (n in 1:ncol(STOX)) {
-#        STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
-#      }
+#    patt= "(^|[-+*/^(, ])([0123456789.]+)($|[-+*/^), ])"
+#    repl= "\\1dble(\\2)\\3"
+#    PROC= gsub(pattern=patt, replacement=repl, x=PROC)
+#    for (n in 1:ncol(STOX)) {
+#      STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
 #    }
 #  }
 
@@ -130,9 +128,10 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
   # - Consequently, the position of the i-th variable at the p-th spatial level
   #   is computed as "(i-1)*n+p"
 
-  for (i in 1:ncol(STOX)) {
-    patt= paste0(beforeName,names(STOX)[i],afterName)
-    repl= paste0("\\1",nameVecVars,L$eleOpen,"(",i,"-1)*",nLevels,"+",nameSpatialLevelIndex,L$eleClose,"\\2")
+  for (i in 1:length(vars)) {
+    patt= paste0(beforeName,names(vars)[i],afterName)
+    repl= paste0("\\1",nameVecVars,L$eleOpen,"(",
+      names(vars)[i],"-1)*",nLevels,"+",nameSpatialLevelIndex,L$eleClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
@@ -143,7 +142,8 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
   # Note: Parameters don't have a spatial resolution (as opposed to state vars)
   for (i in 1:length(pars)) {
     patt= paste0(beforeName,names(pars)[i],afterName)
-    repl= paste0("\\1",nameVecPars,L$eleOpen,i,L$eleClose,"\\2")
+    repl= paste0("\\1",nameVecPars,L$eleOpen,
+      names(pars)[i],L$eleClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
@@ -234,18 +234,10 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
 ################################################################################
 
   # Embed the vector constructor codes in appropriate language-specific functions
-  if (lang == "r") {
-    return(generate_r(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
-      nameSpatialLevelIndex,
-      nLevels, code_drvs, code_proc, nVars=length(vars), nProc=length(proc), newline))
-  } else if (lang == "f") {
-    return(generate_f(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
-      nameSpatialLevelIndex,
-      nLevels, code_drvs, code_proc, nVars=length(vars), nPars=length(pars),
-      nFuns=length(funs), nProc=length(proc), newline))
-  } else {
-    stop("Requested language not supported.")
-  }
+  return(create_code(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
+      nameSpatialLevelIndex, names(vars), names(pars),
+      nLevels, code_drvs, code_proc, nProc=length(proc),
+      importFuns=(length(funs)>0), newline, lang))
 
 })
 
