@@ -30,8 +30,9 @@ in, e.g., \code{proc} and/or \code{stox}.}
 
 \describe{
 \item{\code{generate(name = "derivs", nLevels = 1, lang = "r", nameVecVars = "Y_",
-  nameVecPars = "P_", nameSpatialLevelIndex = "i_", nameVecDrvs = "dYdt",
-  nameVecProc = "proc")}}{Generate code to compute the variables' derivatives with respect to time.
+  nameVecPars = "P_", nameSpatialLevelIndex = "i_", nameLenVars = "NVARS",
+  nameLenPars = "NPARS", nameLenProc = "NPROC", nameLenLevels = "N_",
+  nameVecDrvs = "dYdt", nameVecProc = "proc")}}{Generate code to compute the variables' derivatives with respect to time.
 \bold{Arguments:} \code{name}: A string giving the name for the generated
 function; \code{nLevels}: An integer (default 1) specifying the number of
 instances of each state variable, e.g. in spatially distributed models.

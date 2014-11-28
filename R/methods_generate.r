@@ -14,7 +14,8 @@
 
 
 rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
-  nameVecVars= "Y_", nameVecPars= "P_", nameSpatialLevelIndex= "i_", 
+  nameVecVars= "Y_", nameVecPars= "P_", nameSpatialLevelIndex= "i_",
+  nameLenVars= "NVARS", nameLenPars= "NPARS", nameLenProc="NPROC", nameLenLevels="N_",
   nameVecDrvs= "dYdt",   nameVecProc= "proc"
 ) {
     "Generate code to compute the variables' derivatives with respect to time.
@@ -131,7 +132,7 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
   for (i in 1:length(vars)) {
     patt= paste0(beforeName,names(vars)[i],afterName)
     repl= paste0("\\1",nameVecVars,L$eleOpen,"(",
-      names(vars)[i],"-1)*",nLevels,"+",nameSpatialLevelIndex,L$eleClose,"\\2")
+      names(vars)[i],"-1)*",nameLenLevels,"+",nameSpatialLevelIndex,L$eleClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
@@ -236,7 +237,9 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
   # Embed the vector constructor codes in appropriate language-specific functions
   return(create_code(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
       nameSpatialLevelIndex, names(vars), names(pars),
-      nLevels, code_drvs, code_proc, nProc=length(proc),
+      code_drvs, code_proc, 
+      nameLenVars, nameLenPars, nameLenProc, nProc=length(proc),
+      nameLenLevels, nLevels,
       importFuns=(length(funs)>0), newline, lang))
 
 })
