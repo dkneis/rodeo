@@ -1,6 +1,6 @@
 
 create_code= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
-  nameSpatialLevelIndex, namesVars, namesPars, 
+  nameLevelIndex, namesVars, namesPars, 
   code_drvs, code_proc, nameLenVars, nameLenPars, nameLenProc, nProc,
   nameLenLevels, nLevels,
   importFuns, newline, lang
@@ -47,10 +47,10 @@ create_code= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
     code=paste0(code,"  contains  ! Internal functions follow",newline)
     code=paste0(code,"  ",newline)
     code=paste0(code,"  ! Function to compute the derivatives at a particular level",newline)
-    code=paste0(code,"  function ",nameVecDrvs,"0D(",nameSpatialLevelIndex,")",newline)
+    code=paste0(code,"  function ",nameVecDrvs,"0D(",nameLevelIndex,")",newline)
     code=paste0(code,"  implicit none",newline)
     code=paste0(code,"  ! Inputs",newline)
-    code=paste0(code,"  integer, intent(in):: ",nameSpatialLevelIndex,newline)
+    code=paste0(code,"  integer, intent(in):: ",nameLevelIndex,newline)
     code=paste0(code,"  ! Outputs",newline)
     code=paste0(code,"  double precision, dimension(",nameLenVars,"):: ",nameVecDrvs,"0D",newline)
     code=paste0(code,"  ",newline)
@@ -58,10 +58,10 @@ create_code= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
     code=paste0(code,"  end function",newline)
     code=paste0(code,"  ",newline)
     code=paste0(code,"  ! Function to compute the process rates at a particular level",newline)
-    code=paste0(code,"  function ",nameVecProc,"0D(",nameSpatialLevelIndex,")",newline)
+    code=paste0(code,"  function ",nameVecProc,"0D(",nameLevelIndex,")",newline)
     code=paste0(code,"  implicit none",newline)
     code=paste0(code,"  ! Inputs",newline)
-    code=paste0(code,"  integer, intent(in):: ",nameSpatialLevelIndex,newline)
+    code=paste0(code,"  integer, intent(in):: ",nameLevelIndex,newline)
     code=paste0(code,"  ! Outputs",newline)
     code=paste0(code,"  double precision, dimension(",nameLenProc,"):: ",nameVecProc,"0D",newline)
     code=paste0(code,"  ",newline)
@@ -85,12 +85,12 @@ create_code= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
     code=paste0(code,paste0("  ",namesPars,"=",1:length(namesPars),newline,collapse=""))
     code=paste0(code,"",newline)
     code=paste0(code,"  # Internal function to compute the derivatives at a particular level",newline)
-    code=paste0(code,"  fun_",nameVecDrvs,"0D = function(",nameSpatialLevelIndex,") {",newline)
+    code=paste0(code,"  fun_",nameVecDrvs,"0D = function(",nameLevelIndex,") {",newline)
     code=paste0(code,"  ",code_drvs,newline)
     code=paste0(code,"  }",newline)
     code=paste0(code,"  ",newline)
     code=paste0(code,"  # Internal function to compute the process rates at a particular level",newline)
-    code=paste0(code,"  fun_",nameVecProc,"0D = function(",nameSpatialLevelIndex,") {",newline)
+    code=paste0(code,"  fun_",nameVecProc,"0D = function(",nameLevelIndex,") {",newline)
     code=paste0(code,"  ",code_proc,newline)
     code=paste0(code,"  }",newline)
     code=paste0(code,"  # Set vector of derivatives (all spatial levels)",newline)

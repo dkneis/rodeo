@@ -12,11 +12,7 @@
 # In the case of spatially variable parameters, one needs to introduce a
 # state variable (with all derivatives being zero).
 
-
-rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
-  nameVecVars= "Y_", nameVecPars= "P_", nameSpatialLevelIndex= "i_",
-  nameLenVars= "NVARS", nameLenPars= "NPARS", nameLenProc="NPROC", nameLenLevels="N_",
-  nameVecDrvs= "dYdt",   nameVecProc= "proc"
+rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r"
 ) {
     "Generate code to compute the variables' derivatives with respect to time.
     \\bold{Arguments:} \\code{name}: A string giving the name for the generated
@@ -25,8 +21,31 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
     \\code{lang}: The language of generated code (currently 'r' or 'f').
     \\bold{Returns:} The generated function as a character string.
     "
+
+  # Set identifier names used in generated code
+  nameVecVars= "y"
+  nameVecPars= "p"
+  nameLenVars=  "nVARS"
+  nameLenPars=  "nPARS"
+  nameLenProc=  "nPROS"
+  nameLenLevels="nLVLS"
+  nameLevelIndex= "i_"
+  nameVecDrvs= "dydt"
+  nameVecProc= "proc"
+
+
+  # Check names of identifiers used in generated code for conflicts with
+  # user-defined function names
+  if ((length(funs)) > 0) {
+    reserved= c(nameVecVars, nameVecPars, nameLevelIndex, nameLenVars,
+      nameLenPars, nameLenProc, nameLenLevels, nameVecDrvs, nameVecProc)
+    if (any(funs %in% reserved))
+    stop("identifier(s) used in generated code conflict(s) with name(s) of user-defined function(s)")
+  }
+
   # Constants
   newline= ifelse(.Platform$OS.type=="windows","\r\n","\n")
+
   # Language-specific code features
   if (lang == "r") {
     L= list(com="#", cont="", eleOpen="[", eleClose="]", vecOpen="c(", vecClose=")")
@@ -132,7 +151,7 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
   for (i in 1:length(vars)) {
     patt= paste0(beforeName,names(vars)[i],afterName)
     repl= paste0("\\1",nameVecVars,L$eleOpen,"(",
-      names(vars)[i],"-1)*",nameLenLevels,"+",nameSpatialLevelIndex,L$eleClose,"\\2")
+      names(vars)[i],"-1)*",nameLenLevels,"+",nameLevelIndex,L$eleClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
@@ -236,7 +255,7 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r",
 
   # Embed the vector constructor codes in appropriate language-specific functions
   return(create_code(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
-      nameSpatialLevelIndex, names(vars), names(pars),
+      nameLevelIndex, names(vars), names(pars),
       code_drvs, code_proc, 
       nameLenVars, nameLenPars, nameLenProc, nProc=length(proc),
       nameLenLevels, nLevels,
