@@ -12,13 +12,11 @@
 # In the case of spatially variable parameters, one needs to introduce a
 # state variable (with all derivatives being zero).
 
-rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r"
+rodeo$methods( generate = function(name="derivs", lang="r"
 ) {
     "Generate code to compute the variables' derivatives with respect to time.
     \\bold{Arguments:} \\code{name}: A string giving the name for the generated
-    function; \\code{nLevels}: An integer (default 1) specifying the number of
-    instances of each state variable, e.g. in spatially distributed models.
-    \\code{lang}: The language of generated code (currently 'r' or 'f').
+    function. \\code{lang}: The language of generated code (currently 'r' or 'f').
     \\bold{Returns:} The generated function as a character string.
     "
 
@@ -186,12 +184,10 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r"
   #   the expression compliant with the above-mentioned requirement by adding a
   #   term like '+ X * ZERO' where 'X' is an existing state variable and ZERO is
   #   a constant initialized to zero. 
-  if (nLevels > 1) {
-    patt=paste0(nameVecVars,L$eleOpen)
-    if (!all(grepl(pattern=patt, x=PROC, fixed=TRUE))) {
-      stop("in a spatially distributed model, a reference to a state variable",
-        " must appear at the righthand side of any process rate expression")
-    }
+  patt=paste0(nameVecVars,L$eleOpen)
+  if (!all(grepl(pattern=patt, x=PROC, fixed=TRUE))) {
+    stop("in a spatially distributed model, a reference to a state variable",
+      " must appear at the righthand side of any process rate expression")
   }
  
 ################################################################################
@@ -257,8 +253,7 @@ rodeo$methods( generate = function(name="derivs", nLevels=1, lang="r"
   return(create_code(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
       nameLevelIndex, names(vars), names(pars),
       code_drvs, code_proc, 
-      nameLenVars, nameLenPars, nameLenProc, nProc=length(proc),
-      nameLenLevels, nLevels,
+      nameLenVars, nameLenPars, nameLenProc, nProc=length(proc), nameLenLevels,
       importFuns=(length(funs)>0), newline, lang))
 
 })

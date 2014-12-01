@@ -2,7 +2,7 @@
 create_code= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
   nameLevelIndex, namesVars, namesPars, 
   code_drvs, code_proc, nameLenVars, nameLenPars, nameLenProc, nProc,
-  nameLenLevels, nLevels,
+  nameLenLevels,
   importFuns, newline, lang
 ) {
 
@@ -10,18 +10,19 @@ create_code= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
 
     # Create code
     code=paste0("! THIS IS A GENERATED FILE - EDITING DOESN'T MAKE SENSE",newline)
-    code=paste0(code,"subroutine ",name,"(time, ",nameVecVars,", ",nameVecPars,", ",nameVecDrvs,", ",nameVecProc,")",newline)
+    code=paste0(code,"subroutine ",name,"(time, ",nameVecVars,", ",nameVecPars,
+      ", ",nameLenLevels,", ",nameVecDrvs,", ",nameVecProc,")",newline)
     code=paste0(code,"  ",ifelse(importFuns,"","!"),"use functions",newline)
     code=paste0(code,"  implicit none",newline)
     code=paste0(code,"  ! Dimension constants",newline)
     code=paste0(code,"  integer, parameter:: ",nameLenVars,"=",length(namesVars),newline)
     code=paste0(code,"  integer, parameter:: ",nameLenPars,"=",length(namesPars),newline)
     code=paste0(code,"  integer, parameter:: ",nameLenProc,"=",nProc,newline)
-    code=paste0(code,"  integer, parameter:: ",nameLenLevels,"=",nLevels,newline)
     code=paste0(code,"  ! Inputs",newline)
     code=paste0(code,"  double precision, intent(in):: time",newline)
     code=paste0(code,"  double precision, dimension(",nameLenVars,"*",nameLenLevels,"), intent(in):: ",nameVecVars,newline)
     code=paste0(code,"  double precision, dimension(",nameLenPars,"), intent(in):: ",nameVecPars,newline)
+    code=paste0(code,"  integer, intent(in):: ",nameLenLevels,newline)
     code=paste0(code,"  ! Outputs",newline)
     code=paste0(code,"  double precision, dimension(",nameLenVars,"*",nameLenLevels,"), intent(out):: ",nameVecDrvs,newline)
     code=paste0(code,"  double precision, dimension(",nameLenProc,"*",nameLenLevels,"), intent(out):: ",nameVecProc,newline)
@@ -74,10 +75,7 @@ create_code= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
 
     # Create code
     code=paste0("# THIS IS A GENERATED FILE - EDITING DOESN'T MAKE SENSE",newline)
-    code=paste0(code,name," = function(time, ",nameVecVars,", ",nameVecPars,") {",newline)
-    code=paste0(code,"",newline)
-    code=paste0(code,"  # Dimension constants",newline)
-    code=paste0(code,"  ",nameLenLevels,"=",nLevels,newline)
+    code=paste0(code,name," = function(time, ",nameVecVars,", ",nameVecPars,", ",nameLenLevels,") {",newline)
     code=paste0(code,"",newline)
     code=paste0(code,"  # Index constants for variables",newline)
     code=paste0(code,paste0("  ",namesVars,"=",1:length(namesVars),newline,collapse=""))
