@@ -192,6 +192,24 @@ rodeo$methods( generate = function(name="derivs", lang="r"
  
 ################################################################################
 
+  # Generate constructor code for the processes vector
+  # Note: The length of the vector equals the number of processes in the
+  #       0-dimensional case, i.e. a spatially lumped model
+  code_proc=""
+  code_proc=paste0(code_proc,"  ",nameVecProc,"0D","=",L$vecOpen,L$cont,newline)
+  for (n in 1:length(PROC)) {
+    if (n > 1) {
+      code_proc=paste0(code_proc,"    ,",L$cont,newline)
+    }
+    code_proc=paste0(code_proc,"    ",L$com," Process rate '",names(proc)[n],"'",newline)
+    buffer= PROC[n]
+    # Break fortran lines
+    if (lang == "f") { buffer= breakline(text=buffer, conti=L$cont, newline=newline) }
+    # Add to code
+    code_proc= paste0(code_proc,"      ",buffer,L$cont,newline)
+  }
+  code_proc=paste0(code_proc,"  ",L$vecClose,newline)
+
   # Generate constructor code for the derivatives vector
   # Note: The length of the vector equals the number of state variables in the
   #       0-dimensional case, i.e. a spatially lumped model
@@ -211,7 +229,11 @@ rodeo$methods( generate = function(name="derivs", lang="r"
         if (nchar(buffer) > 0) {
           buffer= paste0(buffer," + ")
         }
-        buffer=paste0(buffer," (",PROC[k],") * (",STOX[k,n],")")
+         # The following line would produce the 'full' code, i.e. the
+         # process rates would be computed redundantly
+         # buffer=paste0(buffer," (",PROC[k],") * (",STOX[k,n],")")
+        buffer=paste0(buffer," ",nameVecProc,L$eleOpen,"(",k,"-1)*",nameLenLevels,
+          "+",nameLevelIndex,L$eleClose," * (",STOX[k,n],")")
       }
     }
     # Treat case where all stoichiometry factors are zero. Note: We cannot simply
@@ -229,23 +251,6 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   }
   code_drvs=paste0(code_drvs,"  ",L$vecClose,newline) # End of derivatives vector
 
-  # Generate constructor code for the processes vector
-  # Note: The length of the vector equals the number of processes in the
-  #       0-dimensional case, i.e. a spatially lumped model
-  code_proc=""
-  code_proc=paste0(code_proc,"  ",nameVecProc,"0D","=",L$vecOpen,L$cont,newline)
-  for (n in 1:length(PROC)) {
-    if (n > 1) {
-      code_proc=paste0(code_proc,"    ,",L$cont,newline)
-    }
-    code_proc=paste0(code_proc,"    ",L$com," Process rate '",names(proc)[n],"'",newline)
-    buffer= PROC[n]
-    # Break fortran lines
-    if (lang == "f") { buffer= breakline(text=buffer, conti=L$cont, newline=newline) }
-    # Add to code
-    code_proc= paste0(code_proc,"      ",buffer,L$cont,newline)
-  }
-  code_proc=paste0(code_proc,"  ",L$vecClose,newline)
 
 ################################################################################
 
