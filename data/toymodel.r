@@ -1,10 +1,11 @@
 toymodel='
 {
+  "comments" : "Note the use of a dummy variable in the definition of the flow process rate",
   "auxx" : {
      "lim_do" : "c_do/(c_do + h_do)"
   },
   "proc" : {
-    "flow": "q_in - q_ex",
+    "flow": "q_in - q_ex + 0.0*v",
     "imex": "q_in / v",
     "degr": "k_deg * c_z * lim_do",
     "surf": "k2(wind,depth) * (DOSAT(temp) - c_do)"
