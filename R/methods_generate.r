@@ -73,24 +73,16 @@ rodeo$methods( generate = function(name="derivs", lang="r"
     "
 
   # Set identifier names used in generated code
-  nameVecVars= "y"
-  nameVecPars= "p"
-  nameLenVars=  "nVARS"
-  nameLenPars=  "nPARS"
-  nameLenProc=  "nPROS"
-  nameLenLevels="nLVLS"
-  nameLevelIndex= "i_"
-  nameVecDrvs= "dydt"
-  nameVecProc= "proc"
-  nameConstOne= "l"
-
+  ident= c(
+    vecVars= "y", vecPars= "p", vecDrvs= "dydt", vecProc= "proc",
+    lenVars=  "nVARS", lenPars=  "nPARS", lenProc=  "nPROS", lenLevels="nLVLS",
+    levelIndex= "i_", constOne= "l"
+  )
 
   # Check names of identifiers used in generated code for conflicts with
   # user-defined names (specifically function and parameter names)
-  reserved= c(nameVecVars, nameVecPars, nameLevelIndex, nameLenVars,
-    nameLenPars, nameLenProc, nameLenLevels, nameVecDrvs, nameVecProc, nameConstOne)
   names2check= c(funs, names(pars))
-  conflicts= names2check %in% reserved
+  conflicts= names2check %in% ident
   if (any(conflicts))
     stop(paste0("identifier name(s) in generated code conflict(s) with name(s)",
       " of user-defined item(s); conflicting names(s): '",
@@ -169,8 +161,9 @@ rodeo$methods( generate = function(name="derivs", lang="r"
 
   for (i in 1:length(vars)) {
     patt= paste0(beforeName,names(vars)[i],afterName)
-    repl= paste0("\\1",nameVecVars,L$eleOpen,"(",
-      names(vars)[i],"-",nameConstOne,")*",nameLenLevels,"+",nameLevelIndex,L$eleClose,"\\2")
+    repl= paste0("\\1",ident["vecVars"],L$eleOpen,"(",
+      names(vars)[i],"-",ident["constOne"],")*",ident["lenLevels"],"+",
+      ident["levelIndex"],L$eleClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
@@ -181,7 +174,7 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   # Note: Parameters don't have a spatial resolution (as opposed to state vars)
   for (i in 1:length(pars)) {
     patt= paste0(beforeName,names(pars)[i],afterName)
-    repl= paste0("\\1",nameVecPars,L$eleOpen,
+    repl= paste0("\\1",ident["vecPars"],L$eleOpen,
       names(pars)[i],L$eleClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
@@ -205,7 +198,7 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   #   the expression compliant with the above-mentioned requirement by adding a
   #   term like '+ X * ZERO' where 'X' is an existing state variable and ZERO is
   #   a constant initialized to zero. 
-  patt=paste0(nameVecVars,L$eleOpen)
+  patt=paste0(ident["vecVars"],L$eleOpen)
   if (!all(grepl(pattern=patt, x=PROC, fixed=TRUE))) {
     stop("in a spatially distributed model, a reference to a state variable",
       " must appear at the righthand side of any process rate expression")
@@ -217,7 +210,7 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   # Note: The length of the vector equals the number of processes in the
   #       0-dimensional case, i.e. a spatially lumped model
   code_proc=""
-  code_proc=paste0(code_proc,"  ",nameVecProc,"0D","=",L$vecOpen,L$cont,newline)
+  code_proc=paste0(code_proc,"  ",ident["vecProc"],"0D","=",L$vecOpen,L$cont,newline)
   for (n in 1:length(PROC)) {
     if (n > 1) {
       code_proc=paste0(code_proc,"    ,",L$cont,newline)
@@ -238,7 +231,7 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   # Note: The length of the vector equals the number of state variables in the
   #       0-dimensional case, i.e. a spatially lumped model
   code_drvs=""
-  code_drvs=paste0(code_drvs,"  ",nameVecDrvs,"0D","= ",L$vecOpen,L$cont,newline)
+  code_drvs=paste0(code_drvs,"  ",ident["vecDrvs"],"0D","= ",L$vecOpen,L$cont,newline)
   for (n in 1:ncol(STOX)) {
     if (n > 1) {
       code_drvs=paste0(code_drvs,"    ,",L$cont,newline)
@@ -256,9 +249,9 @@ rodeo$methods( generate = function(name="derivs", lang="r"
          # The following line would produce the 'full' code, i.e. the
          # process rates would be computed redundantly
          # buffer=paste0(buffer," (",PROC[k],") * (",STOX[k,n],")")
-        buffer=paste0(buffer," ",nameVecProc,L$eleOpen,"(",names(PROC)[k],
-          "-",nameConstOne,")*",nameLenLevels,
-          "+",nameLevelIndex,L$eleClose," * (",STOX[k,n],")")
+        buffer=paste0(buffer," ",ident["vecProc"],L$eleOpen,"(",names(PROC)[k],
+          "-",ident["constOne"],")*",ident["lenLevels"],
+          "+",ident["levelIndex"],L$eleClose," * (",STOX[k,n],")")
       }
     }
     # Treat case where all stoichiometry factors are zero. Note: We cannot simply
@@ -283,11 +276,9 @@ rodeo$methods( generate = function(name="derivs", lang="r"
 ################################################################################
 
   # Embed the vector constructor codes in appropriate language-specific functions
-  return(create_code(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
-      nameLevelIndex, names(vars), names(pars), names(proc),
-      code_drvs, code_proc, 
-      nameLenVars, nameLenPars, nameLenProc, nProc=length(proc), nameLenLevels, nameConstOne,
-      importFuns=(length(funs)>0), newline, lang))
+  return(create_code(name, names(vars), names(pars), names(proc), ident,
+    code_drvs, code_proc, nProc=length(proc), importFuns=(length(funs)>0),
+    newline, lang))
 
 })
 
