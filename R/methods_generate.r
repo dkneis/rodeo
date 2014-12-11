@@ -1,4 +1,56 @@
 
+# Utility functions
+
+# Fortran only: Break long lines
+f_breakLines= function(text, conti, newline) {
+  minlen= 65
+  buf=""
+  from=1
+  k= 0
+  for (i in 1:nchar(text)) {
+    k= k+1
+    if (substr(text,i,i) %in% c("+","-","*","/",",") && (k >= minlen)) {
+      k= 0
+      buf= paste0(buf,substr(text,from,i),conti,newline)
+      from=i+1
+    }
+  }
+  if (from <= nchar(text))
+    buf= paste0(buf,substr(text,from,nchar(text)))
+  return(buf) 
+}
+
+# Fortran only: Promote numeric constants to double precision
+# Notes: This converts both real and integer constants to double precision.
+#   It is important to prevent integer divisions) or loss-of-precision problems.
+#   See the following test code for supported notations of numeric constants.
+##numbers= c("1", "-1", "1e5", "1e-05", "1.", "1.0", "1.0e0", "-1.0e+0", ".1", ".1e0", ".1e+0")
+##numbers= paste("prefix99 **",numbers)
+##numbers= paste(numbers, " / suffix")
+##print(f_doubleConst(numbers))
+f_doubleConst= function(text) {
+  # Step 1: Identify numeric constants and enclose within angle brackets
+  before= "(^|[^a-zA-Z0-9_])"
+  after= "([^a-zA-Z0-9_]|$)"
+  pattern= paste0(before,"((?:(?:[-]?[0-9]+[.]?[0-9]*)|(?:[-]?[.][0-9]+))(?:e[-+]?[0-9]+)?)",after)
+  replace= "\\1<\\2>\\3"
+  text= gsub(pattern=pattern, replacement=replace, x=text)
+  # Step 2: Replace exponent symbol "e" by "d"
+  pattern= "([<][^>]+)([e])([^<]+[>])"
+  replace= "\\1d\\3"
+  text= gsub(pattern=pattern, replacement=replace, x=text)
+  # Step 3: Append "d0" to constants not written in exponent form
+  pattern= "([<])([^d<]+)([>])"
+  replace= "\\1\\2d0\\3"
+  text= gsub(pattern=pattern, replacement=replace, x=text)
+  # Step 4: Strip angle brackets
+  pattern= "[<>]"
+  replace= ""
+  text= gsub(pattern=pattern, replacement=replace, x=text)
+  return(text)
+}
+
+
 
 # Specific comments:
 #
@@ -30,16 +82,19 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   nameLevelIndex= "i_"
   nameVecDrvs= "dydt"
   nameVecProc= "proc"
+  nameConstOne= "l"
 
 
   # Check names of identifiers used in generated code for conflicts with
-  # user-defined function names
-  if ((length(funs)) > 0) {
-    reserved= c(nameVecVars, nameVecPars, nameLevelIndex, nameLenVars,
-      nameLenPars, nameLenProc, nameLenLevels, nameVecDrvs, nameVecProc)
-    if (any(funs %in% reserved))
-    stop("identifier(s) used in generated code conflict(s) with name(s) of user-defined function(s)")
-  }
+  # user-defined names (specifically function and parameter names)
+  reserved= c(nameVecVars, nameVecPars, nameLevelIndex, nameLenVars,
+    nameLenPars, nameLenProc, nameLenLevels, nameVecDrvs, nameVecProc, nameConstOne)
+  names2check= c(funs, names(pars))
+  conflicts= names2check %in% reserved
+  if (any(conflicts))
+    stop(paste0("identifier name(s) in generated code conflict(s) with name(s)",
+      " of user-defined item(s); conflicting names(s): '",
+      paste(names2check[which(conflicts)], collapse="', '"),"'"))
 
   # Constants
   newline= ifelse(.Platform$OS.type=="windows","\r\n","\n")
@@ -51,24 +106,6 @@ rodeo$methods( generate = function(name="derivs", lang="r"
     L= list(com="!", cont="&", eleOpen="(", eleClose=")", vecOpen="(/", vecClose="/)")
   } else {
     stop("requested language not supported")
-  }
-  # Function to break long lines in Fortran
-  breakline= function(text, conti, newline) {
-    minlen= 65
-    buf=""
-    from=1
-    k= 0
-    for (i in 1:nchar(text)) {
-      k= k+1
-      if (substr(text,i,i) %in% c("+","-","*","/",",") && (k >= minlen)) {
-        k= 0
-        buf= paste0(buf,substr(text,from,i),conti,newline)
-        from=i+1
-      }
-    }
-    if (from <= nchar(text))
-      buf= paste0(buf,substr(text,from,nchar(text)))
-    return(buf) 
   }
 
   # We work with local copies (since this is a reference class!)
@@ -115,22 +152,6 @@ rodeo$methods( generate = function(name="derivs", lang="r"
 
 ################################################################################
 
-# NOTE: This is de-activated. This implementation does not properly deal with
-#       numbers in scientific format like, e.g. "1.e-06". This is not trivial.
-#       As a workaround, the input is expected not to contain numeric constants.
-#       Named constants must be used instead.
-#  # In case of Fortran code: Convert numerical constants to double precision
-#  if (lang == "f") {
-#    patt= "(^|[-+*/^(, ])([0123456789.]+)($|[-+*/^), ])"
-#    repl= "\\1dble(\\2)\\3"
-#    PROC= gsub(pattern=patt, replacement=repl, x=PROC)
-#    for (n in 1:ncol(STOX)) {
-#      STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
-#    }
-#  }
-
-################################################################################
-
   # Turn names of variables into references to vector elements
   #
   # Notes:
@@ -149,7 +170,7 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   for (i in 1:length(vars)) {
     patt= paste0(beforeName,names(vars)[i],afterName)
     repl= paste0("\\1",nameVecVars,L$eleOpen,"(",
-      names(vars)[i],"-1)*",nameLenLevels,"+",nameLevelIndex,L$eleClose,"\\2")
+      names(vars)[i],"-",nameConstOne,")*",nameLenLevels,"+",nameLevelIndex,L$eleClose,"\\2")
     PROC= gsub(pattern=patt, replacement=repl, x=PROC)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
@@ -203,8 +224,11 @@ rodeo$methods( generate = function(name="derivs", lang="r"
     }
     code_proc=paste0(code_proc,"    ",L$com," Process rate '",names(proc)[n],"'",newline)
     buffer= PROC[n]
-    # Break fortran lines
-    if (lang == "f") { buffer= breakline(text=buffer, conti=L$cont, newline=newline) }
+    # Specialities of Fortran
+    if (lang == "f") {
+      buffer= f_doubleConst(buffer)
+      buffer= f_breakLines(text=buffer, conti=L$cont, newline=newline)
+    }
     # Add to code
     code_proc= paste0(code_proc,"      ",buffer,L$cont,newline)
   }
@@ -232,7 +256,8 @@ rodeo$methods( generate = function(name="derivs", lang="r"
          # The following line would produce the 'full' code, i.e. the
          # process rates would be computed redundantly
          # buffer=paste0(buffer," (",PROC[k],") * (",STOX[k,n],")")
-        buffer=paste0(buffer," ",nameVecProc,L$eleOpen,"(",k,"-1)*",nameLenLevels,
+        buffer=paste0(buffer," ",nameVecProc,L$eleOpen,"(",names(PROC)[k],
+          "-",nameConstOne,")*",nameLenLevels,
           "+",nameLevelIndex,L$eleClose," * (",STOX[k,n],")")
       }
     }
@@ -244,8 +269,11 @@ rodeo$methods( generate = function(name="derivs", lang="r"
       stop(paste0("expecting at least one non-zero stoichiometry factor",
         " for state variable '",names(STOX)[n],"'"))
     }
-    # Break fortran lines
-    if (lang == "f") { buffer= breakline(text=buffer, conti=L$cont, newline=newline) }
+    # Specialities of Fortran
+    if (lang == "f") {
+      buffer= f_doubleConst(buffer)
+      buffer= f_breakLines(text=buffer, conti=L$cont, newline=newline)
+    }
     # Add to code
     code_drvs= paste0(code_drvs,buffer,L$cont,newline)
   }
@@ -256,9 +284,9 @@ rodeo$methods( generate = function(name="derivs", lang="r"
 
   # Embed the vector constructor codes in appropriate language-specific functions
   return(create_code(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
-      nameLevelIndex, names(vars), names(pars),
+      nameLevelIndex, names(vars), names(pars), names(proc),
       code_drvs, code_proc, 
-      nameLenVars, nameLenPars, nameLenProc, nProc=length(proc), nameLenLevels,
+      nameLenVars, nameLenPars, nameLenProc, nProc=length(proc), nameLenLevels, nameConstOne,
       importFuns=(length(funs)>0), newline, lang))
 
 })

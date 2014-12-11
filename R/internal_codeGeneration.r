@@ -1,8 +1,8 @@
 
 create_code= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
-  nameLevelIndex, namesVars, namesPars, 
+  nameLevelIndex, namesVars, namesPars, namesProc,
   code_drvs, code_proc, nameLenVars, nameLenPars, nameLenProc, nProc,
-  nameLenLevels,
+  nameLenLevels, nameConstOne,
   importFuns, newline, lang
 ) {
 
@@ -32,6 +32,8 @@ create_code= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
     code=paste0(code,paste0("  integer, parameter:: ",namesVars,"=",1:length(namesVars),newline,collapse=""))
     code=paste0(code,"  ! Index constants for parameters",newline)
     code=paste0(code,paste0("  integer, parameter:: ",namesPars,"=",1:length(namesPars),newline,collapse=""))
+    code=paste0(code,"  ! Index constants for processes",newline)
+    code=paste0(code,paste0("  integer, parameter:: ",namesProc,"=",1:length(namesProc),newline,collapse=""))
     code=paste0(code,"",newline)
     code=paste0(code,"  ! Set vector of process rates (all spatial levels)",newline)
     code=paste0(code,"  do spatial_level = 1, ",nameLenLevels,newline)
@@ -54,6 +56,8 @@ create_code= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
     code=paste0(code,"  integer, intent(in):: ",nameLevelIndex,newline)
     code=paste0(code,"  ! Outputs",newline)
     code=paste0(code,"  double precision, dimension(",nameLenProc,"):: ",nameVecProc,"0D",newline)
+    code=paste0(code,"  ! Local",newline)
+    code=paste0(code,"  integer, parameter:: ",nameConstOne,"=1",newline)
     code=paste0(code,"  ",newline)
     code=paste0(code,"  ",code_proc,newline)
     code=paste0(code,"  end function",newline)
@@ -65,6 +69,8 @@ create_code= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
     code=paste0(code,"  integer, intent(in):: ",nameLevelIndex,newline)
     code=paste0(code,"  ! Outputs",newline)
     code=paste0(code,"  double precision, dimension(",nameLenVars,"):: ",nameVecDrvs,"0D",newline)
+    code=paste0(code,"  ! Local",newline)
+    code=paste0(code,"  integer, parameter:: ",nameConstOne,"=1",newline)
     code=paste0(code,"  ",newline)
     code=paste0(code,"  ",code_drvs,newline)
     code=paste0(code,"  end function",newline)
@@ -81,6 +87,10 @@ create_code= function(name, nameVecDrvs, nameVecProc, nameVecVars, nameVecPars,
     code=paste0(code,paste0("  ",namesVars,"=",1:length(namesVars),newline,collapse=""))
     code=paste0(code,"  # Index constants for parameters",newline)
     code=paste0(code,paste0("  ",namesPars,"=",1:length(namesPars),newline,collapse=""))
+    code=paste0(code,"  # Index constants for processes",newline)
+    code=paste0(code,paste0("  ",namesProc,"=",1:length(namesProc),newline,collapse=""))
+    code=paste0(code,"  # Other constants",newline)
+    code=paste0(code,"  ",nameConstOne,"=1",newline)
     code=paste0(code,"",newline)
     code=paste0(code,"  # Internal function to compute the process rates at a particular level",newline)
     code=paste0(code,"  fun_",nameVecProc,"0D = function(",nameLevelIndex,") {",newline)
