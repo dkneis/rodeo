@@ -21,12 +21,13 @@ rodeo$methods(
     # Initialize all fields
     auxx <<- unlist(x$auxx)
     proc <<- unlist(x$proc)
-    stox <<- m
-    nam= names(m)
+    stox <<- m[,names(m)[order(names(m))]]  # sorted by variable names
+    rm(m)
+    nam= names(stox)
     vars <<- setNames(rep(NA, length(nam)), nam)
-    funs <<- namesOfFuns(.self)
+    funs <<- namesOfFuns(.self)                  # also sorted by names
     nam= namesOfPars(.self)
-    pars <<- setNames(rep(NA, length(nam)), nam)
+    pars <<- setNames(rep(NA, length(nam)), nam) # also sorted by names
     return(invisible(NULL))
   }
 )
