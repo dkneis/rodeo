@@ -1,3 +1,6 @@
+# A model formulated in JSON code
+# NOTE: Since JSON code is not allowd in the "data" folder of an R package
+#       the entire JSON code is stored in a string variable.
 toymodel='
 {
   "comments" : "Note the use of a dummy variable in the definition of the flow process rate",
