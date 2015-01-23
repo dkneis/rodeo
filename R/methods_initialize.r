@@ -4,7 +4,11 @@ rodeo$methods(
     "Initializes a \\code{rodeo} object with json-formatted data from \\code{file}"
     if (!is.character(file) || !(length(file) == 1) || !file.exists(file))
       stop("argument must be a valid file name")
-    x= fromJSON(file=file)
+    tryCatch({
+      x= fromJSON(file=file)
+    }, error= function(e) {
+      stop(paste("Failed to read JSON data. Details: ",e,sep=""))
+    })
     if ((!is.list(x)) || (!all(c("auxx", "proc","stox") %in% names(x))))
       stop("missing components in initialization data")
     m= matrix(rep("0", length(x$stox)*length(x$proc)), ncol=length(x$stox), nrow=length(x$proc))
