@@ -33,7 +33,7 @@ names(y)= paste(rep(names(x$getVars()),each=nLevels),
 
 # Integrate over some time and put output in a data frame
 library(deSolve)
-result= lsoda(y=y, times=seq(0, 30*86400, 3600), func=derivs, parms=x$getPars(), nLVLS=nLevels)
+result= lsoda(y=y, times=seq(0, 30*86400, 3600), func=derivs, parms=x$getPars(), NLVL=nLevels)
 if (attr(result,which="istate",exact=TRUE)[1] != 2) stop("Integration failed.")
 result= as.data.frame(result)
 result$time= result$time / 86400

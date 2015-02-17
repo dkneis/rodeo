@@ -52,7 +52,7 @@ function. \code{lang}: The language of generated code (currently 'r' or 'f').
 \item{\code{plot_stox()}}{Creates a graphical representation of the stoichiometry matrix}
 
 \item{\code{publish(file, tbl, comment = "\%", colsep = "&", endline = "\\\\\\\\",
-  equal = " &= ", startCell = "$ ", endCell = " $")}}{Exports model equations to a file for inclusion in e.g. LaTex documents}
+  equal = " &= ", startCell = "$ ", endCell = " $")}}{Experimental: Exports model equations to a file for inclusion in e.g. LaTex documents}
 
 \item{\code{setPars(v)}}{Initializes field \code{pars} to the values in the named vector \code{v}}
 

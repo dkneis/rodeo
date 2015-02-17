@@ -75,7 +75,7 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   # Set identifier names used in generated code
   ident= c(
     vecVars= "y", vecPars= "p", vecDrvs= "dydt", vecProc= "proc",
-    lenVars=  "nVARS", lenPars=  "nPARS", lenProc=  "nPROS", lenLevels="nLVLS",
+    lenVars=  "NVAR", lenPars=  "NPAR", lenProc=  "NPRO", lenLevels="NLVL",
     levelIndex= "i_", constOne= "l"
   )
 
@@ -94,7 +94,7 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   # Language-specific code features
   if (lang == "r") {
     L= list(com="#", cont="", eleOpen="[", eleClose="]", vecOpen="c(", vecClose=")")
-  } else if (lang == "f") {
+  } else if (lang == "f95") {
     L= list(com="!", cont="&", eleOpen="(", eleClose=")", vecOpen="(/", vecClose="/)")
   } else {
     stop("requested language not supported")
@@ -218,7 +218,7 @@ rodeo$methods( generate = function(name="derivs", lang="r"
     code_proc=paste0(code_proc,"    ",L$com," Process rate '",names(proc)[n],"'",newline)
     buffer= PROC[n]
     # Specialities of Fortran
-    if (lang == "f") {
+    if (lang == "f95") {
       buffer= f_doubleConst(buffer)
       buffer= f_breakLines(text=buffer, conti=L$cont, newline=newline)
     }
@@ -263,7 +263,7 @@ rodeo$methods( generate = function(name="derivs", lang="r"
         " for state variable '",names(STOX)[n],"'"))
     }
     # Specialities of Fortran
-    if (lang == "f") {
+    if (lang == "f95") {
       buffer= f_doubleConst(buffer)
       buffer= f_breakLines(text=buffer, conti=L$cont, newline=newline)
     }

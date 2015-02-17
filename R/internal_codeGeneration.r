@@ -3,7 +3,7 @@ create_code= function(name, namesVars, namesPars, namesProc, ident,
   code_drvs, code_proc, nProc, importFuns, newline, lang
 ) {
 
-  if (lang == "f") {
+  if (lang == "f95") {
 
     # Create code
     code=paste0("! THIS IS A GENERATED FILE - EDITING DOESN'T MAKE SENSE",newline)
@@ -33,12 +33,18 @@ create_code= function(name, namesVars, namesPars, namesProc, ident,
     code=paste0(code,paste0("  integer, parameter:: ",namesProc,"=",1:length(namesProc),newline,collapse=""))
     code=paste0(code,"",newline)
     code=paste0(code,"  ! Set vector of process rates (all spatial levels)",newline)
+    # Note: A 'forall' statement doesn't make this loop faster. Furthermore, use
+    #       of openMP 'parallel do' led to a significant loss of performance
+    #       (comp. time increased by factor 2.5) in a typical example. Tested: 2015-02-10
     code=paste0(code,"  do spatial_level = 1, ",ident["lenLevels"],newline)
     code=paste0(code,"    ",ident["vecProc"],"((/(i, i=spatial_level, ((",ident["lenProc"],"-1)*",
       ident["lenLevels"],"+spatial_level), ",ident["lenLevels"],")/))","= ",ident["vecProc"],"0D(spatial_level)",newline)
     code=paste0(code,"  end do",newline)
     code=paste0(code,"  ",newline)
     code=paste0(code,"  ! Set vector of derivatives (all spatial levels)",newline)
+    # Note: A 'forall' statement doesn't make this loop faster. Furthermore, use
+    #       of openMP 'parallel do' led to a significant loss of performance
+    #       (comp. time increased by factor 2.5) in a typical example. Tested: 2015-02-10
     code=paste0(code,"  do spatial_level = 1, ",ident["lenLevels"],newline)
     code=paste0(code,"    ",ident["vecDrvs"],"((/(i, i=spatial_level, ((",ident["lenVars"],"-1)*",
       ident["lenLevels"],"+spatial_level), ",ident["lenLevels"],")/))","= ",ident["vecDrvs"],"0D(spatial_level)",newline)
