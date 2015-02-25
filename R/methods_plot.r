@@ -25,9 +25,9 @@ rodeo$methods( plot = function(pars, vars) {
   # create environment holding all data -> required for evaluating expressions in stox
   env= new.env()
   f=tempfile()
-  write.table(file=f, x=data.frame(.self$vars,sortLikeVars(vars),stringsAsFactors=FALSE),
+  write.table(file=f, x=data.frame(.self$vars,.self$sortLikeVars(vars),stringsAsFactors=FALSE),
     sep="=", col.names=FALSE, row.names=FALSE, quote=FALSE)
-  write.table(file=f, x=data.frame(.self$pars,sortLikePars(pars),stringsAsFactors=FALSE),
+  write.table(file=f, x=data.frame(.self$pars,.self$sortLikePars(pars),stringsAsFactors=FALSE),
     sep="=", col.names=FALSE, row.names=FALSE, quote=FALSE, append=TRUE)
   write.table(file=f, x=data.frame(names(auxs),auxs,stringsAsFactors=FALSE),
     sep="=", col.names=FALSE, row.names=FALSE, quote=FALSE, append=TRUE)
