@@ -1,7 +1,7 @@
 # Extracts function names from model description
 namesOfFuns= function(obj) {
   # Merge all expressions into a single string
-  string= paste(paste(obj$auxx, collapse=";"),paste(obj$proc, collapse=";"),paste(unlist(obj$stox), collapse=";"), sep=";")
+  string= paste(paste(obj$auxs, collapse=";"),paste(obj$pros, collapse=";"),paste(unlist(obj$stox), collapse=";"), sep=";")
   # Collect names of functions
   pos= gregexpr(pattern="[a-zA-Z]+[0-9_a-zA-Z]*[ ]*[(]", text=string)[[1]]
   if (pos[1] == -1) {
@@ -17,7 +17,7 @@ namesOfFuns= function(obj) {
 # Extracts parameter names from model description
 namesOfPars=  function(obj) {
   # Merge all expressions into a single string
-  string= paste(paste(obj$auxx, collapse=";"),paste(obj$proc, collapse=";"),paste(unlist(obj$stox), collapse=";"), sep=";")
+  string= paste(paste(obj$auxs, collapse=";"),paste(obj$pros, collapse=";"),paste(unlist(obj$stox), collapse=";"), sep=";")
   # Collect names of all items
   string= gsub(pattern="[-+*/^(),;]", replacement=" ",x=string)    # replace operators etc.
   string= gsub(pattern="(^[ ]+|[ ]+$)", replacement="", x=string) # trim leading/trailing spaces
@@ -25,7 +25,7 @@ namesOfPars=  function(obj) {
   items= as.list(items)
   items[unlist(items) %in% namesOfFuns(obj)]= NULL  # sort out function names
   items[unlist(items) %in% names(obj$stox)]= NULL  # sort out names of state variables
-  items[unlist(items) %in% names(obj$auxx)]= NULL  # sort out names of auxiliary expressions
+  items[unlist(items) %in% names(obj$auxs)]= NULL  # sort out names of auxiliary expressions
   items[regexpr(pattern="^[^a-zA-Z]",text=unlist(items)) != -1]= NULL  # sort out plain numeric constants
   return(sort(unlist(items)))
 }

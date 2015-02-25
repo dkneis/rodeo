@@ -19,16 +19,16 @@ rodeo$methods( publish = function(file, tbl,
   write(file=file, x=out, ncolumns=1, append=TRUE)
   out= paste0("\\begin{align}")
   write(file=file, x=out, ncolumns=1, append=TRUE)
-  PROC= proc
+  PROS= pros
   for (k in 1:nrow(tbl)) {
     tryCatch({
-      PROC= gsub(pattern=tbl[k,1], replacement=tbl[k,2], x=PROC)
-      names(PROC)= gsub(pattern=tbl[k,1], replacement=tbl[k,2], x=names(PROC))
+      PROS= gsub(pattern=tbl[k,1], replacement=tbl[k,2], x=PROS)
+      names(PROS)= gsub(pattern=tbl[k,1], replacement=tbl[k,2], x=names(PROS))
     }, error= function(e) {
       stop(paste("Failed to replace pattern '",tbl[k,1],"'. Details: ",e,sep=""))
     })
   }
-  out= paste(paste(names(PROC),PROC,sep=equal), collapse=paste0(endline,newline))
+  out= paste(paste(names(PROS),PROS,sep=equal), collapse=paste0(endline,newline))
   write(file=file, x=out, ncolumns=1, append=TRUE)
   out= paste0("\\end{align}",newline)
   write(file=file, x=out, ncolumns=1, append=TRUE)
@@ -60,16 +60,16 @@ rodeo$methods( publish = function(file, tbl,
   write(file=file, x=out, ncolumns=1, append=TRUE)
   out= paste0("\\begin{align}")
   write(file=file, x=out, ncolumns=1, append=TRUE)
-  AUXX= auxx
+  AUXS= auxs
   for (k in 1:nrow(tbl)) {
     tryCatch({
-      AUXX= gsub(pattern=tbl[k,1], replacement=tbl[k,2], x=AUXX)
-      names(AUXX)= gsub(pattern=tbl[k,1], replacement=tbl[k,2], x=names(AUXX))
+      AUXS= gsub(pattern=tbl[k,1], replacement=tbl[k,2], x=AUXS)
+      names(AUXS)= gsub(pattern=tbl[k,1], replacement=tbl[k,2], x=names(AUXS))
     }, error= function(e) {
       stop(paste("Failed to replace pattern '",tbl[k,1],"'. Details: ",e,sep=""))
     })
   }
-  out= paste(paste(names(AUXX),AUXX,sep=equal), collapse=paste0(endline,newline))
+  out= paste(paste(names(AUXS),AUXS,sep=equal), collapse=paste0(endline,newline))
   write(file=file, x=out, ncolumns=1, append=TRUE)
   out= paste0("\\end{align}",newline)
   write(file=file, x=out, ncolumns=1, append=TRUE)

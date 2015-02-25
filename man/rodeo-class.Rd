@@ -11,21 +11,21 @@ A reference class to represent an ODE-based model.
 \section{Fields}{
 
 \describe{
-\item{\code{proc}}{A named vector of character strings holding process rate expressions.}
+\item{\code{pros}}{A named vector of character strings holding process rate expressions.}
 
 \item{\code{stox}}{A data frame holding character strings to represent the
 stoichiometry factors (colums = variables, rows = processes).}
 
-\item{\code{auxx}}{A named vector of character strings holding auxiliary expressions being referenced
-in, e.g., \code{proc} and/or \code{stox}.}
+\item{\code{auxs}}{A named vector of character strings holding auxiliary expressions being referenced
+in, e.g., \code{pros} and/or \code{stox}.}
 
-\item{\code{vars}}{A named numerical vector holding state variables.}
+\item{\code{vars}}{A vector of character strings holding the names of state variables.}
 
-\item{\code{pars}}{A named numerical vector holding parameters.}
+\item{\code{pars}}{A vector of character strings holding the names of parameters.}
 
-\item{\code{funs}}{A named vector of character strings holding the names of functions
-  appearing in any of the model's expressions, i.e. \code{proc}, \code{stox},
-  and \code{auxx}.}
+\item{\code{funs}}{A vector of character strings holding the names of functions.
+  appearing in any of the model's expressions, i.e. \code{pros}, \code{stox},
+  and \code{auxs}.}
 }}
 \section{Methods}{
 
@@ -35,28 +35,30 @@ in, e.g., \code{proc} and/or \code{stox}.}
 function. \code{lang}: The language of generated code (currently 'r' or 'f').
 \bold{Returns:} The generated function as a character string.}
 
-\item{\code{getAuxx()}}{Returns a named vector of auxiliary expressions referenced in, e.g., \code{stox} or \code{proc}}
+\item{\code{getAuxs()}}{Returns a named vector of auxiliary expressions referenced in, e.g., \code{stox} or \code{pros}}
 
-\item{\code{getFuns()}}{Returns a vector of function names appearing in \code{auxx}, \code{stox}, or \code{proc}}
+\item{\code{getFuns()}}{Returns a vector of function names appearing in \code{auxs}, \code{stox}, or \code{pros}}
 
-\item{\code{getPars()}}{Returns the values of parameters in a named vector}
+\item{\code{getPars()}}{Returns a vector holding the names of parameters}
 
-\item{\code{getProc()}}{Returns a named vector of process rate expressions}
+\item{\code{getPros()}}{Returns a named vector of process rate expressions}
 
 \item{\code{getStox()}}{Returns the stoichiometry matrix as a data frame (columns = variables, rows = processes)}
 
-\item{\code{getVars()}}{Returns the values of state variables in a named vector}
+\item{\code{getVars()}}{Returns a vector holding the names of state variables}
 
-\item{\code{initialize(file)}}{Initializes a \code{rodeo} object with json-formatted data from \code{file}}
+\item{\code{initialize(file, keyPros = "processes", keyStox = "stoichiometry",
+  keyAuxs = "auxiliary")}}{Initializes a \code{rodeo} object with json-formatted data from \code{file}}
 
-\item{\code{plot_stox()}}{Creates a graphical representation of the stoichiometry matrix}
+\item{\code{plot(pars, vars)}}{Creates a plot of the stoichiometry matrix for the parameter and
+variable values in \code{pars} and \code{vars}, respectively}
 
 \item{\code{publish(file, tbl, comment = "\%", colsep = "&", endline = "\\\\\\\\",
   equal = " &= ", startCell = "$ ", endCell = " $")}}{Experimental: Exports model equations to a file for inclusion in e.g. LaTex documents}
 
-\item{\code{setPars(v)}}{Initializes field \code{pars} to the values in the named vector \code{v}}
+\item{\code{sortLikePars(v)}}{Re-sorts a named vector \code{v} according to the order of parameters}
 
-\item{\code{setVars(v)}}{Initializes field \code{vars} to the values in the named vector \code{v}}
+\item{\code{sortLikeVars(v)}}{Re-sorts a named vector \code{v} according to the order of state variables}
 }}
 \examples{
 # Create file with model definition in json format
@@ -67,19 +69,19 @@ write(x=toymodel, file=tf)
 # Instantiate object and import model from file
 x=new("rodeo", file=tf)
 
-# Assign values to state variables and parameters
-data(toymodel_vars)
-x$setVars(setNames(toymodel_vars$value, toymodel_vars$name))
-data(toymodel_pars)
-x$setPars(setNames(toymodel_pars$value, toymodel_pars$name))
-
 # Display the entire model
 x$show()
 
-# Define functions referenced in the model,
-# then visualize the stoichiometry matrix
+# Define functions referenced in the model
 DOSAT= function(t) {14.652 - 0.41022*t + 0.007991*t^2 - 0.000077774*t^3}
 k2= function(u, d) {(0.728*sqrt(u) - 0.317*u + 0.0372*u^2) / d / 86400}
-x$plot_stox()
+# Assign values to state variables and parameters
+# then visualize the stoichiometry matrix
+data(toymodel_vars)
+vars= x$sortLikeVars(setNames(toymodel_vars$value, toymodel_vars$name))
+data(toymodel_pars)
+pars= x$sortLikePars(setNames(toymodel_pars$value, toymodel_pars$name))
+
+x$plot(vars=vars, pars=pars)
 }
 

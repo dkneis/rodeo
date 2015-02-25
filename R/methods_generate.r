@@ -54,7 +54,7 @@ f_doubleConst= function(text) {
 
 # Specific comments:
 #
-# In the generated code, auxiliary expressions (auxx) are replaced by their values. On the one
+# In the generated code, auxiliary expressions (auxs) are replaced by their values. On the one
 # hand, this increases the number of terms to be computed for process rates and
 # stoichiometry factors (and this may slow down computations). On the other hand
 # this avoids memory allocation for additional constants inside the function
@@ -74,14 +74,14 @@ rodeo$methods( generate = function(name="derivs", lang="r"
 
   # Set identifier names used in generated code
   ident= c(
-    vecVars= "y", vecPars= "p", vecDrvs= "dydt", vecProc= "proc",
-    lenVars=  "NVAR", lenPars=  "NPAR", lenProc=  "NPRO", lenLevels="NLVL",
+    vecVars= "y", vecPars= "p", vecDrvs= "dydt", vecPros= "pros",
+    lenVars=  "NVAR", lenPars=  "NPAR", lenPros=  "NPRO", lenLevels="NLVL",
     levelIndex= "i_", constOne= "l"
   )
 
   # Check names of identifiers used in generated code for conflicts with
   # user-defined names (specifically function and parameter names)
-  names2check= c(funs, names(pars))
+  names2check= c(funs, pars)
   conflicts= names2check %in% ident
   if (any(conflicts))
     stop(paste0("identifier name(s) in generated code conflict(s) with name(s)",
@@ -101,8 +101,8 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   }
 
   # We work with local copies (since this is a reference class!)
-  AUXX= auxx
-  PROC= proc
+  AUXS= auxs
+  PROS= pros
   STOX= stox
 
   # Regexp patterns that preceed/follow valid identifier names. These patterns
@@ -115,28 +115,28 @@ rodeo$methods( generate = function(name="derivs", lang="r"
 
   # Replace aux. expressions in other aux. expressions in a forward manner,
   #  i.e. assuming that an aux. expression is defined BEFORE it is referenced.
-  for (i in 1:length(AUXX)) {
-    if (i < length(AUXX)) {
-      patt= paste0(beforeName,names(AUXX)[i],afterName)
-      repl= paste0("\\1","(",AUXX[i],")","\\2")
-      AUXX[(i+1):length(AUXX)]= gsub(pattern=patt, replacement=repl,
-        x=AUXX[(i+1):length(AUXX)])
+  for (i in 1:length(AUXS)) {
+    if (i < length(AUXS)) {
+      patt= paste0(beforeName,names(AUXS)[i],afterName)
+      repl= paste0("\\1","(",AUXS[i],")","\\2")
+      AUXS[(i+1):length(AUXS)]= gsub(pattern=patt, replacement=repl,
+        x=AUXS[(i+1):length(AUXS)])
     }
   }
   # Check whether the above assumption was actually fulfilled.
-  for (i in 1:length(AUXX)) {
-    patt= paste0(beforeName,names(AUXX)[i],afterName)
-    if (any(grepl(pattern=patt, x=AUXX))) {
-      stop(paste0("auxiliary expression '",names(AUXX)[i],
+  for (i in 1:length(AUXS)) {
+    patt= paste0(beforeName,names(AUXS)[i],afterName)
+    if (any(grepl(pattern=patt, x=AUXS))) {
+      stop(paste0("auxiliary expression '",names(AUXS)[i],
         "' is referenced before it is defined"))
     }
   }
 
   # Substitute aux. expression names by their values
-  for (i in 1:length(AUXX)) {
-    patt= paste0(beforeName,names(AUXX)[i],afterName)
-    repl= paste0("\\1","(",AUXX[i],")","\\2")
-    PROC= gsub(pattern=patt, replacement=repl, x=PROC)
+  for (i in 1:length(AUXS)) {
+    patt= paste0(beforeName,names(AUXS)[i],afterName)
+    repl= paste0("\\1","(",AUXS[i],")","\\2")
+    PROS= gsub(pattern=patt, replacement=repl, x=PROS)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
     }
@@ -160,11 +160,11 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   #   is computed as "(i-1)*n+p"
 
   for (i in 1:length(vars)) {
-    patt= paste0(beforeName,names(vars)[i],afterName)
+    patt= paste0(beforeName,vars[i],afterName)
     repl= paste0("\\1",ident["vecVars"],L$eleOpen,"(",
-      names(vars)[i],"-",ident["constOne"],")*",ident["lenLevels"],"+",
+      vars[i],"-",ident["constOne"],")*",ident["lenLevels"],"+",
       ident["levelIndex"],L$eleClose,"\\2")
-    PROC= gsub(pattern=patt, replacement=repl, x=PROC)
+    PROS= gsub(pattern=patt, replacement=repl, x=PROS)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
     }
@@ -173,10 +173,10 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   # Turn names of parameters into references to vector elements
   # Note: Parameters don't have a spatial resolution (as opposed to state vars)
   for (i in 1:length(pars)) {
-    patt= paste0(beforeName,names(pars)[i],afterName)
+    patt= paste0(beforeName,pars[i],afterName)
     repl= paste0("\\1",ident["vecPars"],L$eleOpen,
-      names(pars)[i],L$eleClose,"\\2")
-    PROC= gsub(pattern=patt, replacement=repl, x=PROC)
+      pars[i],L$eleClose,"\\2")
+    PROS= gsub(pattern=patt, replacement=repl, x=PROS)
     for (n in 1:ncol(STOX)) {
       STOX[,n]= gsub(pattern=patt, replacement=repl, x=STOX[,n])
     }
@@ -199,7 +199,7 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   #   term like '+ X * ZERO' where 'X' is an existing state variable and ZERO is
   #   a constant initialized to zero. 
   patt=paste0(ident["vecVars"],L$eleOpen)
-  if (!all(grepl(pattern=patt, x=PROC, fixed=TRUE))) {
+  if (!all(grepl(pattern=patt, x=PROS, fixed=TRUE))) {
     stop("in a spatially distributed model, a reference to a state variable",
       " must appear at the righthand side of any process rate expression")
   }
@@ -209,23 +209,23 @@ rodeo$methods( generate = function(name="derivs", lang="r"
   # Generate constructor code for the processes vector
   # Note: The length of the vector equals the number of processes in the
   #       0-dimensional case, i.e. a spatially lumped model
-  code_proc=""
-  code_proc=paste0(code_proc,"  ",ident["vecProc"],"0D","=",L$vecOpen,L$cont,newline)
-  for (n in 1:length(PROC)) {
+  code_pros=""
+  code_pros=paste0(code_pros,"  ",ident["vecPros"],"0D","=",L$vecOpen,L$cont,newline)
+  for (n in 1:length(PROS)) {
     if (n > 1) {
-      code_proc=paste0(code_proc,"    ,",L$cont,newline)
+      code_pros=paste0(code_pros,"    ,",L$cont,newline)
     }
-    code_proc=paste0(code_proc,"    ",L$com," Process rate '",names(proc)[n],"'",newline)
-    buffer= PROC[n]
+    code_pros=paste0(code_pros,"    ",L$com," Process rate '",names(pros)[n],"'",newline)
+    buffer= PROS[n]
     # Specialities of Fortran
     if (lang == "f95") {
       buffer= f_doubleConst(buffer)
       buffer= f_breakLines(text=buffer, conti=L$cont, newline=newline)
     }
     # Add to code
-    code_proc= paste0(code_proc,"      ",buffer,L$cont,newline)
+    code_pros= paste0(code_pros,"      ",buffer,L$cont,newline)
   }
-  code_proc=paste0(code_proc,"  ",L$vecClose,newline)
+  code_pros=paste0(code_pros,"  ",L$vecClose,newline)
 
   # Generate constructor code for the derivatives vector
   # Note: The length of the vector equals the number of state variables in the
@@ -239,7 +239,7 @@ rodeo$methods( generate = function(name="derivs", lang="r"
     code_drvs=paste0(code_drvs,"    ",L$com," Variable '",names(STOX)[n],"'",newline)
     # Assemble expressions
     buffer=""
-    for (k in 1:length(PROC)) {
+    for (k in 1:length(PROS)) {
       # Suppress terms where a stoichiometry factor is exactly zero (usually because
       # it has not been set explicitly)
       if (grepl(pattern="[^0]", x=STOX[k,n])) {
@@ -248,8 +248,8 @@ rodeo$methods( generate = function(name="derivs", lang="r"
         }
          # The following line would produce the 'full' code, i.e. the
          # process rates would be computed redundantly
-         # buffer=paste0(buffer," (",PROC[k],") * (",STOX[k,n],")")
-        buffer=paste0(buffer," ",ident["vecProc"],L$eleOpen,"(",names(PROC)[k],
+         # buffer=paste0(buffer," (",PROS[k],") * (",STOX[k,n],")")
+        buffer=paste0(buffer," ",ident["vecPros"],L$eleOpen,"(",names(PROS)[k],
           "-",ident["constOne"],")*",ident["lenLevels"],
           "+",ident["levelIndex"],L$eleClose," * (",STOX[k,n],")")
       }
@@ -276,8 +276,8 @@ rodeo$methods( generate = function(name="derivs", lang="r"
 ################################################################################
 
   # Embed the vector constructor codes in appropriate language-specific functions
-  return(create_code(name, names(vars), names(pars), names(proc), ident,
-    code_drvs, code_proc, nProc=length(proc), importFuns=(length(funs)>0),
+  return(create_code(name, vars, pars, names(pros), ident,
+    code_drvs, code_pros, nPros=length(pros), importFuns=(length(funs)>0),
     newline, lang))
 
 })
