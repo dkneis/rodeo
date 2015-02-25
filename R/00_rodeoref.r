@@ -28,7 +28,8 @@ library("rjson")
 #' x=new("rodeo", file=tf)
 #'
 #' # Display the entire model
-#' x$show()
+#' x$show()   # built-in method
+#' x$print()
 #'
 #' # Define functions referenced in the model
 #' DOSAT= function(t) {14.652 - 0.41022*t + 0.007991*t^2 - 0.000077774*t^3}

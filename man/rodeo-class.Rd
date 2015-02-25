@@ -53,12 +53,14 @@ function. \code{lang}: The language of generated code (currently 'r' or 'f').
 \item{\code{plot(pars, vars)}}{Creates a plot of the stoichiometry matrix for the parameter and
 variable values in \code{pars} and \code{vars}, respectively}
 
+\item{\code{print()}}{Prints all fields of a \code{rodeo} object}
+
 \item{\code{publish(file, tbl, comment = "\%", colsep = "&", endline = "\\\\\\\\",
   equal = " &= ", startCell = "$ ", endCell = " $")}}{Experimental: Exports model equations to a file for inclusion in e.g. LaTex documents}
 
-\item{\code{sortLikePars(v)}}{Re-sorts a named vector \code{v} according to the order of parameters}
+\item{\code{sortLikePars(v)}}{Sorts a named vector \code{v} according to the order of parameters}
 
-\item{\code{sortLikeVars(v)}}{Re-sorts a named vector \code{v} according to the order of state variables}
+\item{\code{sortLikeVars(v)}}{Sorts a named vector \code{v} according to the order of state variables}
 }}
 \examples{
 # Create file with model definition in json format
@@ -70,7 +72,8 @@ write(x=toymodel, file=tf)
 x=new("rodeo", file=tf)
 
 # Display the entire model
-x$show()
+x$show()   # built-in method
+x$print()
 
 # Define functions referenced in the model
 DOSAT= function(t) {14.652 - 0.41022*t + 0.007991*t^2 - 0.000077774*t^3}
