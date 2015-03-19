@@ -132,25 +132,32 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"!###  THIS IS A GENERATED FILE -- DO NOT EDIT  ###",newline)
     code=paste0(code,"!#################################################",newline)
     code=paste0(code,newline)
-    code=paste0(code,"module access_constants",newline)
+    code=paste0(code,"module dimensions_and_indices",newline)
     code=paste0(code,"  implicit none",newline)
-    code=paste0(code,"  integer, private:: i",newline)    
+    code=paste0(code,"  integer, private:: i",newline)
+    code=paste0(code,"  ! Dimension constants",newline)
+    code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent["lenVars"],
+      "=",nrow(.self$VARS),newline)
+    code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent["lenPars"],
+      "=",nrow(.self$PARS),newline)
+    code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent["lenPros"],
+      "=",nrow(.self$PROS),newline)
     code=paste0(code,"  ! Constant index arrays (for OD case or 1st level, respectively)",newline)
-    code=paste0(code,"  integer, dimension(",length(indexVars),
+    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenVars"],
       "), parameter:: ",rodeoConst$genIdent["ivecVars0D"],
       " =(/(i, i=1, ",length(indexVars),")/)",newline)
-    code=paste0(code,"  integer, dimension(",length(indexPars),
+    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenPars"],
       "), parameter:: ",rodeoConst$genIdent["ivecPars0D"],
       " =(/(i, i=1, ",length(indexPars),")/)",newline)
-    code=paste0(code,"  integer, dimension(",length(indexPros),
+    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenPros"],
       "), parameter:: ",rodeoConst$genIdent["ivecPros0D"],
       " =(/(i, i=1, ",length(indexPros),")/)",newline)
     code=paste0(code,"  ! Modifyable index arrays (to be adjusted for each spatial level)",newline)
-    code=paste0(code,"  integer, dimension(",length(indexVars),
+    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenVars"],
       "), target:: ",rodeoConst$genIdent["ivecVars"],newline)
-    code=paste0(code,"  integer, dimension(",length(indexPars),
+    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenPars"],
       "), target:: ",rodeoConst$genIdent["ivecPars"],newline)
-    code=paste0(code,"  integer, dimension(",length(indexPros),
+    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenPros"],
       "), target:: ",rodeoConst$genIdent["ivecPros"],newline)
     code=paste0(code,newline)
     code=paste0(code,"  ! Lists of pointers to index arrays",newline)
@@ -177,17 +184,10 @@ rodeo$methods( generate = function(lang, name="derivs") {
       ", ",rodeoConst$genIdent["lenLevels"],", ",rodeoConst$genIdent["vecDrvs"],
       ", ",rodeoConst$genIdent["vecPros"],
       ")",newline)
-    code=paste0(code,"  use access_constants",newline)
+    code=paste0(code,"  use dimensions_and_indices",newline)
     code=paste0(code,"  ",ifelse(nrow(.self$FUNS) > 0,"","!"),"use functions",newline)
     code=paste0(code,"  implicit none",newline)
     # Arguments of main method
-    code=paste0(code,"  ! Dimension constants",newline)
-    code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent["lenVars"],
-      "=",nrow(.self$VARS),newline)
-    code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent["lenPars"],
-      "=",nrow(.self$PARS),newline)
-    code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent["lenPros"],
-      "=",nrow(.self$PROS),newline)
     code=paste0(code,"  ! Inputs",newline)
     code=paste0(code,"  double precision, intent(in):: time",newline)
     code=paste0(code,"  double precision, dimension(",
