@@ -13,19 +13,19 @@ output:
 %\VignetteIndexEntry{Using rodeo}
 -->
 
-# What the package is about
+## What the package is about
  The *rodeo* package 
 TODO
 
-# Example problem
+## Example problem
 
 TODO
 
-# Basic use
+## Basic use
 
-## Creating and inspecting model objects
+### Creating and inspecting model objects
 
-We start by creating a new object with `new()`. This requires us to supply the name of the class as well as data for initialization.
+We start by creating a new object with `new()`. This requires us to supply the name of the class as well as a set of data frames for initialization.
 
 ```{r createObj}
 library(rodeo, quietly=TRUE)
@@ -48,7 +48,7 @@ model$show()
 print(model$stoichiometryMatrix())
 ```
 
-## Defining functions and supplying data
+### Defining functions and supplying data
 
 In order to work with the object, we need to define functions that are reference in the model's mathematical expressions (i.e. in the process rates or the stoichiometry factors).
 
@@ -68,29 +68,38 @@ p= model$arrangePars(pars)
 v= model$arrangeVars(vars)
 ```
 
-## Plotting a model object
+### Plotting a model object
 
-Having defined all functions and having set data, we can plot the stoichiometry matrix. This is very useful for complex models with many variables and processes.
+Having defined all functions and having set data, we can plot the stoichiometry matrix. This is very useful for complex models with many variables and processes.</td>
 
-```{r plotObj, fig.width=2, fig.height=2, fig.align="center"}
+<table border = 0>
+<tr>
+<td>
+<td>
+```{r plotObjCode, eval=FALSE}
 model$plot(c(v, p))
 ```
+<td>
+```{r plotObjResult, ref.label="plotObjCode", echo=FALSE, fig.width=2, fig.height=2, fig.align="center"}
+```
+</td>
+</tr>
+</table>
 
-## Translating the model into source code
+### Translating the model into source code
 
-In order to use the model for simulation, we need to transfer it into source code. This is also known as 'code generation'.
+In order to use the model for simulation, we need to transfer it into source code. This is also known as 'code generation'. Specifically, we want the code generator to create a function that returns the derivatives of the state variables with respect to time. In addition to the derivatives, the generated function also returns the values of all process rates (as diagnostic variables).
 
-```{r generate}
-# Generate code to compute the d/dt of state variables
+After generating the code, we need to make it executable. In R, we can use a combination of `eval()` and `parse()`. Alternatively, the generated code could be for loaded with `source()` after exporting it to a file (e.g. using `write()`). The latter method is needed if one wants to inspect (or even modify) the generated code.
+
+```{r generateR}
 code= model$generate(name="derivs",lang="r")
-
-# Make the generated code executable
 derivs= eval(parse(text=code))
 ```
 
-## Solving the ODE system
+### Solving the ODE system
 
-Now we are ready to compute the evolution of the state variables over time by means of numerical integration. At this point, the proper order of the elements in the vectors `v` and `p` is essential since the generated function code uses *by-index* access!
+Now we are ready to compute the evolution of the state variables over time by means of numerical integration. At this point, the proper order of the elements in the vectors `v` and `p` is essential since the generated function code uses *by-index* access! Therefore, `v` and `p` should always be set by calls to the `arrangeVars()` and `arrangePars()` method, respectively.
 
 In addition to the dynamics of the state variables, we also get the dynamics of the process rates.
 
@@ -98,18 +107,19 @@ In addition to the dynamics of the state variables, we also get the dynamics of 
 library(deSolve)
 t= seq(0, 30*86400, 3600)
 out= ode(y=v, times=t, func=derivs, parms=p, NLVL=1)
-plot(out)
+layout(matrix(1:8, ncol=4, byrow=TRUE))
+plot(out, mfrow=NULL)
 ```
 
-# Advanced topics
+## Advanced topics
 
-## Handling spatially distributed systems
+### Handling spatially distributed systems
 
 A zero-dimensional case (single reactor) has been considered so far. We will now extend the model for a collection of reactors.
 
 In the first step, we need to provide vectors (instead of scalars) for one variable and one parameter, at least. Variables and parameters with scalar values will be replicated to vectors of the required length.
 
-```{r solve-1d}
+```{r solve-1d, fig.width=8, fig.height=3}
 nbox= 3
 pars= list(kd=rep(5.78e-7, nbox), h_do=0.5, s_do_z=2.76, wind=1, depth=2,
   temp=20, q_in=1, q_ex=1, c_z_in=0.1, c_do_in=9.022)
@@ -117,13 +127,89 @@ vars= list(c_z=seq(from=0, to=50, length.out=nbox), c_do=9.022, v=1.e6)
 p= model$arrangePars(pars)
 v= model$arrangeVars(vars)
 
-
 out= ode(y=v, times=t, func=derivs, parms=p, NLVL=nbox)
-plot(out, which=paste0("c_do",1:nbox))
-
+layout(matrix(1:nbox, nrow=1))
+plot(out, which=paste0("c_do",1:nbox), mfrow=NULL)
 ```
 
-## Definition of models in Fortran (instead of R)
+### Definition of models in Fortran (instead of R)
 
+Real-world models usually consist of many and lenghty mathematical expressions. Also, depending on the studied problem, the ODE solver may need to use (very) short time steps. Then, computation times become of serious concern. In those time-critical cases, it is recommended to generate source code for a fast, compilable language rather than for (slower) R. The compilable language currently supported by the package is *Fortran95*.
 
+The next statement generates *Fortran95* code and exports it to a file for later compilation.
+```{r generateF}
+code= model$generate(name="derivs",lang="f95")
+file_genCode= paste0(tempfile(), ".f95")
+write(x=code, file=file_genCode)
+cat("code written to",file_genCode)
+```
 
+Inspection of the generated *Fortran95* code reveals that the interface of the central subroutine "derivs" is
+
+`subroutine derivs(time, var, par, NLVL, dydt, pro)`
+
+However, according to the [vignette of the *deSolve* package](http://cran.r-project.org/web/packages/deSolve/vignettes/compiledCode.pdf) (page 6), the following interface is required
+
+`subroutine derivs (neq, t, y, ydot, yout, ip)`
+
+and an additional subroutine for parameter initialization (`initmod`) must to be supplied as well.
+
+Consequently, we need to manually code in Fortran
+
+  (1) a wrapper around the generated function to make its interface compatible with *deSolve*
+  (2) the additional subroutine for parameter initialization
+  (3) any functions used by the model
+
+A suitable Fortan code for (1) and (2) is given below. Note that this code is fully generic except for the statement `NLVL=3` which defines the number of spatial boxes.
+
+```{r fortranWrapper, echo=FALSE}
+file_auxCode= "wrapperCode.f95"
+text= readLines(file_auxCode, n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
+text= paste(text,"\n")
+cat(text)
+```
+
+The model-specific functions (3) could be defines as :
+
+```{r fortranFunctions, echo=FALSE}
+file_funCode= "functionsCode.f95"
+text= readLines(file_funCode, n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
+text= paste(text,"\n")
+cat(text)
+```
+
+As a next step, we need to compile *(a)* the generated code and *(b)* all hand-written auxiliary code (boxes above) into a shared library. For that purpose, we make use of R's command line utility `R CMD SHLIB`. The 3 files passed to the command are the following:
+  
+  - *file_funCode* : Hand-coded source file with the model-specific function (box above)
+  - *file_auxCode* : Hand-coded source file containing the wrapper and dimension specifications (box above)
+  - *file_genCode* : File containing the generated source
+
+```{r compileF, echo=TRUE}
+dllname= "mySharedLib"
+dllfile= paste0(dllname,.Platform$dynlib.ext)
+command= paste0("R CMD SHLIB ",file_funCode," ",file_genCode," ",file_auxCode,
+  " --preclean --clean -o ",dllfile)
+if (system(command) != 0)
+  stop(paste0("Error running '",command,"'"))
+```
+
+```{r, echo=FALSE}
+# Clean up files from compilation
+invisible(file.remove(list.files(pattern=".+[.]mod")))
+```
+
+We are now prepared to load the shared library and run the simulation based on the Fortran code. Note the additional arguments `dllname`, `initfunc`, and `nout` being passed to the numerical solver (use `?lsoda` to see the documentation for them).
+
+```{r solve-1d-F, fig.width=8, fig.height=3}
+dyn.load(dllfile)
+out= ode(y=v, times=t, func="derivs_wrapped", parms=p, NLVL=nbox,
+  dllname=dllname, initfunc="initmod", nout=4*nbox)
+layout(matrix(1:nbox, nrow=1))
+dyn.unload(dllfile)
+plot(out, which=paste0("c_do",1:nbox), mfrow=NULL)
+```
+
+```{r, echo=FALSE}
+# Clean up dll file
+invisible(file.remove(list.files(pattern=paste0(".+",.Platform$dynlib.ext))))
+```
