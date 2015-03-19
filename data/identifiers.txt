@@ -1,0 +1,21 @@
+"name"    "type" "units" "description"
+# State variables
+"c_do"    "v"    "mg/l"  "dissolved O2"
+"c_z"     "v"    "mg/l"  "degradable organic matter Z"
+"v"       "v"    "m3"    "water volume in reactor"
+# Parameters
+"q_in"    "p"    "m3/s"  "inflow rate"
+"q_ex"    "p"    "m3/s"  "outflow rate"
+"c_z_in"  "p"    "g/m3"  "concentration of Z in inflow"
+"c_do_in" "p"    "g/m3"  "concentration of O2 in inflow"
+"kd"      "p"    "1/d"   "decay rate"
+"s_do_z"  "p"    "g/g"   "stoichiometry (O2:Z)"
+"h_do"    "p"    "g/m3"  "half-saturation O2 for aerobic decay"
+"temp"    "p"    "°C"    "temperature"
+"wind"    "p"    "m/s"   "wind speed"
+"depth"   "p"    "m"     "water depth"
+# Functions
+"O2sat"   "f"    "mg/l"  "oxygen saturation level; args.: (1) temperature"
+"ka"      "f"    "1/d"   "aeration rate; args.: (1) wind speed, (2) water depth"
+"monod"   "f"    "-"     "monod model; args.: (1) conc., (2) half-sat. conc."
+

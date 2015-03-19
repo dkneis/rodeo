@@ -1,0 +1,8 @@
+"variable"  "process"  "expression"
+"v"         "flow"     "1"
+"c_z"       "flushing" "c_z_in - c_z"
+"c_z"       "decay"    "-1"
+"c_do"      "flushing" "c_do_in - c_do"
+"c_do"      "decay"    "-s_do_z"
+"c_do"      "aeration" "1"
+

@@ -1,0 +1,14 @@
+Package: rodeo
+Type: Package
+Title: Handling of ODE-models as R objects
+Version: 0.2
+Date: 2015-03-16
+Author: David Kneis <david.kneis@tu-dresden.de>
+Maintainer: David Kneis <david.kneis@tu-dresden.de>
+Description: The package allows for the representation of ODE-based models in
+    the form of R objects. It includes basic functions to deal with such
+    objects, including code generation.
+License: GPL (>= 2)
+Depends:
+    methods, deSolve, knitr
+VignetteBuilder: knitr

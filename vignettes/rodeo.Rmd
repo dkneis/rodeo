@@ -1,0 +1,129 @@
+---
+title: "Handling of ODE-models as R-objects (*rodeo*)"
+author: "David Kneis (david.kneis [at] tu-dresden.de)"
+output:
+  html_document:
+    toc: true
+  pdf_document:
+    toc: true
+---
+
+<!--
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{Using rodeo}
+-->
+
+# What the package is about
+ The *rodeo* package 
+TODO
+
+# Example problem
+
+TODO
+
+# Basic use
+
+## Creating and inspecting model objects
+
+We start by creating a new object with `new()`. This requires us to supply the name of the class as well as data for initialization.
+
+```{r createObj}
+library(rodeo, quietly=TRUE)
+
+# Load sample data frames
+data(identifiers, processes, stoichiometry)
+
+# Instantiate new object
+model= new("rodeo", vars=subset(identifiers,type=="v"),
+  pars=subset(identifiers,type=="p"), funs=subset(identifiers,type=="f"),
+  pros=processes, stoi=stoichiometry)
+```
+
+To inspect the object's contents, we can use the following:
+```{r inspectObj, eval=FALSE}
+# Built-in method
+model$show()
+
+# Show stoichiometry information as a matrix
+print(model$stoichiometryMatrix())
+```
+
+## Defining functions and supplying data
+
+In order to work with the object, we need to define functions that are reference in the model's mathematical expressions (i.e. in the process rates or the stoichiometry factors).
+
+```{r setData}
+O2sat= function(t) {14.652 - 0.41022*t + 0.007991*t^2 - 0.000077774*t^3}
+ka= function(u, d) {(0.728*sqrt(u) - 0.317*u + 0.0372*u^2) / d / 86400}
+monod= function(s,h) {s / (s + h)}
+```
+
+We also need to set the values of parameters and state variables (initial values). We first define both parameters and initial values as lists. These lists are then coerced into named vectors using the dedicated methods `arrangePars()` and `arrangeVars()`. Use of these methods guarantees that the vector elements appear in proper order. Proper order is essential when the vector elements are accessed *by position* rather than *by name*.
+
+```{r setFuns}
+pars= list(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
+ temp=20, q_in=1, q_ex=1, c_z_in=0.1, c_do_in=9.022)
+vars= list(c_z=1, c_do=9.022, v=1.e6)
+p= model$arrangePars(pars)
+v= model$arrangeVars(vars)
+```
+
+## Plotting a model object
+
+Having defined all functions and having set data, we can plot the stoichiometry matrix. This is very useful for complex models with many variables and processes.
+
+```{r plotObj, fig.width=2, fig.height=2, fig.align="center"}
+model$plot(c(v, p))
+```
+
+## Translating the model into source code
+
+In order to use the model for simulation, we need to transfer it into source code. This is also known as 'code generation'.
+
+```{r generate}
+# Generate code to compute the d/dt of state variables
+code= model$generate(name="derivs",lang="r")
+
+# Make the generated code executable
+derivs= eval(parse(text=code))
+```
+
+## Solving the ODE system
+
+Now we are ready to compute the evolution of the state variables over time by means of numerical integration. At this point, the proper order of the elements in the vectors `v` and `p` is essential since the generated function code uses *by-index* access!
+
+In addition to the dynamics of the state variables, we also get the dynamics of the process rates.
+
+```{r solve-0d}
+library(deSolve)
+t= seq(0, 30*86400, 3600)
+out= ode(y=v, times=t, func=derivs, parms=p, NLVL=1)
+plot(out)
+```
+
+# Advanced topics
+
+## Handling spatially distributed systems
+
+A zero-dimensional case (single reactor) has been considered so far. We will now extend the model for a collection of reactors.
+
+In the first step, we need to provide vectors (instead of scalars) for one variable and one parameter, at least. Variables and parameters with scalar values will be replicated to vectors of the required length.
+
+```{r solve-1d}
+nbox= 3
+pars= list(kd=rep(5.78e-7, nbox), h_do=0.5, s_do_z=2.76, wind=1, depth=2,
+  temp=20, q_in=1, q_ex=1, c_z_in=0.1, c_do_in=9.022)
+vars= list(c_z=seq(from=0, to=50, length.out=nbox), c_do=9.022, v=1.e6)
+p= model$arrangePars(pars)
+v= model$arrangeVars(vars)
+
+
+out= ode(y=v, times=t, func=derivs, parms=p, NLVL=nbox)
+plot(out, which=paste0("c_do",1:nbox))
+
+```
+
+## Definition of models in Fortran (instead of R)
+
+
+
