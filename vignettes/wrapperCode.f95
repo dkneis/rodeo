@@ -6,7 +6,7 @@ end module
 
 ! Generic routine for parameter initialization
 subroutine initmod(extfun)
-  use dimensions_and_indices
+  use dimensions_and_indices   ! Module is provided by the generated code
   use spatial_dimension
   external extfun
   double precision, dimension(NPAR*NLVL):: par
@@ -16,7 +16,7 @@ end subroutine
 
 ! Generic wrapper around the generated code
 subroutine derivs_wrapped (neq, t, y, ydot, yout, ip)
-  use dimensions_and_indices
+  use dimensions_and_indices   ! Module is provided by the generated code
   use spatial_dimension
   implicit none
   ! Inputs

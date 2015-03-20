@@ -189,7 +189,7 @@ plot(out, which=paste0(&quot;c_do&quot;,1:nbox), mfrow=NULL)</code></pre>
 file_genCode= paste0(tempfile(), &quot;.f95&quot;)
 write(x=code, file=file_genCode)
 cat(&quot;code written to&quot;,file_genCode)</code></pre>
-<pre><code>## code written to /tmp/RtmpTe5F8u/file44da5f59305.f95</code></pre>
+<pre><code>## code written to /tmp/RtmpdUCs50/file20374e1cef9f.f95</code></pre>
 <p>Inspection of the generated <em>Fortran95</em> code reveals that the interface of the central subroutine “derivs” is</p>
 <p><code>subroutine derivs(time, var, par, NLVL, dydt, pro)</code></p>
 <p>However, according to the <a href="http://cran.r-project.org/web/packages/deSolve/vignettes/compiledCode.pdf">vignette of the <em>deSolve</em> package</a> (page 6), the following interface is required</p>
@@ -210,7 +210,7 @@ cat(&quot;code written to&quot;,file_genCode)</code></pre>
 ##   
 ##  ! Generic routine for parameter initialization 
 ##  subroutine initmod(extfun) 
-##    use dimensions_and_indices 
+##    use dimensions_and_indices   ! Module is provided by the generated code 
 ##    use spatial_dimension 
 ##    external extfun 
 ##    double precision, dimension(NPAR*NLVL):: par 
@@ -220,7 +220,7 @@ cat(&quot;code written to&quot;,file_genCode)</code></pre>
 ##   
 ##  ! Generic wrapper around the generated code 
 ##  subroutine derivs_wrapped (neq, t, y, ydot, yout, ip) 
-##    use dimensions_and_indices 
+##    use dimensions_and_indices   ! Module is provided by the generated code 
 ##    use spatial_dimension 
 ##    implicit none 
 ##    ! Inputs 
@@ -272,10 +272,10 @@ command= paste0(&quot;R CMD SHLIB &quot;,file_funCode,&quot; &quot;,file_genCode
   &quot; --preclean --clean -o &quot;,dllfile)
 if (system(command) != 0)
   stop(paste0(&quot;Error running '&quot;,command,&quot;'&quot;))</code></pre>
-<p>We are now prepared to load the shared library and run the simulation based on the Fortran code. Note the additional arguments <code>dllname</code>, <code>initfunc</code>, and <code>nout</code> being passed to the numerical solver (use <code>?lsoda</code> to see the documentation for them).</p>
+<p>We are now prepared to load the shared library and run the simulation based on the Fortran code. Note the additional arguments <code>dllname</code>, <code>initfunc</code>, and <code>nout</code> being passed to the numerical solver (use <code>?lsoda</code> to see the documentation for them). Note that setting a wrong value for <code>nout</code> easily makes R crash.</p>
 <pre class="r"><code>dyn.load(dllfile)
 out= ode(y=v, times=t, func=&quot;derivs_wrapped&quot;, parms=p, NLVL=nbox,
-  dllname=dllname, initfunc=&quot;initmod&quot;, nout=4*nbox)
+  dllname=dllname, initfunc=&quot;initmod&quot;, nout=nrow(model$PROS)*nbox)
 layout(matrix(1:nbox, nrow=1))
 dyn.unload(dllfile)
 plot(out, which=paste0(&quot;c_do&quot;,1:nbox), mfrow=NULL)</code></pre>
