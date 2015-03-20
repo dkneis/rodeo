@@ -70,15 +70,15 @@ v= model$arrangeVars(vars)
 
 ### Plotting a model object
 
-Having defined all functions and having set data, we can plot the stoichiometry matrix. This is very useful for complex models with many variables and processes.</td>
+Having defined all functions and having set data, we can plot the stoichiometry matrix. This is very useful for complex models with many variables and processes.
 
 <table border = 0>
 <tr>
 <td>
-<td>
 ```{r plotObjCode, eval=FALSE}
 model$plot(c(v, p))
 ```
+</td>
 <td>
 ```{r plotObjResult, ref.label="plotObjCode", echo=FALSE, fig.width=2, fig.height=2, fig.align="center"}
 ```
