@@ -13,24 +13,72 @@ output:
 %\VignetteIndexEntry{Using rodeo}
 -->
 
-## What the package is about
- The *rodeo* package 
-TODO
+## When to use this package
+The *rodeo* package facilitates the implementation of ODE-based models. These are models that describe the dynamics of a set of *n* state variables by integrating a set of *n*  ordinary differential equations. The package is particularly useful in conjunction with the [deSolve](http://cran.r-project.org/web/packages/deSolve/index.html) package providing numerical solvers for initial value problems.
+
+The advantages from using *rodeo* are:
+
+ - You can define the model using just plain tabular text files. Thus, the model is formulated independent from source code. Mathematical expressions and documentation form a unit.
+ 
+ - You are forced to provide the model in stoichiometry matrix notation (see [here](http://en.wikipedia.org/wiki/Petersen_matrix)). If you do not see the advantage, read on.
+ 
+ - You can visualize the structure of the model by plotting the stoichiomety matrix.
+ 
+ - Due to use of the matrix notation, redundant terms are eliminated from the differential equations. This contributes to comprehensibility and increases computational efficiency.
+ 
+ - You can generate source code for different target languages. At the moment, *R* and *Fortran95* are supported.
+ 
+ - The generated source code is applicable to an arbitrary number of boxes (control volumes). This allows for simulating spatially distributed systems. Using  the [method-of-lines](http://en.wikipedia.org/wiki/Method_of_lines) approach one can easily build reactive transport models.
+
+
 
 ## Example problem
+The functioning of the package is best illustrated by an example. In this document, we consider a continuous flow stirred tank reactor (CFSTR) containing a degradable organic matter (concentration *c_z*) and dissolved oxygen (*c_do*). Due to mixing, the reactors contents is spatially homogeneous, hence the concentrations are scalars (see figure below). Changes in concentrations are triggered by
 
-TODO
+  (1) the loads in the reactor's inflow
+  (2) aerobic degradation of the organic matter (1st order) which consumes dissolved oxygen
+  (3) exchange of oxygen with the atmosphere
+
+Some specific aspects of the model are as follows:
+
+  - The dependence of aerobic degradation on available oxygen is described with a Monod term (Michaelis-Menten model).
+  - The rate of oxygen exchange between water and atmosphere is described as an empirical function of water depth and wind speed.
+  - The model does *not* assume steady flow conditions, hence the volume of the reactor is a state variable too.
+
+<img src="reactor.png" width="300">
+
+Using *rodeo*, the model can be described using just tabular text files. These files are shipped with the package (see below).
+
+*Declaration of identifiers (data set `identifiers`). The type column indicates whether the item is a state variable (v), a parameter (p), or a function (f).*
+
+```{r exampleData1, echo=FALSE}
+library(rodeo, quietly=TRUE)
+data(identifiers)
+print(format(identifiers, justify="left"))
+```
+
+*Tab. 2: Specification of processes (data set `processes`).*
+```{r exampleData2, echo=FALSE}
+data(processes)
+print(format(processes, justify="left"))
+```
+
+*Tab. 3: Specification of stoichiometric factors (data set `stoichiometry`).*
+```{r exampleData3, echo=FALSE}
+data(stoichiometry)
+print(format(stoichiometry, justify="left"))
+```
 
 ## Basic use
 
-### Creating and inspecting model objects
+### Creating and inspecting a model object
 
 We start by creating a new object with `new()`. This requires us to supply the name of the class as well as a set of data frames for initialization.
 
 ```{r createObj}
 library(rodeo, quietly=TRUE)
 
-# Load sample data frames
+# Load sample data frames (contents shown above)
 data(identifiers, processes, stoichiometry)
 
 # Instantiate new object

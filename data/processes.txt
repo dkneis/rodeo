@@ -1,6 +1,6 @@
 "name"      "units"   "description"                 "expression"
 "flow"      "m3/s"    "water balance"               "q_in - q_ex"
 "flushing"  "1/s"     "flushing rate"               "q_in / v"
-"decay"     "g/m3/s"  "O2-limited decay of z"       "kd * c_z * monod(c_do, h_do)"
-"aeration"  "g/m3/s"  "O2-exchange with atmosphere" "ka(wind,depth) * (O2sat(temp) - c_do)"
+"decay"     "g/m3/s"  "decay of z"       "kd * c_z * monod(c_do, h_do)"
+"aeration"  "g/m3/s"  "O2-exchange"     "ka(wind,depth) * (O2sat(temp) - c_do)"
 
