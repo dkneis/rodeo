@@ -11,3 +11,10 @@ rodeo$methods( lenPars= function() { nrow(.self$PARS) })
 rodeo$methods( lenFuns= function() { nrow(.self$FUNS) })
 rodeo$methods( lenPros= function() { nrow(.self$PROS) })
 
+# Methods to return entire tables
+rodeo$methods( getVars= function() { .self$VARS })
+rodeo$methods( getPars= function() { .self$PARS })
+rodeo$methods( getFuns= function() { .self$FUNS })
+rodeo$methods( getPros= function() { .self$PROS })
+rodeo$methods( getStoi= function() { .self$STOI })
+
