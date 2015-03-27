@@ -15,19 +15,19 @@ rodeo$methods(
     stoi= data.frame(lapply(stoi, as.character), stringsAsFactors=FALSE)
   # Set variables ##############################################################
   checkTbl(tbl=vars, tblName="vars",
-    colNames=c("name","units","description"), nameCol="name", emptyOK=FALSE)
+    colNames=c("name","unit","description"), nameCol="name", emptyOK=FALSE)
   .self$VARS <<- vars
   # Set parameters #############################################################
   checkTbl(tbl=pars, tblName="pars",
-    colNames=c("name","units","description"), nameCol="name", emptyOK=FALSE)
+    colNames=c("name","unit","description"), nameCol="name", emptyOK=FALSE)
   .self$PARS <<- pars
   # Set functions ##############################################################
   checkTbl(tbl=funs, tblName="funs",
-    colNames=c("name","units","description"), nameCol="name", emptyOK=TRUE)
+    colNames=c("name","unit","description"), nameCol="name", emptyOK=TRUE)
   .self$FUNS <<- funs
   # Set processes ##############################################################
   # Basic checks
-  checkTbl(tbl=pros, tblName="pros", colNames=c("name","units","description",
+  checkTbl(tbl=pros, tblName="pros", colNames=c("name","unit","description",
     "expression"), nameCol="name", emptyOK=FALSE)
   # Check for undeclared items in expressions
   for (i in 1:nrow(pros)) {

@@ -1,4 +1,4 @@
-"name"    "type" "units" "description"
+"name"    "type" "unit"  "description"
 # State variables
 "c_do"    "v"    "mg/l"  "dissolved O2"
 "c_z"     "v"    "mg/l"  "degradable organic matter Z"
