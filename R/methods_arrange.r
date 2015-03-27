@@ -1,6 +1,6 @@
 
 # Converts a list into vector after sorting/selecting columns and data recycling
-arrangeGeneric= function(x, itemNames, warnUnused=TRUE) {
+arrangeGeneric= function(x, itemNames, sep=".", warnUnused=TRUE) {
   # Check inputs
   if (!is.list(x))
     stop("actual argument must be a list")
@@ -21,10 +21,16 @@ arrangeGeneric= function(x, itemNames, warnUnused=TRUE) {
   if ((length(sizes) > 2) || ((length(sizes) == 2) && (min(sizes) != 1)))
     stop("elements of input list must either be scalars or vectors of a common length")
   x= data.frame(x)
+  nr= nrow(x)
   # Sort/drop columns
   x= x[,itemNames]
   # Transform into vector
   x= unlist(x)
+  if (nr > 1) {
+    names(x)= paste(rep(itemNames, each=nr), rep(1:nr, length(itemNames)), sep=".")
+  } else {
+    names(x)= itemNames
+  }
   # Check type
   if (any(!is.numeric(x)))
     stop("non-numeric data detected in input list")
@@ -32,17 +38,23 @@ arrangeGeneric= function(x, itemNames, warnUnused=TRUE) {
   return(x)
 }
 
-rodeo$methods( arrangeVars= function(x, warnUnused=TRUE) {
+rodeo$methods( arrangeVars= function(x, sep=".", warnUnused=TRUE) {
   "Create vector of state variables from list \\code{x}. The list elements can
   either be vectors (with length according to the number of spatial levels) or
-  scalars. The latter are recycled for all spatial levels."
-  arrangeGeneric(x=x, itemNames=.self$VARS$name, warnUnused=warnUnused)
+  scalars. The latter are recycled for all spatial levels. Element names are
+  constructed by appending the level index to the original names using the
+  specified separator. If there is a single level only, element names are
+  identical to the original names (no suffix)."
+  arrangeGeneric(x=x, itemNames=.self$VARS$name, sep=sep, warnUnused=warnUnused)
 })
 
-rodeo$methods( arrangePars= function(x, warnUnused=TRUE) {
+rodeo$methods( arrangePars= function(x, sep=".", warnUnused=TRUE) {
   "Create vector of parameters from list \\code{x}. The list elements can
   either be vectors (with length according to the number of spatial levels) or
-  scalars. The latter are recycled for all spatial levels."
-  arrangeGeneric(x=x, itemNames=.self$PARS$name, warnUnused=warnUnused)
+  scalars. The latter are recycled for all spatial levels. Element names are
+  constructed by appending the level index to the original names using the
+  specified separator. If there is a single level only, element names are
+  identical to the original names (no suffix)."
+  arrangeGeneric(x=x, itemNames=.self$PARS$name, sep=sep, warnUnused=warnUnused)
 })
 

@@ -177,7 +177,7 @@ v= model$arrangeVars(vars)
 
 out= ode(y=v, times=t, func=derivs, parms=p, NLVL=nbox)
 layout(matrix(1:nbox, nrow=1))
-plot(out, which=paste0("c_do",1:nbox), mfrow=NULL)
+plot(out, which=paste("c_do",1:nbox,sep="."), mfrow=NULL)
 ```
 
 ### Definition of models in Fortran (instead of R)
@@ -254,7 +254,7 @@ out= ode(y=v, times=t, func="derivs_wrapped", parms=p, NLVL=nbox,
   dllname=dllname, initfunc="initmod", nout=nrow(model$PROS)*nbox)
 layout(matrix(1:nbox, nrow=1))
 dyn.unload(dllfile)
-plot(out, which=paste0("c_do",1:nbox), mfrow=NULL)
+plot(out, which=paste("c_do",1:nbox,sep="."), mfrow=NULL)
 ```
 
 ```{r, echo=FALSE}

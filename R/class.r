@@ -60,7 +60,7 @@
 #' p= model$arrangePars(pars)
 #' v= model$arrangeVars(vars)
 #' out= ode(y=v, times=t, func=derivs, parms=p, NLVL=nbox)
-#' plot(out, which=paste0("c_do",1:nbox))
+#' plot(out, which=paste("c_do",1:nbox,sep="."))
 #'
 #' @export
 
