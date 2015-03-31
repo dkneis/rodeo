@@ -212,6 +212,7 @@ A suitable Fortan code for (1) and (2) is given below. Note that this code is fu
 
 ```{r fortranWrapper, echo=FALSE}
 file_auxCode= "wrapperCode.f95"
+#file_auxCode= "vignettes/wrapperCode.f95"
 text= readLines(file_auxCode, n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
 text= paste(text,"\n")
 cat(text)
@@ -221,6 +222,7 @@ The model-specific functions (3) could be defines as :
 
 ```{r fortranFunctions, echo=FALSE}
 file_funCode= "functionsCode.f95"
+#file_funCode= "vignettes/functionsCode.f95"
 text= readLines(file_funCode, n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
 text= paste(text,"\n")
 cat(text)
@@ -235,7 +237,7 @@ As a next step, we need to compile *(a)* the generated code and *(b)* all hand-w
 ```{r compileF, echo=TRUE}
 dllname= "mySharedLib"
 dllfile= paste0(dllname,.Platform$dynlib.ext)
-command= paste0("R CMD SHLIB ",file_funCode," ",file_genCode," ",file_auxCode,
+command= paste0("R CMD SHLIB ",file_funCode," ",normalizePath(file_genCode, winslash = "/")," ",file_auxCode,
   " --preclean --clean -o ",dllfile)
 if (system(command) != 0)
   stop(paste0("Error running '",command,"'"))
