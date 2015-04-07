@@ -61,6 +61,9 @@ substituteIdentifiers= function(expr, sub, all=TRUE) {
   if (any((names(sub) %in% sub) & (names(sub) != sub)))
     stop("bad vector of substitutes (the VALUE of an element must not be",
       "identical to the NAME of another element)")
+  specialChar="\a"
+  if (grepl(pattern=specialChar, x=expr))
+    stop("reserved character (escape sequence '\\a') detected in expression")
   # Identify replaceable identifiers
   tmp= gregexpr(pattern=rodeoConst$identifierPatterns$core,text=expr)[[1]]
   if (tmp[1] == -1) {
@@ -80,12 +83,20 @@ substituteIdentifiers= function(expr, sub, all=TRUE) {
     }
     ident= ident[ident %in% names(sub)]
     # Substitute
+    # We do this in two steps to avoid the case where (part of) an inserted
+    # substitute is later replaced by another substitute
     if (length(ident) > 0) {
-      for (i in 1:length(ident))
+      for (i in 1:length(ident)) {
         expr= gsub(pattern=paste0(rodeoConst$identifierPatterns$before,ident[i],
           rodeoConst$identifierPatterns$after),
-          replacement=paste0("\\1",sub[ident[i]],"\\2"),
+          replacement=paste0("\\1",specialChar,i,specialChar,"\\2"),
           x=expr)
+      }
+      for (i in 1:length(ident)) {
+        expr= gsub(pattern=paste0(specialChar,i,specialChar),
+          replacement=paste0(sub[ident[i]]),
+          x=expr)
+      }
     }
     return(expr)
   }
