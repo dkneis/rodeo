@@ -69,6 +69,15 @@ rodeo$methods(
         stoi$variable[i],"' and process '",stoi$process[i],
         "' contains undeclared item(s) '",paste(bad,collapse="', '"),"'"))
   }
+  # Duplicate-name checks over multiple tables
+  n= c(vars$name, pars$name, funs$name, pros$name)
+  bad= unique(n[which(duplicated(n))])
+  if (length(bad) > 0)
+    stop(paste0("names of variables, parameters, functions, and processes",
+      " must be unique; the following ",
+      ifelse(length(bad)>1,"names were","name was"),
+      " declared more than once: '",paste(bad,collapse="', '"),"'"))
+
   .self$STOI <<- stoi
 })
 
