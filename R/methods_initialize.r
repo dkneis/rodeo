@@ -36,6 +36,15 @@ rodeo$methods(
       stop(paste0("expression for process '",pros$name[i],
         "' contains undeclared item(s) '",paste(bad,collapse="', '"),"'"))
   }
+  # Check for invalid expressions
+  for (i in 1:nrow(pros)) {
+    tryCatch({
+      parse(text=pros$expression[i])
+    }, error= function(e) {
+      stop(paste0("invalid mathematical expression detected for process rate '",
+        pros$name[i],"'; details: ",e))
+    })
+  }
   .self$PROS <<- pros
   # Set stoichiometry ##########################################################
   # Basic checks
@@ -69,6 +78,18 @@ rodeo$methods(
         stoi$variable[i],"' and process '",stoi$process[i],
         "' contains undeclared item(s) '",paste(bad,collapse="', '"),"'"))
   }
+  # Check for invalid expressions
+  for (i in 1:nrow(stoi)) {
+    tryCatch({
+      parse(text=stoi$expression[i])
+    }, error= function(e) {
+      stop(paste0("stoichiometry factor for variable '",stoi$variable[i],
+      "' and process '",stoi$process[i],
+      "' is not a valid mathematical expression; details: ",e))
+    })
+  }
+  .self$STOI <<- stoi
+  # General checks #############################################################
   # Duplicate-name checks over multiple tables
   n= c(vars$name, pars$name, funs$name, pros$name)
   bad= unique(n[which(duplicated(n))])
@@ -78,6 +99,5 @@ rodeo$methods(
       ifelse(length(bad)>1,"names were","name was"),
       " declared more than once: '",paste(bad,collapse="', '"),"'"))
 
-  .self$STOI <<- stoi
 })
 
