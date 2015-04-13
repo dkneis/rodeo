@@ -31,13 +31,19 @@ functions referenced in the expression fields of \code{pros} or \code{stox}.}
 \section{Methods}{
 
 \describe{
-\item{\code{arrangePars(x, warnUnused = TRUE)}}{Create vector of parameters from list \code{x}. The list elements can
+\item{\code{arrangePars(x, sep = ".", warnUnused = TRUE)}}{Create vector of parameters from list \code{x}. The list elements can
 either be vectors (with length according to the number of spatial levels) or
-scalars. The latter are recycled for all spatial levels.}
+scalars. The latter are recycled for all spatial levels. Element names are
+constructed by appending the level index to the original names using the
+specified separator. If there is a single level only, element names are
+identical to the original names (no suffix).}
 
-\item{\code{arrangeVars(x, warnUnused = TRUE)}}{Create vector of state variables from list \code{x}. The list elements can
+\item{\code{arrangeVars(x, sep = ".", warnUnused = TRUE)}}{Create vector of state variables from list \code{x}. The list elements can
 either be vectors (with length according to the number of spatial levels) or
-scalars. The latter are recycled for all spatial levels.}
+scalars. The latter are recycled for all spatial levels. Element names are
+constructed by appending the level index to the original names using the
+specified separator. If there is a single level only, element names are
+identical to the original names (no suffix).}
 
 \item{\code{generate(lang, name = "derivs")}}{Generates code to compute the variables' derivatives with respect
 to time. \bold{Arguments:} \code{name}: A string giving the name for the
@@ -96,6 +102,6 @@ vars= list(c_z=seq(from=0, to=50, length.out=nbox), c_do=9.022, v=1.e6)
 p= model$arrangePars(pars)
 v= model$arrangeVars(vars)
 out= ode(y=v, times=t, func=derivs, parms=p, NLVL=nbox)
-plot(out, which=paste0("c_do",1:nbox))
+plot(out, which=paste("c_do",1:nbox,sep="."))
 }
 
