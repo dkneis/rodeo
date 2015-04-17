@@ -6,8 +6,6 @@
 # Parameters
 "q_in"    "p"    "m3/s"  "inflow rate"
 "q_ex"    "p"    "m3/s"  "outflow rate"
-"c_z_in"  "p"    "g/m3"  "concentr. of Z in inflow"
-"c_do_in" "p"    "g/m3"  "concentr. of O2 in inflow"
 "kd"      "p"    "1/d"   "decay rate"
 "s_do_z"  "p"    "g/g"   "stoichiometry (O2:Z)"
 "h_do"    "p"    "g/m3"  "half-saturation O2 for decay"
@@ -18,4 +16,6 @@
 "O2sat"   "f"    "mg/l"  "O2 saturation level, f(temp)"
 "ka"      "f"    "1/d"   "aeration rate, f(wind, depth)"
 "monod"   "f"    "-"     "monod model"
+"c_z_in"  "f"    "g/m3"  "time-dependent concentr. of Z in inflow"
+"c_do_in" "f"    "g/m3"  "time-dependent concentr. of O2 in inflow"
 

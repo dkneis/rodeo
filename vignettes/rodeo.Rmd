@@ -98,19 +98,23 @@ print(model$stoichiometryMatrix())
 
 ### Defining functions and supplying data
 
-In order to work with the object, we need to define functions that are reference in the model's mathematical expressions (i.e. in the process rates or the stoichiometry factors).
+In order to work with the object, we need to define functions that are referenced in the model's mathematical expressions. This includes the forcings which are functions of a special argument with the reserved name 'time'.
 
-```{r setData}
+```{r setFuns}
+# 'normal' functions
 O2sat= function(t) {14.652 - 0.41022*t + 0.007991*t^2 - 0.000077774*t^3}
 ka= function(u, d) {(0.728*sqrt(u) - 0.317*u + 0.0372*u^2) / d / 86400}
 monod= function(s,h) {s / (s + h)}
+# forcings are functions of special variable 'time'
+c_z_in= function(seconds) { 0.1 * seconds/(7*86400 + seconds) }
+c_do_in= function(seconds) { 9.022 }
 ```
 
 We also need to set the values of parameters and state variables (initial values). We first define both parameters and initial values as lists. These lists are then coerced into named vectors using the dedicated methods `arrangePars()` and `arrangeVars()`. Use of these methods guarantees that the vector elements appear in proper order. Proper order is essential when the vector elements are accessed *by position* rather than *by name*.
 
-```{r setFuns}
+```{r setData}
 pars= list(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
- temp=20, q_in=1, q_ex=1, c_z_in=0.1, c_do_in=9.022)
+ temp=20, q_in=1, q_ex=1)
 vars= list(c_z=1, c_do=9.022, v=1.e6)
 p= model$arrangePars(pars)
 v= model$arrangeVars(vars)
@@ -124,7 +128,7 @@ Having defined all functions and having set data, we can plot the stoichiometry 
 <tr>
 <td>
 ```{r plotObjCode, eval=FALSE}
-model$plot(c(v, p))
+model$plot(c(v, p, time=0))
 ```
 </td>
 <td>
@@ -170,7 +174,7 @@ In the first step, we need to provide vectors (instead of scalars) for one varia
 ```{r solve-1d, fig.width=8, fig.height=3}
 nbox= 3
 pars= list(kd=rep(5.78e-7, nbox), h_do=0.5, s_do_z=2.76, wind=1, depth=2,
-  temp=20, q_in=1, q_ex=1, c_z_in=0.1, c_do_in=9.022)
+  temp=20, q_in=1, q_ex=1)
 vars= list(c_z=seq(from=0, to=50, length.out=nbox), c_do=9.022, v=1.e6)
 p= model$arrangePars(pars)
 v= model$arrangeVars(vars)
@@ -187,7 +191,7 @@ Real-world models usually consist of many and lenghty mathematical expressions. 
 The next statement generates *Fortran95* code and exports it to a file for later compilation.
 ```{r generateF}
 code= model$generate(name="derivs",lang="f95")
-file_genCode= paste0(normalizePath(tempfile()), ".f95")
+file_genCode= suppressWarnings(paste0(normalizePath(tempfile()), ".f95"))
 write(x=code, file=file_genCode)
 cat("code written to",file_genCode)
 ```
