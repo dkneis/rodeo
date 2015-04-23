@@ -17,7 +17,9 @@ rodeoConst= list(
     ilistVars= "v", ilistPars= "p", ilistPros= "r",
     lenVars=  "NVAR", lenPars=  "NPAR", lenPros=  "NPRO",
     lenLevels="NLVL", levelIndex= "level"
-  )
+  ),
+
+  nameTime="time"
   
 ) # End of list
 

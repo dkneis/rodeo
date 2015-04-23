@@ -22,6 +22,9 @@ checkTbl= function(tbl, tblName, colNames, nameCol, emptyOK) {
       if (any(duplicated(tbl[,nameCol])))
         stop(paste0("duplicate names detected in column '",nameCol," of '",
           tblName,"'"))
+      if (any(tbl[,nameCol] == rodeoConst$nameTime))
+        stop(paste0("reserved name '",rodeoConst$nameTime,
+          "' cannot appear in column '",nameCol," of '",tblName,"'"))
     }
     # Check whether names are legal identifiers
     bad= tbl[,nameCol][!grepl(pattern="^[a-zA-Z]+[a-zA-Z0-9_]*$", x=tbl[,nameCol])]

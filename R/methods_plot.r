@@ -11,7 +11,8 @@ rodeo$methods( plot = function(values) {
   if (nrow(.self$FUNS) > 0) {
     for (i in 1:nrow(.self$FUNS)) {
       if (!exists(.self$FUNS$name[i], mode = "function"))
-        stop(paste0("function '",.self$FUNS$name[i],"' is referenced but not defined"))
+        stop(paste0("function '",.self$FUNS$name[i],
+          "' is referenced but not defined (in R code)"))
     }
   }
   # Define constants and functions for plotting
