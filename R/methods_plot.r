@@ -35,7 +35,7 @@ rodeo$methods( plot = function(values) {
   m= .self$stoichiometryMatrix()
   # Create graphics
   op=par(no.readonly=TRUE)
-  par(mar=c(0.5,6,4,0.5))
+  par(mar=c(0.5,8,4,0.5))
   graphics::plot(x=c(0,ncol(m)), y=c(0,nrow(m)), type="n", bty="n", xaxt="n", yaxt="n",
     xlab="", ylab="")
   for (ic in 1:ncol(m)) {
