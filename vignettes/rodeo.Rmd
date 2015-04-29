@@ -191,7 +191,7 @@ Real-world models usually consist of many and lenghty mathematical expressions. 
 The next statement generates *Fortran95* code and exports it to a file for later compilation.
 ```{r generateF}
 code= model$generate(name="derivs",lang="f95")
-file_genCode= suppressWarnings(paste0(normalizePath(tempfile()), ".f95"))
+file_genCode= paste0(gsub("\\","/",tempfile(),fixed=TRUE), ".f95")
 write(x=code, file=file_genCode)
 cat("code written to",file_genCode)
 ```
