@@ -43,7 +43,8 @@ rodeo$methods( generate = function(lang, name="derivs") {
     buffer= .self$PROS$expression[n]
     # Substitute original identifiers by references to vector elements
     tryCatch({
-      buffer= substituteIdentifiers(expr=buffer, sub=c(substVars,substPars,substFuns), all=TRUE)
+      buffer= substituteIdentifiers(expr=buffer, sub=c(substVars,substPars,substFuns,
+        time="time"), all=TRUE)
     }, error= function(e) {
       stop(paste0("substitution of identifiers in expression for process rate '",
         .self$PROS$name[n],"' failed; details: ",e))
@@ -97,12 +98,12 @@ rodeo$methods( generate = function(lang, name="derivs") {
             L$eleClose,
             # Stoichiometry factor (expression with subtitutes for original identifiers)
             " * (",
-            substituteIdentifiers(expr=STOX[k,n], sub=c(substVars,substPars,substFuns),
-              all=TRUE),
+            substituteIdentifiers(expr=STOX[k,n], sub=c(substVars,substPars,substFuns,
+              time="time"),all=TRUE),
             ")")
         }, error= function(e) {
           stop(paste0("substitution of identifiers in expression failed for",
-            "stoichiometry factor of process '",.self$PROS$name[k],
+            " stoichiometry factor of process '",.self$PROS$name[k],
             "', variable '",colnames(STOX)[n],"'; details: ",e))
         })
       }

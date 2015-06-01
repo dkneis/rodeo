@@ -31,7 +31,8 @@ rodeo$methods(
     "expression"), nameCol="name", emptyOK=FALSE)
   # Check for undeclared items in expressions
   for (i in 1:nrow(pros)) {
-    bad= undeclared(pros$expression[i], c(vars$name, pars$name, funs$name))
+    bad= undeclared(pros$expression[i], c(vars$name, pars$name, funs$name,
+      rodeoConst$nameTime))
     if (length(bad) > 0)
       stop(paste0("expression for process '",pros$name[i],
         "' contains undeclared item(s) '",paste(bad,collapse="', '"),"'"))
@@ -72,7 +73,8 @@ rodeo$methods(
       paste(bad,collapse="', '"),"'"))
   # Check for undeclared items in expressions
   for (i in 1:nrow(stoi)) {
-    bad= undeclared(stoi$expression[i], c(vars$name, pars$name, funs$name))
+    bad= undeclared(stoi$expression[i], c(vars$name, pars$name, funs$name,
+      rodeoConst$nameTime))
     if (length(bad) > 0)
       stop(paste0("stoichiometry factor for variable '",
         stoi$variable[i],"' and process '",stoi$process[i],

@@ -17,5 +17,15 @@ module functions
     monod= s / (s + h)
   end function
 
+  double precision function c_z_in(seconds) 
+    double precision, intent(in):: seconds
+    c_z_in= 0.1d0 * seconds/(7d0*86400d0 + seconds)
+  end function
+
+  double precision function c_do_in(seconds) 
+    double precision, intent(in):: seconds
+    c_do_in= 9.022d0
+  end function
+
 end module
 
