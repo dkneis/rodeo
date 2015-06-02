@@ -1,6 +1,7 @@
 ---
 title: "Handling of ODE-models as R-objects (*rodeo*)"
 author: "David Kneis (david.kneis [at] tu-dresden.de)"
+date: "`r Sys.Date()`"
 output:
   html_document:
     toc: true
@@ -98,7 +99,7 @@ print(model$stoichiometryMatrix())
 
 ### Defining functions and supplying data
 
-In order to work with the object, we need to define functions that are referenced in the model's mathematical expressions. This includes the forcings which are functions of a special argument with the reserved name 'time'.
+In order to work with the object, we need to define functions that are referenced in the model's mathematical expressions. This includes the forcings which are functions of a special argument with the reserved name 'time'. See the [section on forcings](#forcings) for details.
 
 ```{r setFuns}
 # 'normal' functions
@@ -264,4 +265,26 @@ plot(out, which=paste("c_do",1:nbox,sep="."), mfrow=NULL)
 ```{r, echo=FALSE}
 # Clean up dll file
 invisible(file.remove(list.files(pattern=paste0(".+",.Platform$dynlib.ext))))
+```
+### Forcings
+
+In general, there are two options how to deal with time-variable forcings:
+
+ - *functions-of-time*: In this approach one needs to define the forcings as functions of a single argument representing time. In `rodeo` this argument must have the reserved name 'time'. Use of this approach is most convenient if the forcings are easily described as parametric functions of time (e.g. seasonal change of solar radiation). It can also be used with tabulated time series data, but this requires some extra coding. In any case, it is essential for rescrict the integration step size of the solver (e.g. using the `hmax` argument of `deSolve::lsoda`) so that short-term variations in the forcings cannot be 'missed'.
+ 
+ - *stop-and-go*: In this approach forcings are implemented as normal parameters. To allow for their variation in time, the ODE solver is interrupted every time when the forcing data change. The solver is then re-started with the updated parameters (i.e. forcing data) using the states computed in the previous call as initial values. Hence, the calls to the ODE solver must be embedded within a time-loop. With this approach, setting a limit on the solver's integration step size (through argument `hmax`) is not required since the solver is interrupted at the 'critical times' anyway.
+
+In real-world applications, the 'stop-and-go' approach is often simpler to use and the overhead due to interruption and re-start of the solvers seems to be rather small. It also facilitates the generation of useful traceback information in case of exceptions (e.g. due to corrupt time series data).
+
+What follows is a rather simple code allowing for use of the 'functions-of-time' approach in Fortran-based models. In order to use this, one must, for each forcing variable
+
+ - Make a copy of the function 'forcing'.
+ - Rename the copied function, i.e. replace the identifier 'forcing' by something appropriate (examples: 'temperature' or 'rateOfInflow').
+ - Adjust the path to the corresponding data file, i.e. insert a valid path between the quotes.
+ - Reference the forcing functions in the model definition (usually in the process rates). Supply them with the special argument `time` and with a dedicated value for signalling abnormal conditions (second argument named 'na'). In many situations, a very large negative number might be appropriate.
+
+```{r fortranForcings, echo=FALSE}
+text= readLines("fortranForcings.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
+text= paste(text,"\n")
+cat(text)
 ```
