@@ -10,7 +10,7 @@ output:
 ---
 
 <!--
-%\VignetteEngine{knitr::knitr}
+%\VignetteEngine{knitr::rmarkdown}
 %\VignetteIndexEntry{Using rodeo}
 -->
 
@@ -268,6 +268,7 @@ invisible(file.remove(list.files(pattern=paste0(".+",.Platform$dynlib.ext))))
 ```
 ### Forcings
 
+#### Two alternative options
 In general, there are two options how to deal with time-variable forcings:
 
  - *functions-of-time*: In this approach one needs to define the forcings as functions of a single argument representing time. In `rodeo` this argument must have the reserved name 'time'. Use of this approach is most convenient if the forcings are easily described as parametric functions of time (e.g. seasonal change of solar radiation). It can also be used with tabulated time series data, but this requires some extra coding. In any case, it is essential for rescrict the integration step size of the solver (e.g. using the `hmax` argument of `deSolve::lsoda`) so that short-term variations in the forcings cannot be 'missed'.
@@ -276,15 +277,24 @@ In general, there are two options how to deal with time-variable forcings:
 
 In real-world applications, the 'stop-and-go' approach is often simpler to use and the overhead due to interruption and re-start of the solvers seems to be rather small. It also facilitates the generation of useful traceback information in case of exceptions (e.g. due to corrupt time series data).
 
-What follows is a rather simple code allowing for use of the 'functions-of-time' approach in Fortran-based models. In order to use this, one must, for each forcing variable
+#### Using the 'functions-of-time' approach with Fortran-based models
 
- - Make a copy of the function 'forcing'.
- - Rename the copied function, i.e. replace the identifier 'forcing' by something appropriate (examples: 'temperature' or 'rateOfInflow').
- - Adjust the path to the corresponding data file, i.e. insert a valid path between the quotes.
- - Reference the forcing functions in the model definition (usually in the process rates). Supply them with the special argument `time` and with a dedicated value for signalling abnormal conditions (second argument named 'na'). In many situations, a very large negative number might be appropriate.
+This section demonstrates how the 'functions-of-time' approach can be used in Fortran-based models assuming that information on forcings is stored in delimited text files (column 1: time, column 2: value). Such files can be created, for example, with any spreadsheet software, data base system, or R.
+
+The following Fortran code defines a forcing variable 'temperature' whose time variable values are read from a csv-formatted data file (using comma, blank, or TAB as separator).
+
+Note that the first part of the file (module 'forcings') is fully generic. Only the second part (module 'functions') is meant to be edited by users.
 
 ```{r fortranForcings, echo=FALSE}
 text= readLines("fortranForcings.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
+text= paste(text,"\n")
+cat(text)
+```
+
+The following Fortran code demonstrates how the user-definfed forcing functions can be tested/debugged outside of the `rodeo` environment. The shown utility program can be compiled, for example, using a command like `gfortran <file_with_modules> <file_with_program> -o test`. 
+
+```{r fortranForcingsTest, echo=FALSE}
+text= readLines("fortranForcingsTest.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
 text= paste(text,"\n")
 cat(text)
 ```

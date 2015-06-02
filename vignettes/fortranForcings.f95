@@ -1,4 +1,8 @@
-module functions
+!###############################################################################
+!# PART 1: GENERIC CODE NOT REQUIRING CHANGES BY USER
+!###############################################################################
+
+module forcings
 implicit none
 
 !###############################################################################
@@ -12,15 +16,11 @@ contains
 !###############################################################################
 ! Function to read time series data from an ASCII text file. It is called when a
 ! forcing item is queried for the first time.
-! Notes:
-! - data must be in two columns; column 1: time, column 2: value
-! - times must be real numbers (e.g. unix time of offset from user datum)
-! - columns are expected to be separated by space or tabulator 
-! - a header line (column names) must NOT be present
-logical function readTS(file, x)
+logical function readTS(file, nskip, x)
   implicit none
   ! args
   character(len=*), intent(in):: file    ! name of data file
+  integer, intent(in):: nskip            ! number of lines to skip in file
   type(TSeries), intent(out):: x         ! object of type TSeries
   ! const
   integer, parameter:: un=10
@@ -48,10 +48,10 @@ logical function readTS(file, x)
     if (ioresult .ne. 0) then
       write(*,*)"read error at line ",line," of file '",trim(file),"'"
       goto 1
-    end if      
+    end if
     string= adjustl(string)
-    ! Increase array lengths, if necessary
-    if (len_trim(string) .gt. 0) then
+    if ((len_trim(string) .gt. 0) .and. (line .gt. nskip)) then
+      ! Increase array lengths, if necessary
       if ((n + 1) .gt. size(tmp%times)) then
         allocate(x%times(n))
         allocate(x%values(n))
@@ -98,8 +98,8 @@ logical function readTS(file, x)
   readTS= .TRUE.
   return
   1 readTS= .FALSE.
-  deallocate(x%times)
-  deallocate(x%values)
+  if (allocated(x%times)) deallocate(x%times)
+  if (allocated(x%values)) deallocate(x%values)
 end function
 
 !###############################################################################
@@ -145,42 +145,67 @@ end function
 
 !###############################################################################
 ! Function to return perform linear interpolation in a time series
-function forcing (time, na) result (value)
+double precision function forcing (time, na, file, nskip)
   ! args
   double precision, intent(in):: time    ! query time
   double precision, intent(in):: na      ! return value on failure
+  character(len=*), intent(in):: file    ! text file with time series data
+  integer, intent(in):: nskip            ! number of lines to skip in file
   ! constants
-  character(len=256), parameter:: file="exampleTimeSeries.txt" ! to be adjusted
   ! local
-  double precision:: value
   logical, save:: firstCall= .TRUE.
   integer, save:: latest= 1
   type(TSeries), save:: x
   ! init
   if (firstCall) then
     firstCall= .FALSE.
-    if (.not. readTS(file, x)) then
+    if (.not. readTS(file, nskip, x)) then
       write(*,*) "initialization of forcing data failed"
     end if
   end if
   ! interpolate
   if (allocated(x%times)) then
-    value= linInt(time=time, x=x, latest=latest, na=na)
+    forcing= linInt(time=time, x=x, latest=latest, na=na)
   else
     write(*,*) "no forcing data to interpolate"
-    value= na
+    forcing= na
   end if
 end function
 
 end module
 
+
 !###############################################################################
-! A test program for external use - uncomment this, if necessary
-!program test
-!use functions
-!implicit none
-!  write(*,*) forcing(time=2.4d0, na=-9999d0)
-!  write(*,*) forcing(time=2.6d0, na=-9999d0)
-!  write(*,*) forcing(time=2.8d0, na=-9999d0)
-!end program
+!# PART 2: MODULE WITH USER DEFINED FUNCTIONS
+!###############################################################################
+
+module functions
+! Imports generic code for handling of forcings
+use forcings
+
+implicit none
+
+
+contains
+
+! Example of a user-defined forcing
+! Things to adjust:
+!   1) The name of the function
+!   2) The 'na' argument of 'forcing'. This value is returned in the case of
+!      errors (e.g. if the data file is corrupt of non-existing).
+!   3) The name of the data file. This file must follow the conventions:
+!      - there must be two numeric columns; column 1: time, column 2: value
+!      - times must be real numbers (e.g. unix time of offset from user datum)
+!      - columns are expected to be separated by comma, blank, or tabulator 
+!      - numeric data start in the first row, otherwise nskip must be > 0
+!      - blank lines are OK, comment lines are currently NOT supported
+!   4) The number if lines to skip before reading data from file
+double precision function temperature (time)
+  double precision, intent(in):: time
+  temperature= forcing(time=time, na=20d0, file="temperature.csv", nskip=1)
+end function
+
+end module
+
+
 

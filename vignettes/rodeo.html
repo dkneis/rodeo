@@ -87,7 +87,7 @@ img {
 </div>
 
 <!--
-%\VignetteEngine{knitr::knitr}
+%\VignetteEngine{knitr::rmarkdown}
 %\VignetteIndexEntry{Using rodeo}
 -->
 <div id="when-to-use-this-package" class="section level2">
@@ -249,7 +249,7 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 file_genCode= paste0(gsub(&quot;\\&quot;,&quot;/&quot;,tempfile(),fixed=TRUE), &quot;.f95&quot;)
 write(x=code, file=file_genCode)
 cat(&quot;code written to&quot;,file_genCode)</code></pre>
-<pre><code>## code written to /tmp/RtmpJ2kfGI/file1f075e0c8df3.f95</code></pre>
+<pre><code>## code written to /tmp/RtmpEeBdt4/file5089129a3bee.f95</code></pre>
 <p>Inspection of the generated <em>Fortran95</em> code reveals that the interface of the central subroutine “derivs” is</p>
 <p><code>subroutine derivs(time, var, par, NLVL, dydt, pro)</code></p>
 <p>However, according to the <a href="http://cran.r-project.org/web/packages/deSolve/vignettes/compiledCode.pdf">vignette of the <em>deSolve</em> package</a> (page 6), the following interface is required</p>
@@ -353,20 +353,25 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 </div>
 <div id="forcings" class="section level3">
 <h3>Forcings</h3>
+<div id="two-alternative-options" class="section level4">
+<h4>Two alternative options</h4>
 <p>In general, there are two options how to deal with time-variable forcings:</p>
 <ul>
 <li><p><em>functions-of-time</em>: In this approach one needs to define the forcings as functions of a single argument representing time. In <code>rodeo</code> this argument must have the reserved name ‘time’. Use of this approach is most convenient if the forcings are easily described as parametric functions of time (e.g. seasonal change of solar radiation). It can also be used with tabulated time series data, but this requires some extra coding. In any case, it is essential for rescrict the integration step size of the solver (e.g. using the <code>hmax</code> argument of <code>deSolve::lsoda</code>) so that short-term variations in the forcings cannot be ‘missed’.</p></li>
 <li><p><em>stop-and-go</em>: In this approach forcings are implemented as normal parameters. To allow for their variation in time, the ODE solver is interrupted every time when the forcing data change. The solver is then re-started with the updated parameters (i.e. forcing data) using the states computed in the previous call as initial values. Hence, the calls to the ODE solver must be embedded within a time-loop. With this approach, setting a limit on the solver’s integration step size (through argument <code>hmax</code>) is not required since the solver is interrupted at the ‘critical times’ anyway.</p></li>
 </ul>
 <p>In real-world applications, the ‘stop-and-go’ approach is often simpler to use and the overhead due to interruption and re-start of the solvers seems to be rather small. It also facilitates the generation of useful traceback information in case of exceptions (e.g. due to corrupt time series data).</p>
-<p>What follows is a rather simple code allowing for use of the ‘functions-of-time’ approach in Fortran-based models. In order to use this, one must, for each forcing variable</p>
-<ul>
-<li>Make a copy of the function ‘forcing’.</li>
-<li>Rename the copied function, i.e. replace the identifier ‘forcing’ by something appropriate (examples: ‘temperature’ or ‘rateOfInflow’).</li>
-<li>Adjust the path to the corresponding data file, i.e. insert a valid path between the quotes.</li>
-<li>Reference the forcing functions in the model definition (usually in the process rates). Supply them with the special argument <code>time</code> and with a dedicated value for signalling abnormal conditions (second argument named ‘na’). In many situations, a very large negative number might be appropriate.</li>
-</ul>
-<pre><code>## module functions 
+</div>
+<div id="using-the-functions-of-time-approach-with-fortran-based-models" class="section level4">
+<h4>Using the ‘functions-of-time’ approach with Fortran-based models</h4>
+<p>This section demonstrates how the ‘functions-of-time’ approach can be used in Fortran-based models assuming that information on forcings is stored in delimited text files (column 1: time, column 2: value). Such files can be created, for example, with any spreadsheet software, data base system, or R.</p>
+<p>The following Fortran code defines a forcing variable ‘temperature’ whose time variable values are read from a csv-formatted data file (using comma, blank, or TAB as separator).</p>
+<p>Note that the first part of the file (module ‘forcings’) is fully generic. Only the second part (module ‘functions’) is meant to be edited by users.</p>
+<pre><code>## !############################################################################### 
+##  !# PART 1: GENERIC CODE NOT REQUIRING CHANGES BY USER 
+##  !############################################################################### 
+##   
+##  module forcings 
 ##  implicit none 
 ##   
 ##  !############################################################################### 
@@ -380,15 +385,11 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 ##  !############################################################################### 
 ##  ! Function to read time series data from an ASCII text file. It is called when a 
 ##  ! forcing item is queried for the first time. 
-##  ! Notes: 
-##  ! - data must be in two columns; column 1: time, column 2: value 
-##  ! - times must be real numbers (e.g. unix time of offset from user datum) 
-##  ! - columns are expected to be separated by space or tabulator  
-##  ! - a header line (column names) must NOT be present 
-##  logical function readTS(file, x) 
+##  logical function readTS(file, nskip, x) 
 ##    implicit none 
 ##    ! args 
 ##    character(len=*), intent(in):: file    ! name of data file 
+##    integer, intent(in):: nskip            ! number of lines to skip in file 
 ##    type(TSeries), intent(out):: x         ! object of type TSeries 
 ##    ! const 
 ##    integer, parameter:: un=10 
@@ -416,10 +417,10 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 ##      if (ioresult .ne. 0) then 
 ##        write(*,*)&quot;read error at line &quot;,line,&quot; of file '&quot;,trim(file),&quot;'&quot; 
 ##        goto 1 
-##      end if       
+##      end if 
 ##      string= adjustl(string) 
-##      ! Increase array lengths, if necessary 
-##      if (len_trim(string) .gt. 0) then 
+##      if ((len_trim(string) .gt. 0) .and. (line .gt. nskip)) then 
+##        ! Increase array lengths, if necessary 
 ##        if ((n + 1) .gt. size(tmp%times)) then 
 ##          allocate(x%times(n)) 
 ##          allocate(x%values(n)) 
@@ -466,8 +467,8 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 ##    readTS= .TRUE. 
 ##    return 
 ##    1 readTS= .FALSE. 
-##    deallocate(x%times) 
-##    deallocate(x%values) 
+##    if (allocated(x%times)) deallocate(x%times) 
+##    if (allocated(x%values)) deallocate(x%values) 
 ##  end function 
 ##   
 ##  !############################################################################### 
@@ -513,45 +514,81 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 ##   
 ##  !############################################################################### 
 ##  ! Function to return perform linear interpolation in a time series 
-##  function forcing (time, na) result (value) 
+##  double precision function forcing (time, na, file, nskip) 
 ##    ! args 
 ##    double precision, intent(in):: time    ! query time 
 ##    double precision, intent(in):: na      ! return value on failure 
+##    character(len=*), intent(in):: file    ! text file with time series data 
+##    integer, intent(in):: nskip            ! number of lines to skip in file 
 ##    ! constants 
-##    character(len=256), parameter:: file=&quot;exampleTimeSeries.txt&quot; ! to be adjusted 
 ##    ! local 
-##    double precision:: value 
 ##    logical, save:: firstCall= .TRUE. 
 ##    integer, save:: latest= 1 
 ##    type(TSeries), save:: x 
 ##    ! init 
 ##    if (firstCall) then 
 ##      firstCall= .FALSE. 
-##      if (.not. readTS(file, x)) then 
+##      if (.not. readTS(file, nskip, x)) then 
 ##        write(*,*) &quot;initialization of forcing data failed&quot; 
 ##      end if 
 ##    end if 
 ##    ! interpolate 
 ##    if (allocated(x%times)) then 
-##      value= linInt(time=time, x=x, latest=latest, na=na) 
+##      forcing= linInt(time=time, x=x, latest=latest, na=na) 
 ##    else 
 ##      write(*,*) &quot;no forcing data to interpolate&quot; 
-##      value= na 
+##      forcing= na 
 ##    end if 
 ##  end function 
 ##   
 ##  end module 
 ##   
+##   
 ##  !############################################################################### 
-##  ! A test program for external use - uncomment this, if necessary 
-##  !program test 
-##  !use functions 
-##  !implicit none 
-##  !  write(*,*) forcing(time=2.4d0, na=-9999d0) 
-##  !  write(*,*) forcing(time=2.6d0, na=-9999d0) 
-##  !  write(*,*) forcing(time=2.8d0, na=-9999d0) 
-##  !end program 
+##  !# PART 2: MODULE WITH USER DEFINED FUNCTIONS 
+##  !############################################################################### 
+##   
+##  module functions 
+##  ! Imports generic code for handling of forcings 
+##  use forcings 
+##   
+##  implicit none 
+##   
+##   
+##  contains 
+##   
+##  ! Example of a user-defined forcing 
+##  ! Things to adjust: 
+##  !   1) The name of the function 
+##  !   2) The 'na' argument of 'forcing'. This value is returned in the case of 
+##  !      errors (e.g. if the data file is corrupt of non-existing). 
+##  !   3) The name of the data file. This file must follow the conventions: 
+##  !      - there must be two numeric columns; column 1: time, column 2: value 
+##  !      - times must be real numbers (e.g. unix time of offset from user datum) 
+##  !      - columns are expected to be separated by comma, blank, or tabulator  
+##  !      - numeric data start in the first row, otherwise nskip must be &gt; 0 
+##  !      - blank lines are OK, comment lines are currently NOT supported 
+##  !   4) The number if lines to skip before reading data from file 
+##  double precision function temperature (time) 
+##    double precision, intent(in):: time 
+##    temperature= forcing(time=time, na=20d0, file=&quot;temperature.csv&quot;, nskip=1) 
+##  end function 
+##   
+##  end module 
+##   
+##   
 ## </code></pre>
+<p>The following Fortran code demonstrates how the user-definfed forcing functions can be tested/debugged outside of the <code>rodeo</code> environment. The shown utility program can be compiled, for example, using a command like <code>gfortran &lt;file_with_modules&gt; &lt;file_with_program&gt; -o test</code>.</p>
+<pre><code>## program test 
+##  use functions 
+##   
+##  implicit none 
+##   
+##  write(*,*) temperature(2.5d0) 
+##   
+##  end program 
+## </code></pre>
+</div>
 </div>
 </div>
 
