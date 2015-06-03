@@ -5,16 +5,15 @@ date: "`r Sys.Date()`"
 output:
   html_document:
     toc: true
-  pdf_document:
-    toc: true
+    number_sections: true
 ---
 
 <!--
-%\VignetteEngine{knitr::rmarkdown}
+%\VignetteEngine{knitr::knitr}
 %\VignetteIndexEntry{Using rodeo}
 -->
 
-## When to use this package
+# When to use this package
 The *rodeo* package facilitates the implementation of ODE-based models. These are models that describe the dynamics of a set of *n* state variables by integrating a set of *n*  ordinary differential equations. The package is particularly useful in conjunction with the [deSolve](http://cran.r-project.org/web/packages/deSolve/index.html) package providing numerical solvers for initial value problems.
 
 The advantages from using *rodeo* are:
@@ -33,7 +32,7 @@ The advantages from using *rodeo* are:
 
 
 
-## Example problem
+# Example problem
 The functioning of the package is best illustrated by an example. In this document, we consider a continuous flow stirred tank reactor (CFSTR) containing a degradable organic matter (concentration *c_z*) and dissolved oxygen (*c_do*). Due to mixing, the reactors contents is spatially homogeneous, hence the concentrations are scalars (see figure below). Changes in concentrations are triggered by
 
   (1) the loads in the reactor's inflow
@@ -70,9 +69,9 @@ data(stoichiometry)
 print(format(stoichiometry, justify="left"))
 ```
 
-## Basic use
+# Basic use
 
-### Creating and inspecting a model object
+## Creating and inspecting a model object
 
 We start by creating a new object with `new()`. This requires us to supply the name of the class as well as a set of data frames for initialization.
 
@@ -97,7 +96,7 @@ model$show()
 print(model$stoichiometryMatrix())
 ```
 
-### Defining functions and supplying data
+## Defining functions and supplying data
 
 In order to work with the object, we need to define functions that are referenced in the model's mathematical expressions. This includes the forcings which are functions of a special argument with the reserved name 'time'. See the [section on forcings](#forcings) for details.
 
@@ -121,7 +120,7 @@ p= model$arrangePars(pars)
 v= model$arrangeVars(vars)
 ```
 
-### Plotting a model object
+## Plotting a model object
 
 Having defined all functions and having set data, we can plot the stoichiometry matrix. This is very useful for complex models with many variables and processes.
 
@@ -139,7 +138,7 @@ model$plot(c(v, p, time=0))
 </tr>
 </table>
 
-### Translating the model into source code
+## Translating the model into source code
 
 In order to use the model for simulation, we need to transfer it into source code. This is also known as 'code generation'. Specifically, we want the code generator to create a function that returns the derivatives of the state variables with respect to time. In addition to the derivatives, the generated function also returns the values of all process rates (as diagnostic variables).
 
@@ -150,7 +149,7 @@ code= model$generate(name="derivs",lang="r")
 derivs= eval(parse(text=code))
 ```
 
-### Solving the ODE system
+## Solving the ODE system
 
 Now we are ready to compute the evolution of the state variables over time by means of numerical integration. At this point, the proper order of the elements in the vectors `v` and `p` is essential since the generated function code uses *by-index* access! Therefore, `v` and `p` should always be set by calls to the `arrangeVars()` and `arrangePars()` method, respectively.
 
@@ -164,9 +163,9 @@ layout(matrix(1:8, ncol=4, byrow=TRUE))
 plot(out, mfrow=NULL)
 ```
 
-## Advanced topics
+# Advanced topics
 
-### Handling spatially distributed systems
+## Handling spatially distributed systems
 
 A zero-dimensional case (single reactor) has been considered so far. We will now extend the model for a collection of reactors.
 
@@ -185,7 +184,7 @@ layout(matrix(1:nbox, nrow=1))
 plot(out, which=paste("c_do",1:nbox,sep="."), mfrow=NULL)
 ```
 
-### Definition of models in Fortran (instead of R)
+## Definition of models in Fortran (instead of R)
 
 Real-world models usually consist of many and lenghty mathematical expressions. Also, depending on the studied problem, the ODE solver may need to use (very) short time steps. Then, computation times become of serious concern. In those time-critical cases, it is recommended to generate source code for a fast, compilable language rather than for (slower) R. The compilable language currently supported by the package is *Fortran95*.
 
@@ -266,9 +265,9 @@ plot(out, which=paste("c_do",1:nbox,sep="."), mfrow=NULL)
 # Clean up dll file
 invisible(file.remove(list.files(pattern=paste0(".+",.Platform$dynlib.ext))))
 ```
-### Forcings
+## Forcings
 
-#### Two alternative options
+### Two alternative options
 In general, there are two options how to deal with time-variable forcings:
 
  - *functions-of-time*: In this approach one needs to define the forcings as functions of a single argument representing time. In `rodeo` this argument must have the reserved name 'time'. Use of this approach is most convenient if the forcings are easily described as parametric functions of time (e.g. seasonal change of solar radiation). It can also be used with tabulated time series data, but this requires some extra coding. In any case, it is essential for rescrict the integration step size of the solver (e.g. using the `hmax` argument of `deSolve::lsoda`) so that short-term variations in the forcings cannot be 'missed'.
@@ -277,7 +276,7 @@ In general, there are two options how to deal with time-variable forcings:
 
 In real-world applications, the 'stop-and-go' approach is often simpler to use and the overhead due to interruption and re-start of the solvers seems to be rather small. It also facilitates the generation of useful traceback information in case of exceptions (e.g. due to corrupt time series data).
 
-#### Using the 'functions-of-time' approach with Fortran-based models
+### Using the 'functions-of-time' approach with Fortran-based models
 
 This section demonstrates how the 'functions-of-time' approach can be used in Fortran-based models assuming that information on forcings is stored in delimited text files (column 1: time, column 2: value). Such files can be created, for example, with any spreadsheet software, data base system, or R.
 
