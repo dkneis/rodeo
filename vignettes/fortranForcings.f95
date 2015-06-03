@@ -1,4 +1,8 @@
-module functions
+!###############################################################################
+!# PART 1: GENERIC CODE NOT REQUIRING CHANGES BY USER
+!###############################################################################
+
+module forcings
 implicit none
 
 !###############################################################################
@@ -12,15 +16,11 @@ contains
 !###############################################################################
 ! Function to read time series data from an ASCII text file. It is called when a
 ! forcing item is queried for the first time.
-! Notes:
-! - data must be in two columns; column 1: time, column 2: value
-! - times must be real numbers (e.g. unix time of offset from user datum)
-! - columns are expected to be separated by space or tabulator 
-! - a header line (column names) must NOT be present
-logical function readTS(file, x)
+logical function readTS(file, nskip, x)
   implicit none
   ! args
   character(len=*), intent(in):: file    ! name of data file
+  integer, intent(in):: nskip            ! number of lines to skip in file
   type(TSeries), intent(out):: x         ! object of type TSeries
   ! const
   integer, parameter:: un=10
@@ -48,10 +48,10 @@ logical function readTS(file, x)
     if (ioresult .ne. 0) then
       write(*,*)"read error at line ",line," of file '",trim(file),"'"
       goto 1
-    end if      
+    end if
     string= adjustl(string)
-    ! Increase array lengths, if necessary
-    if (len_trim(string) .gt. 0) then
+    if ((len_trim(string) .gt. 0) .and. (line .gt. nskip)) then
+      ! Increase array lengths, if necessary
       if ((n + 1) .gt. size(tmp%times)) then
         allocate(x%times(n))
         allocate(x%values(n))
@@ -98,39 +98,50 @@ logical function readTS(file, x)
   readTS= .TRUE.
   return
   1 readTS= .FALSE.
-  deallocate(x%times)
-  deallocate(x%values)
+  if (allocated(x%times)) deallocate(x%times)
+  if (allocated(x%values)) deallocate(x%values)
 end function
 
 !###############################################################################
-! Function to perform linear interpolation in a time series
-double precision function linInt(time, x, latest, na)
+! Function to perform interpolation in a time series
+! Argument 'lweight' is used as follows:
+!  1: constant interpolation, full weight given to value at begin of interval
+!  0: constant interpolation, full weight given to value at end of interval
+!  <0 or >1: linear interpolation, weights set automatically
+
+double precision function interpol(time, x, latest, lweight, na)
   implicit none
   ! args
-  double precision, intent(in):: time    ! query time
-  type(TSeries), intent(in):: x          ! object of type TSeries
-  integer, intent(inout):: latest        ! index of latest access (modifyable)
-  double precision, intent(in):: na      ! return value on failure
+  double precision, intent(in):: time ! query time
+  type(TSeries), intent(in):: x       ! object of type TSeries
+  integer, intent(inout):: latest     ! index of latest access (inout)
+  integer, intent(in):: lweight       ! weight for begin of time interval
+  double precision, intent(in):: na   ! return value on failure
   ! const
   double precision, parameter:: SMALL=1d-20
   ! locals
-  double precision:: interval
   integer:: i
   logical:: ok
   ! interpolation
   if (time .lt. x%times(1)) then
     write(*,*)"interpolation failed: query time < time stamp of first record"
-    linInt= na
+    interpol= na
   else if (time .gt. x%times(size(x%times))) then
     write(*,*)"interpolation failed: query time > time stamp of final record"
-    linInt= na
+    interpol= na
   else
     ok= .FALSE.
     do i=min(max(1,latest),size(x%times)-1), (size(x%times)-1)
       if ((time .ge. x%times(i)) .and. (time .le. x%times(i+1))) then
-        interval= x%times(i+1) - x%times(i)
-        linInt= x%values(i) * (x%times(i+1) - time) / interval + &
-                x%values(i+1) * (time - x%times(i)) / interval
+        if ((lweight .lt. 0) .or. (lweight .gt. 1)) then
+          interpol= x%values(i) * (x%times(i+1) - time) / &
+            (x%times(i+1) - x%times(i)) + &
+            x%values(i+1) * (time - x%times(i)) / &
+            (x%times(i+1) - x%times(i))
+        else
+          interpol= x%values(i) * dble(lweight) + &
+            x%values(i+1) * dble(1 - lweight)
+        end if
         latest= i
         ok= .TRUE.
         exit
@@ -138,49 +149,88 @@ double precision function linInt(time, x, latest, na)
     end do
     if (.not. ok) then
       write(*,*)"interpolation failed: corrupted time series"
-      linInt= na
+      interpol= na
     end if
   end if
 end function
 
 !###############################################################################
-! Function to return perform linear interpolation in a time series
-function forcing (time, na) result (value)
+! Function to return the value of a forcing variable
+double precision function forcing (time, lweight, na, file, nskip)
   ! args
   double precision, intent(in):: time    ! query time
+  integer, intent(in):: lweight          ! weight for begin of time interval
   double precision, intent(in):: na      ! return value on failure
+  character(len=*), intent(in):: file    ! text file with time series data
+  integer, intent(in):: nskip            ! number of lines to skip in file
   ! constants
-  character(len=256), parameter:: file="exampleTimeSeries.txt" ! to be adjusted
   ! local
-  double precision:: value
   logical, save:: firstCall= .TRUE.
   integer, save:: latest= 1
   type(TSeries), save:: x
   ! init
   if (firstCall) then
     firstCall= .FALSE.
-    if (.not. readTS(file, x)) then
+    if (.not. readTS(file, nskip, x)) then
       write(*,*) "initialization of forcing data failed"
     end if
   end if
   ! interpolate
   if (allocated(x%times)) then
-    value= linInt(time=time, x=x, latest=latest, na=na)
+    forcing= interpol(time=time, x=x, latest=latest, lweight=lweight, na=na)
   else
     write(*,*) "no forcing data to interpolate"
-    value= na
+    forcing= na
   end if
 end function
 
 end module
 
+
 !###############################################################################
-! A test program for external use - uncomment this, if necessary
-!program test
-!use functions
-!implicit none
-!  write(*,*) forcing(time=2.4d0, na=-9999d0)
-!  write(*,*) forcing(time=2.6d0, na=-9999d0)
-!  write(*,*) forcing(time=2.8d0, na=-9999d0)
-!end program
+!# PART 2: MODULE WITH USER DEFINED FUNCTIONS
+!###############################################################################
+
+module functions
+! Imports generic code for handling of forcings
+use forcings
+
+implicit none
+
+contains
+
+! Example of a user-defined forcing
+! You need to define a function like this for every time-variable forcing. You
+! must adjust:
+!   1) The name of the function. A unique name is required for each forcing.
+!   2) The value of 'lweight' (integer). Use 0 for constant interpolation with
+!      full weight given to the value at the end of a time interval. Use 1 for
+!      constant interpolation with full weight given to the value at the begin
+!      of a time interval. Any other values (< 0 or > 1) result in linear
+!      interpolation with weights being set automatically.
+!   3) The value of 'na' (double precision). This value is returned in the case
+!      of errors (e.g. if the data file is corrupt of non-existing). It should
+!      either be a reasonable default value or some exceptional value definitely
+!      resulting in strange outputs. Note that Fortran double precision
+!      constants should be written in scientific notation with character 'd'
+!      being used instead of the usual 'e'. Examples for pi: 3.1425d0, 31415d-4.
+!   4) The name of the data file. Conventions for file contents:
+!      - There must be two numeric columns; column 1: time, column 2: value.
+!      - Times must be real numbers (e.g. unix time of offset from user datum).
+!      - Columns are expected to be separated by comma, blank, or tabulator.
+!      - Numeric data start in the first row unless nskip is set > 0.
+!      - The file may contain blank lines, comment lines are NOT supported.
+!   5) The value of 'nskip' (integer). This is the number of lines to skip
+!      before reading numeric data from the file. Typical values are 0 or 1,
+!      depending on whether column names are present.
+
+double precision function temperature (time)
+  double precision, intent(in):: time
+  temperature= forcing(time=time, lweight=-1, na=20d0, &
+    file="temperature.csv", nskip=1)
+end function
+
+end module
+
+
 
