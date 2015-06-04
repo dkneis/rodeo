@@ -268,7 +268,7 @@ invisible(file.remove(list.files(pattern=paste0(".+",.Platform$dynlib.ext))))
 ## Forcings
 
 ### Two alternative options
-In general, there are two options how to deal with time-variable forcings:
+In general, there are two options for dealing with time-variable forcings:
 
  - *functions-of-time*: In this approach one needs to define the forcings as functions of a single argument representing time. In `rodeo` this argument must have the reserved name 'time'. Use of this approach is most convenient if the forcings are easily described as parametric functions of time (e.g. seasonal change of solar radiation). It can also be used with tabulated time series data, but this requires some extra coding. In any case, it is essential for rescrict the integration step size of the solver (e.g. using the `hmax` argument of `deSolve::lsoda`) so that short-term variations in the forcings cannot be 'missed'.
  
