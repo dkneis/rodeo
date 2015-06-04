@@ -5,12 +5,12 @@
 #' interface.
 #'
 #' @param model Function representing the model. It is called as
-#'   \code{model(input, outdir, ...)}.
+#'   \code{model(input, outdir, more)}.
 #' @param input Data frame with model inputs. See below for expected contents.
 #' @param outdir Name of an existing directory where any output files created
 #'   by \code{model} should be stored. Do \code{not} assume that \code{model}
 #'   cares/warns for existing files in \code{outdir}.
-#' @param ... Further arguments passed to \code{model}.
+#' @param more Optional list with additional information passed to \code{model}.
 #'
 #' @return A character string. It contains a possible error message generated
 #'   during the call of \code{model}. An empty string suggests that \code{model}
@@ -37,7 +37,7 @@
 #' # This model does no computations, it only creates a html table of its inputs
 #' input= data.frame(name=c("a","b"), value=1:2)
 #' input$label= paste("item",input$name)
-#' model= function(input, outdir, ...) {
+#' model= function(input, outdir, more=NULL) {
 #'   html= paste0("<table border=1>\n  <tr><th> ",paste(names(input),
 #'     collapse=paste0(" </th><th> "))," </th></tr>\n")
 #'   for (i in 1:nrow(input)) {
@@ -57,7 +57,7 @@
 #' }
 
 
-runModel= function (model, input, outdir, ...) {
+runModel= function (model, input, outdir, more=NULL) {
   # Check inputs
   if (!is.function(model))
     stop("'model' must be a function")
@@ -69,10 +69,12 @@ runModel= function (model, input, outdir, ...) {
       paste(required,collapse="', '"),"'"))
   if (!file.info(outdir)[1,"isdir"])
     stop(paste0("'outdir' is not an existing directory (",outdir,")"))
+  if (!is.null(more) && !is.list(more))
+    stop("'more' must be a list or NULL")
   # Run model
   msg=""
   tryCatch({
-    model(input, outdir, ...)
+    model(input, outdir, more)
   }, error= function(e) {
     msg=e
   })

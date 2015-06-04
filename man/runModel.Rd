@@ -4,11 +4,11 @@
 \alias{runModel}
 \title{Minimalistic generic model interface}
 \usage{
-runModel(model, input, outdir, ...)
+runModel(model, input, outdir, more = NULL)
 }
 \arguments{
 \item{model}{Function representing the model. It is called as
-\code{model(input, outdir, ...)}.}
+\code{model(input, outdir, more)}.}
 
 \item{input}{Data frame with model inputs. See below for expected contents.}
 
@@ -16,7 +16,7 @@ runModel(model, input, outdir, ...)
 by \code{model} should be stored. Do \code{not} assume that \code{model}
 cares/warns for existing files in \code{outdir}.}
 
-\item{...}{Further arguments passed to \code{model}.}
+\item{more}{Optional list with additional information passed to \code{model}.}
 }
 \value{
 A character string. It contains a possible error message generated
@@ -45,7 +45,7 @@ The following columns are mandatory in data frame \code{input}:
 # This model does no computations, it only creates a html table of its inputs
 input= data.frame(name=c("a","b"), value=1:2)
 input$label= paste("item",input$name)
-model= function(input, outdir, ...) {
+model= function(input, outdir, more=NULL) {
   html= paste0("<table border=1>\\n  <tr><th> ",paste(names(input),
     collapse=paste0(" </th><th> "))," </th></tr>\\n")
   for (i in 1:nrow(input)) {
