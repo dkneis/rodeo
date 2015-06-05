@@ -19,10 +19,7 @@ cares/warns for existing files in \code{outdir}.}
 \item{more}{Optional list with additional information passed to \code{model}.}
 }
 \value{
-A character string. It contains a possible error message generated
-  during the call of \code{model}. An empty string suggests that \code{model}
-  was run successfully, placing any outputs in folder \code{outdir}. It is up
-  to the caller to inspect and further process these files.
+The return value of model.
 }
 \description{
 Wrapper function to run an arbitrarily complex model using a minimalistic
@@ -57,12 +54,7 @@ model= function(input, outdir, more=NULL) {
   return(invisible(NULL))
 }
 outdir=tempdir()
-err= runModel(model=model, input=input, outdir=outdir)
-if (err == "") {
-  print(paste("model outputs written to '",outdir,"'"))
-} else {
-  stop(paste0("model run failed: ",err))
-}
+runModel(model=model, input=input, outdir=outdir)
 }
 \author{
 David Kneis \email{david.kneis@tu-dresden.de}

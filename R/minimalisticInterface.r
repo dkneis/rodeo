@@ -12,10 +12,7 @@
 #'   cares/warns for existing files in \code{outdir}.
 #' @param more Optional list with additional information passed to \code{model}.
 #'
-#' @return A character string. It contains a possible error message generated
-#'   during the call of \code{model}. An empty string suggests that \code{model}
-#'   was run successfully, placing any outputs in folder \code{outdir}. It is up
-#'   to the caller to inspect and further process these files.
+#' @return The return value of model.
 #'
 #' @note The following columns are mandatory in data frame \code{input}:
 #' \itemize{
@@ -49,12 +46,7 @@
 #'   return(invisible(NULL))
 #' }
 #' outdir=tempdir()
-#' err= runModel(model=model, input=input, outdir=outdir)
-#' if (err == "") {
-#'   print(paste("model outputs written to '",outdir,"'"))
-#' } else {
-#'   stop(paste0("model run failed: ",err))
-#' }
+#' runModel(model=model, input=input, outdir=outdir)
 
 runModel= function (model, input, outdir, more=NULL) {
   # Check inputs
@@ -71,14 +63,7 @@ runModel= function (model, input, outdir, more=NULL) {
   if (!is.null(more) && !is.list(more))
     stop("'more' must be a list or NULL")
   # Run model
-  msg=""
-  tryCatch({
-    model(input, outdir, more)
-  }, error= function(e) {
-    msg <<- e$message
-  })
-  # Return
-  return(msg)
+  return(model(input, outdir, more))
 }
 
 
