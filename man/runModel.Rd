@@ -4,22 +4,20 @@
 \alias{runModel}
 \title{Minimalistic generic model interface}
 \usage{
-runModel(model, input, outdir, more = NULL)
+runModel(model, input, outdir)
 }
 \arguments{
 \item{model}{Function representing the model. It is called as
-\code{model(input, outdir, more)}.}
+\code{model(input, outdir)}.}
 
-\item{input}{Data frame with model inputs. See below for expected contents.}
+\item{input}{List with model inputs. See below for expected contents.}
 
 \item{outdir}{Name of an existing directory where any output files created
-by \code{model} should be stored. Do \code{not} assume that \code{model}
-cares/warns for existing files in \code{outdir}.}
-
-\item{more}{Optional list with additional information passed to \code{model}.}
+  by \code{model} should be stored. Do \code{not} assume that \code{model}
+  cares/warns for existing files in \code{outdir}.}
 }
 \value{
-The return value of model.
+The return value of \code{model}.
 }
 \description{
 Wrapper function to run an arbitrarily complex model using a minimalistic
@@ -40,14 +38,13 @@ The following columns are mandatory in data frame \code{input}:
 }
 \examples{
 # This model does no computations, it only creates a html table of its inputs
-input= data.frame(name=c("a","b"), value=1:2)
-input$label= paste("item",input$name)
-model= function(input, outdir, more=NULL) {
-  html= paste0("<table border=1>\\n  <tr><th> ",paste(names(input),
+input= list(tbl=data.frame(name=c("a","b"), value=1:2))
+model= function(input, outdir) {
+  html= paste0("<table border=1>\\n  <tr><th> ",paste(names(input$tbl),
     collapse=paste0(" </th><th> "))," </th></tr>\\n")
-  for (i in 1:nrow(input)) {
+  for (i in 1:nrow(input$tbl)) {
     html= paste0(html,"  <tr>",paste0("<td style='text-align:right'> ",
-      unlist(input[i,])," </td>",collapse=""),"</tr>\\n")
+      unlist(input$tbl[i,])," </td>",collapse=""),"</tr>\\n")
   }
   html= paste0(html,"</table>\\n")
   write(file=paste(outdir,"out.html",sep="/"), x=html)

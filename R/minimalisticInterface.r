@@ -5,14 +5,13 @@
 #' interface.
 #'
 #' @param model Function representing the model. It is called as
-#'   \code{model(input, outdir, more)}.
-#' @param input Data frame with model inputs. See below for expected contents.
+#'   \code{model(input, outdir)}.
+#' @param input List with model inputs. See below for expected contents.
 #' @param outdir Name of an existing directory where any output files created
 #'   by \code{model} should be stored. Do \code{not} assume that \code{model}
 #'   cares/warns for existing files in \code{outdir}.
-#' @param more Optional list with additional information passed to \code{model}.
 #'
-#' @return The return value of model.
+#' @return The return value of \code{model}.
 #'
 #' @note The following columns are mandatory in data frame \code{input}:
 #' \itemize{
@@ -32,14 +31,13 @@
 #'
 #' @examples
 #' # This model does no computations, it only creates a html table of its inputs
-#' input= data.frame(name=c("a","b"), value=1:2)
-#' input$label= paste("item",input$name)
-#' model= function(input, outdir, more=NULL) {
-#'   html= paste0("<table border=1>\n  <tr><th> ",paste(names(input),
+#' input= list(tbl=data.frame(name=c("a","b"), value=1:2))
+#' model= function(input, outdir) {
+#'   html= paste0("<table border=1>\n  <tr><th> ",paste(names(input$tbl),
 #'     collapse=paste0(" </th><th> "))," </th></tr>\n")
-#'   for (i in 1:nrow(input)) {
+#'   for (i in 1:nrow(input$tbl)) {
 #'     html= paste0(html,"  <tr>",paste0("<td style='text-align:right'> ",
-#'       unlist(input[i,])," </td>",collapse=""),"</tr>\n")
+#'       unlist(input$tbl[i,])," </td>",collapse=""),"</tr>\n")
 #'   }
 #'   html= paste0(html,"</table>\n")
 #'   write(file=paste(outdir,"out.html",sep="/"), x=html)
@@ -48,23 +46,15 @@
 #' outdir=tempdir()
 #' runModel(model=model, input=input, outdir=outdir)
 
-runModel= function (model, input, outdir, more=NULL) {
+runModel= function (model, input, outdir) {
   # Check inputs
   if (!is.function(model))
     stop("'model' must be a function")
-  if (!is.data.frame(input))
-    stop("'input' must be a data frame")
-  required= c("name", "value", "label")
-  if (!all(required %in% names(input)))
-    stop(paste0("missing column(s) in 'input', expecting: '",
-      paste(required,collapse="', '"),"'"))
+  if (!is.list(input))
+    stop("'input' must be a list")
   if (!file.info(outdir)[1,"isdir"])
     stop(paste0("'outdir' is not an existing directory (",outdir,")"))
-  if (!is.null(more) && !is.list(more))
-    stop("'more' must be a list or NULL")
   # Run model
-  return(model(input, outdir, more))
+  return(model(input, outdir))
 }
-
-
 
