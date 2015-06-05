@@ -56,7 +56,6 @@
 #'   stop(paste0("model run failed: ",err))
 #' }
 
-
 runModel= function (model, input, outdir, more=NULL) {
   # Check inputs
   if (!is.function(model))
@@ -76,12 +75,11 @@ runModel= function (model, input, outdir, more=NULL) {
   tryCatch({
     model(input, outdir, more)
   }, error= function(e) {
-    msg=e
+    msg <<- e$message
   })
   # Return
   return(msg)
 }
-
 
 
 
