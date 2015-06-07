@@ -28,9 +28,12 @@ rodeo$methods( plot = function(values) {
   # Create environment holding all data -> required for evaluating expressions
   env= new.env()
   f=tempfile()
+cat("tempfile for stoi data is '",f,"'\n")
   write.table(file=f, x=data.frame(names(values),values,stringsAsFactors=FALSE),
     sep="=", col.names=FALSE, row.names=FALSE, quote=FALSE)
+cat("data written to '",f,"'\n")
   sys.source(file=f,envir=env)
+cat("file '",f,"' sourced \n")
   # Represent stoichiometry as a matrix
   m= .self$stoichiometryMatrix()
   # Create graphics

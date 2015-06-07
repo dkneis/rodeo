@@ -252,7 +252,7 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 file_genCode= paste0(gsub(&quot;\\&quot;,&quot;/&quot;,tempfile(),fixed=TRUE), &quot;.f95&quot;)
 write(x=code, file=file_genCode)
 cat(&quot;code written to&quot;,file_genCode)</code></pre>
-<pre><code>## code written to /tmp/RtmpiqHvYL/filefd676671925.f95</code></pre>
+<pre><code>## code written to /tmp/RtmpOrCnBP/file17b15981cf7e.f95</code></pre>
 <p>Inspection of the generated <em>Fortran95</em> code reveals that the interface of the central subroutine “derivs” is</p>
 <p><code>subroutine derivs(time, var, par, NLVL, dydt, pro)</code></p>
 <p>However, according to the <a href="http://cran.r-project.org/web/packages/deSolve/vignettes/compiledCode.pdf">vignette of the <em>deSolve</em> package</a> (page 6), the following interface is required</p>
@@ -358,7 +358,7 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 <h2><span class="header-section-number">4.3</span> Forcings</h2>
 <div id="two-alternative-options" class="section level3">
 <h3><span class="header-section-number">4.3.1</span> Two alternative options</h3>
-<p>In general, there are two options how to deal with time-variable forcings:</p>
+<p>In general, there are two options for dealing with time-variable forcings:</p>
 <ul>
 <li><p><em>functions-of-time</em>: In this approach one needs to define the forcings as functions of a single argument representing time. In <code>rodeo</code> this argument must have the reserved name ‘time’. Use of this approach is most convenient if the forcings are easily described as parametric functions of time (e.g. seasonal change of solar radiation). It can also be used with tabulated time series data, but this requires some extra coding. In any case, it is essential for rescrict the integration step size of the solver (e.g. using the <code>hmax</code> argument of <code>deSolve::lsoda</code>) so that short-term variations in the forcings cannot be ‘missed’.</p></li>
 <li><p><em>stop-and-go</em>: In this approach forcings are implemented as normal parameters. To allow for their variation in time, the ODE solver is interrupted every time when the forcing data change. The solver is then re-started with the updated parameters (i.e. forcing data) using the states computed in the previous call as initial values. Hence, the calls to the ODE solver must be embedded within a time-loop. With this approach, setting a limit on the solver’s integration step size (through argument <code>hmax</code>) is not required since the solver is interrupted at the ‘critical times’ anyway.</p></li>
