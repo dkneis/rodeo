@@ -96,6 +96,17 @@ model$show()
 print(model$stoichiometryMatrix())
 ```
 
+Finally, one can use e.g. `exportDF` to export the object's basic information in a format which is suitable for inclusion in HTML or TEX documents.
+
+```{r exportTables, eval=TRUE}
+df= model$getVars()
+tex= exportDF(x=df, tex=TRUE,
+  beforeHead=setNames(rep("\\textbf{",ncol(df)),names(df)),
+  afterHead=setNames(rep("}",ncol(df)),names(df))
+)
+cat(tex)
+```
+
 ## Defining functions and supplying data
 
 In order to work with the object, we need to define functions that are referenced in the model's mathematical expressions. This includes the forcings which are functions of a special argument with the reserved name 'time'. See the [section on forcings](#forcings) for details.

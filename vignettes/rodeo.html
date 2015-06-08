@@ -10,7 +10,7 @@
 
 <meta name="author" content="David Kneis (david.kneis [at] tu-dresden.de)" />
 
-<meta name="date" content="2015-06-03" />
+<meta name="date" content="2015-06-08" />
 
 <title>Handling of ODE-models as R-objects (rodeo)</title>
 
@@ -64,7 +64,7 @@ img {
 <div id="header">
 <h1 class="title">Handling of ODE-models as R-objects (<em>rodeo</em>)</h1>
 <h4 class="author"><em>David Kneis (david.kneis [at] tu-dresden.de)</em></h4>
-<h4 class="date"><em>2015-06-03</em></h4>
+<h4 class="date"><em>2015-06-08</em></h4>
 </div>
 
 <div id="TOC">
@@ -175,6 +175,19 @@ model$show()
 
 # Show stoichiometry information as a matrix
 print(model$stoichiometryMatrix())</code></pre>
+<p>Finally, one can use e.g. <code>exportDF</code> to export the object’s basic information in a format which is suitable for inclusion in HTML or TEX documents.</p>
+<pre class="r"><code>df= model$getVars()
+tex= exportDF(x=df, tex=TRUE,
+  beforeHead=setNames(rep(&quot;\\textbf{&quot;,ncol(df)),names(df)),
+  afterHead=setNames(rep(&quot;}&quot;,ncol(df)),names(df))
+)
+cat(tex)</code></pre>
+<pre><code>##   \begin{tabular}{llll}\hline
+##     \textbf{name} &amp; \textbf{type} &amp; \textbf{unit} &amp; \textbf{description} \\ \hline
+##     c_do &amp; v &amp; mg/l &amp; dissolved O2 \\
+##     c_z &amp; v &amp; mg/l &amp; degradable organic matter Z \\
+##     v &amp; v &amp; m3 &amp; water volume in reactor \\ \hline
+##   \end{tabular}</code></pre>
 </div>
 <div id="defining-functions-and-supplying-data" class="section level2">
 <h2><span class="header-section-number">3.2</span> Defining functions and supplying data</h2>
@@ -252,7 +265,7 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 file_genCode= paste0(gsub(&quot;\\&quot;,&quot;/&quot;,tempfile(),fixed=TRUE), &quot;.f95&quot;)
 write(x=code, file=file_genCode)
 cat(&quot;code written to&quot;,file_genCode)</code></pre>
-<pre><code>## code written to /tmp/RtmpOrCnBP/file17b15981cf7e.f95</code></pre>
+<pre><code>## code written to /tmp/RtmpXJekZa/file389d79054a57.f95</code></pre>
 <p>Inspection of the generated <em>Fortran95</em> code reveals that the interface of the central subroutine “derivs” is</p>
 <p><code>subroutine derivs(time, var, par, NLVL, dydt, pro)</code></p>
 <p>However, according to the <a href="http://cran.r-project.org/web/packages/deSolve/vignettes/compiledCode.pdf">vignette of the <em>deSolve</em> package</a> (page 6), the following interface is required</p>
