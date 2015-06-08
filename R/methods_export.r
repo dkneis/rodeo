@@ -15,7 +15,7 @@ setOpt= function(x, defaults, colnames) {
 
 #' Export data frame as HTML/TEX code
 #'
-#' Generates code to embed a data frame in a tex document or web site.
+#' Generates code to include tabular data in a tex document or web site.
 #'
 #' @param x The data frame being exported.
 #' @param tex Logical. Allows to switch between generation of TEX code and HTML.
@@ -25,28 +25,35 @@ setOpt= function(x, defaults, colnames) {
 #'   alternative names for selected columns only.
 #' @param width Either \code{NULL} (all columns get equal width) or a named
 #'   vector with element names corresponding to column names in \code{x}. If
-#'   \code{tex == TRUE}, any values are applied to columns with align code 'p'
-#'   only and the value (must be between 0 and 1) is used as a multiplier for
-#'   'textwidth'. If \code{tex == FALSE}, values (between 0 and 100) should be
-#'   supplied for all columns.
+#'   \code{tex == TRUE}, values (between 0 and 1) are needed for columns with
+#'   align code 'p' only. They are interpreted as a multiplier for '\\textwidth'.
+#'   If \code{tex == FALSE}, values (between 0 and 100) should be
+#'   supplied for all columns of \code{x}.
 #' @param align Either \code{NULL} (to use automatic alignment) or a named
 #'   vector with element names corresponding to column names in \code{x}.
 #'   If \code{tex == FALSE} valid alignment codes are 'left', 'right', 'center'.
 #'   If \code{tex == TRUE} valid alignment codes are 'l', 'r', 'c', and 'p'. For
 #'   columns with code 'p' a corresponding value of \code{width} should be set.
-#' @param beforeHead String inserted before a column name. Can be a formatting
-#'   command in the respective target language (see examples).
-#' @param afterHead String inserted after a column name.
-#' @param beforeCell Like \code{beforeHead} but applies to non-header cells.
-#' @param afterCell Like \code{afterHead} but applies to non-header cells.
+#'   It is OK to supply alignment codes for selected columns only.
+#' @param beforeHead Either \code{NULL} or a named character
+#'   vector with element names corresponding to column names in \code{x}.
+#'   The supplied strings (typically formatting command in the respective target
+#'   language, see examples) are inserted before the column names.
+#'   It is OK to supply such strings for selected columns only.
+#' @param afterHead Lile \code{beforeHead} but these strings are inserted right
+#'   after the column names.
+#' @param beforeCell Like \code{beforeHead} but for non-header cells.
+#' @param afterCell Like \code{afterHead} but for non-header cells.
 #' @param lines Logical. Switches table borders on/off.
 #' @param indent Integer. Number of blanks used to indent the generated code.
 #'
 #' @return A character string (usually needs to be exported to a file).
 #'
 #' @seealso The \code{xtable} packages provides similar functionality with
-#'   more sophisticated options. Also consider the 'datatools' package for
-#'   inclusion of raw delimited text files in tex documents.
+#'   more sophisticated options. Consider the 'pandoc' software do convert
+#'   documents from one markup language to another one. Finally, consider the
+#'   latex package 'datatools' for direct inclusion of delimited text files
+#'   (e.g. produced by \code{write.table}) in tex documents.
 #'
 #' @author David Kneis \email{david.kneis@@tu-dresden.de}
 #'
@@ -87,8 +94,10 @@ exportDF= function(x,
   colnames=NULL,
   width= NULL,
   align= NULL,
-  beforeHead= NULL, afterHead= NULL,
-  beforeCell= NULL, afterCell= NULL,
+  beforeHead= NULL,
+  afterHead= NULL,
+  beforeCell= NULL,
+  afterCell= NULL,
   lines=TRUE,
   indent=2
 ) {
