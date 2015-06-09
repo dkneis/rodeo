@@ -5,8 +5,7 @@
 \title{Export data frame as HTML/TEX code}
 \usage{
 exportDF(x, tex = FALSE, colnames = NULL, width = NULL, align = NULL,
-  beforeHead = NULL, afterHead = NULL, beforeCell = NULL,
-  afterCell = NULL, lines = TRUE, indent = 2)
+  funHead = NULL, funCell = NULL, lines = TRUE, indent = 2)
 }
 \arguments{
 \item{x}{The data frame being exported.}
@@ -32,18 +31,15 @@ If \code{tex == TRUE} valid alignment codes are 'l', 'r', 'c', and 'p'. For
 columns with code 'p' a corresponding value of \code{width} should be set.
 It is OK to supply alignment codes for selected columns only.}
 
-\item{beforeHead}{Either \code{NULL} or a named character
-vector with element names corresponding to column names in \code{x}.
-The supplied strings (typically formatting command in the respective target
-language, see examples) are inserted before the column names.
-It is OK to supply such strings for selected columns only.}
+\item{funHead}{Either \code{NULL} or a list of functions whose names
+correspond to column names of \code{x}. The functions should have a single
+formal argument; the respective column names of \code{x} are used as the
+actual arguments. It is OK to supply functions for selected columns only
+(an empty function is applied to the remaining columns). See below for some
+typical examples.}
 
-\item{afterHead}{Lile \code{beforeHead} but these strings are inserted right
-after the column names.}
-
-\item{beforeCell}{Like \code{beforeHead} but for non-header cells.}
-
-\item{afterCell}{Like \code{afterHead} but for non-header cells.}
+\item{funCell}{Like \code{funHead} but these functions are applied to the
+cells in columns rather that to the column names.}
 
 \item{lines}{Logical. Switches table borders on/off.}
 
@@ -55,6 +51,14 @@ A character string (usually needs to be exported to a file).
 \description{
 Generates code to include tabular data in a tex document or web site.
 }
+\note{
+The functions \code{funHead} and \code{funCell} are useful to apply
+  formatting or character replacement. For example, one could use
+
+  \code{function(x) {paste0("\\\\bold{",toupper(x),"}")}}
+
+  to generate bold, uppercase column names in a TEX table.
+}
 \examples{
 # Create example table
 df= data.frame(stringsAsFactors=FALSE, name= c("growth", "dead"),
@@ -65,20 +69,20 @@ tex= exportDF(df, tex=TRUE,
   colnames=c(expression="process rate expression"),
   width=c(expression=0.5),
   align=c(expression="p"),
-  beforeHead=setNames(rep("\\\\textbf{",ncol(df)),names(df)),
-  afterHead=setNames(rep("}",ncol(df)),names(df)),
-  beforeCell=c(name="\\\\textit{",expression="$"),
-  afterCell=c(name="}",expression="$")
+  funHead=setNames(replicate(ncol(df),
+    function(x){paste0("\\\\textbf{",x,"}")}),names(df)),
+  funCell=c(name=function(x){paste0("\\\\textit{",x,"}")},
+    expression=function(x){paste0("$",x,"$")})
 )
 cat(tex,"\\n")
 
 # Export as HTML: non-standard colors are used for all columns
 tf= tempfile(fileext=".html")
 write(x= exportDF(df, tex=FALSE,
-  beforeHead=setNames(rep("<font color='red'>",ncol(df)),names(df)),
-  afterHead=setNames(rep("</font>",ncol(df)),names(df)),
-  beforeCell=setNames(rep("<font color='blue'>",ncol(df)),names(df)),
-  afterCell=setNames(rep("</font>",ncol(df)),names(df))
+  funHead=setNames(replicate(ncol(df),
+    function(x){paste0("<font color='red'>",x,"</font>")}),names(df)),
+  funCell=setNames(replicate(ncol(df),
+    function(x){paste0("<font color='blue'>",x,"</font>")}),names(df))
 ), file=tf)
 \dontrun{
   browseURL(tf)

@@ -13,6 +13,18 @@ setOpt= function(x, defaults, colnames) {
   return(res)
 }
 
+# Helper function to apply a list of functions to a vector of arguments of the
+# same lenght
+# funs: list of functions
+# args: vector of arguments, each of which is passed to the corresp. element of funs
+xapply= function(funs, args) {
+  if (!all(sapply(funs, is.function)))
+    stop("'funs' must be a list of functions")
+  if (length(funs) != length(args))
+    stop("'funs' and 'args' differ in length")
+  return(unlist(lapply(X=1:length(funs), FUN=function(i){funs[[i]](args[i])})))
+}
+
 #' Export data frame as HTML/TEX code
 #'
 #' Generates code to include tabular data in a tex document or web site.
@@ -35,19 +47,25 @@ setOpt= function(x, defaults, colnames) {
 #'   If \code{tex == TRUE} valid alignment codes are 'l', 'r', 'c', and 'p'. For
 #'   columns with code 'p' a corresponding value of \code{width} should be set.
 #'   It is OK to supply alignment codes for selected columns only.
-#' @param beforeHead Either \code{NULL} or a named character
-#'   vector with element names corresponding to column names in \code{x}.
-#'   The supplied strings (typically formatting command in the respective target
-#'   language, see examples) are inserted before the column names.
-#'   It is OK to supply such strings for selected columns only.
-#' @param afterHead Lile \code{beforeHead} but these strings are inserted right
-#'   after the column names.
-#' @param beforeCell Like \code{beforeHead} but for non-header cells.
-#' @param afterCell Like \code{afterHead} but for non-header cells.
+#' @param funHead Either \code{NULL} or a list of functions whose names
+#'   correspond to column names of \code{x}. The functions should have a single
+#'   formal argument; the respective column names of \code{x} are used as the
+#'   actual arguments. It is OK to supply functions for selected columns only
+#'   (an empty function is applied to the remaining columns). See below for some
+#'   typical examples.
+#' @param funCell Like \code{funHead} but these functions are applied to the
+#'   cells in columns rather that to the column names.
 #' @param lines Logical. Switches table borders on/off.
 #' @param indent Integer. Number of blanks used to indent the generated code.
 #'
 #' @return A character string (usually needs to be exported to a file).
+#'
+#' @note The functions \code{funHead} and \code{funCell} are useful to apply
+#'   formatting or character replacement. For example, one could use
+#'
+#'   \code{function(x) {paste0("\\\\bold{",toupper(x),"}")}}
+#'
+#'   to generate bold, uppercase column names in a TEX table.
 #'
 #' @seealso The \code{xtable} packages provides similar functionality with
 #'   more sophisticated options. Consider the 'pandoc' software do convert
@@ -69,20 +87,20 @@ setOpt= function(x, defaults, colnames) {
 #'   colnames=c(expression="process rate expression"),
 #'   width=c(expression=0.5),
 #'   align=c(expression="p"),
-#'   beforeHead=setNames(rep("\\textbf{",ncol(df)),names(df)),
-#'   afterHead=setNames(rep("}",ncol(df)),names(df)),
-#'   beforeCell=c(name="\\textit{",expression="$"),
-#'   afterCell=c(name="}",expression="$")
+#'   funHead=setNames(replicate(ncol(df),
+#'     function(x){paste0("\\textbf{",x,"}")}),names(df)),
+#'   funCell=c(name=function(x){paste0("\\textit{",x,"}")},
+#'     expression=function(x){paste0("$",x,"$")})
 #' )
 #' cat(tex,"\n")
 #'
 #' # Export as HTML: non-standard colors are used for all columns
 #' tf= tempfile(fileext=".html")
 #' write(x= exportDF(df, tex=FALSE,
-#'   beforeHead=setNames(rep("<font color='red'>",ncol(df)),names(df)),
-#'   afterHead=setNames(rep("</font>",ncol(df)),names(df)),
-#'   beforeCell=setNames(rep("<font color='blue'>",ncol(df)),names(df)),
-#'   afterCell=setNames(rep("</font>",ncol(df)),names(df))
+#'   funHead=setNames(replicate(ncol(df),
+#'     function(x){paste0("<font color='red'>",x,"</font>")}),names(df)),
+#'   funCell=setNames(replicate(ncol(df),
+#'     function(x){paste0("<font color='blue'>",x,"</font>")}),names(df))
 #' ), file=tf)
 #' \dontrun{
 #'   browseURL(tf)
@@ -94,10 +112,8 @@ exportDF= function(x,
   colnames=NULL,
   width= NULL,
   align= NULL,
-  beforeHead= NULL,
-  afterHead= NULL,
-  beforeCell= NULL,
-  afterCell= NULL,
+  funHead= NULL,
+  funCell= NULL,
   lines=TRUE,
   indent=2
 ) {
@@ -110,16 +126,13 @@ exportDF= function(x,
   # Set options
   left= ifelse(tex, "l", "left")
   right= ifelse(tex, "r", "right")
-  boldBeg= ifelse(tex, "\\textbf{", "<b>")
-  boldEnd= ifelse(tex, "}", "</b>")
+  none= function(x) {x}
   w= ifelse(tex, 1/ncol(x), floor(100/ncol(x)))
   colnames= setOpt(colnames, names(x), names(x))
-  width= setOpt(width, rep(w, ncol(x)), names(x))
-  align= setOpt(align, ifelse(unlist(lapply(df, FUN=is.numeric)),right,left), names(x))
-  beforeHead= setOpt(beforeHead, rep(boldBeg, ncol(x)), names(x))
-  afterHead=  setOpt(afterHead, rep(boldEnd, ncol(x)), names(x))
-  beforeCell= setOpt(beforeCell, rep("", ncol(x)), names(x))
-  afterCell=  setOpt(afterCell, rep("", ncol(x)), names(x))
+  width=    setOpt(width, rep(w, ncol(x)), names(x))
+  align=    setOpt(align, ifelse(unlist(lapply(df, FUN=is.numeric)),right,left), names(x))
+  funHead=  setOpt(funHead, replicate(n=ncol(x), none), names(x))
+  funCell=  setOpt(funCell, replicate(n=ncol(x), none), names(x))
   # Assemble code
   out=''
 
@@ -132,11 +145,11 @@ exportDF= function(x,
     out= paste0(out,indent,'\\begin{tabular}{',paste(align,collapse=""),
       '}',ifelse(lines, '\\hline', ''),'\n')
     out= paste0(out,indent,'  ',
-      paste0(paste0('',beforeHead,colnames,afterHead,''),collapse=' & '),' \\\\',
+      paste0(paste0('',xapply(funHead,colnames),''),collapse=' & '),' \\\\',
       ifelse(lines, ' \\hline', ''),'\n')
     for (i in 1:nrow(x)) {
       out= paste0(out,indent,'  ',
-        paste0(paste0(beforeCell,unlist(x[i,]),afterCell),collapse=' & '),' \\\\',
+        paste0(paste0('',xapply(funCell,unlist(x[i,])),''),collapse=' & '),' \\\\',
         ifelse(lines && (i == nrow(x)), ' \\hline', ''),'\n')
     }
     out= paste0(out,indent,'\\end{tabular}\n')
@@ -148,12 +161,12 @@ exportDF= function(x,
       out= paste0(out,indent,'  <col width="',width[i],'%">\n')
     }
     out= paste0(out,indent,'  <tr>',
-      paste0(paste0('<th style="text-align:',align,'"> ',beforeHead,
-      colnames,afterHead,' </th>'),collapse=''),' </tr>\n')
+      paste0(paste0('<th style="text-align:',align,'"> ',xapply(funHead,
+      colnames),' </th>'),collapse=''),' </tr>\n')
     for (i in 1:nrow(x)) {
       out= paste0(out,indent,'  <tr>',
-        paste0(paste0('<td style="text-align:',align,'"> ',beforeCell,
-        unlist(x[i,]),afterCell,' </td>'),collapse=''),' </tr>\n')
+        paste0(paste0('<td style="text-align:',align,'"> ',xapply(funCell,
+        unlist(x[i,])),' </td>'),collapse=''),' </tr>\n')
     }
     out= paste0(out,indent,'</table>\n')
   }
