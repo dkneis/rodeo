@@ -130,7 +130,7 @@ exportDF= function(x,
   w= ifelse(tex, 1/ncol(x), floor(100/ncol(x)))
   colnames= setOpt(colnames, names(x), names(x))
   width=    setOpt(width, rep(w, ncol(x)), names(x))
-  align=    setOpt(align, ifelse(unlist(lapply(df, FUN=is.numeric)),right,left), names(x))
+  align=    setOpt(align, ifelse(unlist(lapply(x, FUN=is.numeric)),right,left), names(x))
   funHead=  setOpt(funHead, replicate(n=ncol(x), none), names(x))
   funCell=  setOpt(funCell, replicate(n=ncol(x), none), names(x))
   # Assemble code
