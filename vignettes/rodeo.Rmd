@@ -101,8 +101,8 @@ Finally, one can use e.g. `exportDF` to export the object's basic information in
 ```{r exportTables, eval=TRUE}
 df= model$getVars()
 tex= exportDF(x=df, tex=TRUE,
-  beforeHead=setNames(rep("\\textbf{",ncol(df)),names(df)),
-  afterHead=setNames(rep("}",ncol(df)),names(df))
+  funHead=setNames(replicate(ncol(df),
+    function(x){paste0("\\textbf{",x,"}")}),names(df))
 )
 cat(tex)
 ```
@@ -232,7 +232,7 @@ text= paste(text,"\n")
 cat(text)
 ```
 
-The model-specific functions (3) could be defines as :
+The model-specific functions (3) could be defined as :
 
 ```{r fortranFunctions, echo=FALSE}
 file_funCode= "functionsCode.f95"
