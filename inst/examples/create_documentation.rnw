@@ -1,0 +1,170 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage{rotfloat}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Initializations
+
+<<init, echo=FALSE>>=
+# Load model
+library(rodeo)
+data(identifiers, processes, stoichiometry)
+model= new("rodeo",
+  vars=subset(identifiers,type=="v",select=which(names(identifiers) != "type")),
+  pars=subset(identifiers,type=="p",select=which(names(identifiers) != "type")),
+  funs=subset(identifiers,type=="f",select=which(names(identifiers) != "type")),
+  pros=processes,
+  stoi=stoichiometry
+)
+
+# Low-level formatting functions
+firstUpper= function(x) {
+  paste0(toupper(substr(x,1,1)), substr(x,2,nchar(x)))
+}
+bold= function(x) { paste0("\\textbf{",x,"}") }
+slanted= function(x) { paste0("\\textsl{",x,"}") }
+allow_= function(x) { gsub(pattern="_", replacement="\\_",
+  x=x, fixed=TRUE) }
+
+# High-level formatting functions
+niceHead= function(x) { bold(firstUpper(x)) }
+math= function(x) { paste0("$",gsub(pattern="*", replacement="\\cdot ",
+  x=allow_(x), fixed=TRUE),"$") }
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Tables of variables, parameters, functions
+
+\section{State variables, parameters, and functions}
+
+Tables~\ref{tab:vars}, \ref{tab:pars}, and \ref{tab:funs} contain the declaration of state variables, parameters, and functions.
+
+\begin{table}[!h]
+  \caption{Table of state variables. \label{tab:vars}}
+  \begin{center}
+<<vars, results=tex, echo=FALSE>>=
+cat(
+  exportDF(x=model$getVars(), tex=TRUE,
+    funHead= setNames(replicate(ncol(model$getVars()),niceHead),
+      names(model$getVars())),
+    funCell= c(description=firstUpper, name=math)
+  )
+)
+@
+  \end{center}
+\end{table}
+
+\begin{table}[!h]
+  \caption{Table of parameters. \label{tab:pars}}
+  \begin{center}
+<<pars, results=tex, echo=FALSE>>=
+cat(
+  exportDF(x=model$getPars(), tex=TRUE,
+    funHead= setNames(replicate(ncol(model$getPars()),niceHead),
+      names(model$getPars())),
+    funCell= c(description=firstUpper, name=math)
+  )
+)
+@
+  \end{center}
+\end{table}
+
+\begin{table}[!h]
+  \caption{Table of functions. \label{tab:funs}}
+  \begin{center}
+<<funs, results=tex, echo=FALSE>>=
+cat(
+  exportDF(x=model$getFuns(), tex=TRUE,
+    funHead= setNames(replicate(ncol(model$getFuns()),niceHead),
+      names(model$getFuns())),
+    funCell= c(description=firstUpper, name=math)
+  )
+)
+@
+  \end{center}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Processes
+
+\section{Simulated processes}
+
+The simulated processes are summarized in Table~\ref{tab:pros}. For models with lengthy math expressions, it may be necessary to rotate this table, e.~g. using \texttt{\textbackslash sidewaystable} from the \texttt{rotfloat} package. Another options is to restrict the width of the table's last colum using the \texttt{width} and \texttt{align} arguments of \texttt{exportDF}.
+
+\begin{table}[!h]
+  \caption{Table of processes. \label{tab:pros}}
+  \begin{center}
+<<pros, results=tex, echo=FALSE>>=
+cat(
+  exportDF(x=model$getPros(), tex=TRUE,
+    colnames= c(expression="process rate expression"),
+    funHead= setNames(replicate(ncol(model$getPros()),niceHead),
+      names(model$getPros())),
+    funCell= c(description=firstUpper, expression=math)
+    )
+)
+@
+  \end{center}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Stoichiometry
+
+\section{Stoichiometry}
+
+The link between state variables and processes is determined by the stoichiometry information (Table~\ref{tab:stoi}, Fig.~\ref{fig:stoi}). In order to visualize the matrix, we need to
+\begin{enumerate}
+  \item assign values to parameters,
+  \item assign values to the state variables,
+  \item define any functions (in R code).
+\end{enumerate}
+
+\begin{table}[!h]
+  \caption{Stoichiometry in tabular form. \label{tab:stoi}}
+  \begin{center}
+<<stoi, results=tex, echo=FALSE>>=
+cat(
+  exportDF(x=model$getStoi(), tex=TRUE,
+    colnames= c(expression="stoichiometry factors"),
+    funHead= setNames(replicate(ncol(model$getStoi()),niceHead),
+      names(model$getStoi())),
+    funCell= c(variable=math, expression=math)
+    )
+)
+@
+  \end{center}
+\end{table}
+
+\begin{figure}[!h]
+  \begin{center}
+<<stoi_fig, results=tex, echo=TRUE, fig=TRUE>>=
+
+# Parameters
+pars= c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
+ temp=20, q_in=1, q_ex=1)
+
+# Assumed values of state variables
+vars= c(c_z=1, c_do=9.022, v=1.e6)
+
+# Ordinary functions
+O2sat= function(t) {14.652 - 0.41022*t + 0.007991*t^2 - 0.000077774*t^3}
+ka= function(u, d) {(0.728*sqrt(u) - 0.317*u + 0.0372*u^2) / d / 86400}
+monod= function(s,h) {s / (s + h)}
+
+# Time-dependent forcings
+c_z_in= function(seconds) { 0.1 * seconds/(7*86400 + seconds) }
+c_do_in= function(seconds) { 9.022 }
+
+# Creates the plot
+model$plot(c(vars, pars, time=0))
+@
+  \end{center}
+  \caption{Graphical representation of the stoichiometry matrix. Triangles indicate the sign of the interaction between processes and state variables (upward: positive, downward: negative). Empty cells denote missing (direct) interactions. \label{fig:stoi}}
+\end{figure}
+
+
+\end{document}
