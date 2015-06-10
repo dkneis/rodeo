@@ -307,7 +307,7 @@ text= paste(text,"\n")
 cat(text)
 ```
 
-The following Fortran code demonstrates how the user-definfed forcing functions can be tested/debugged outside of the `rodeo` environment. The shown utility program can be compiled, for example, using a command like `gfortran <file_with_modules> <file_with_program> -o test`. 
+The following Fortran code demonstrates how the user-defined forcing functions can be tested/debugged outside of the `rodeo` environment. The shown utility program can be compiled, for example, using a command like `gfortran <file_with_modules> <file_with_program> -o test`. Note that the subroutine `rexit` is available automatically if the code is used to build a shared library with `R CMD SHLIB`, i.e. the subroutine must not be defined.
 
 ```{r fortranForcingsTest, echo=FALSE}
 text= readLines("fortranForcingsTest.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)

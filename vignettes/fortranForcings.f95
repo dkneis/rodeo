@@ -34,7 +34,7 @@ logical function readTS(file, nskip, x)
   !Open file
   open(unit=un, file=file, status="old", action="read", iostat=ioresult)
   if (ioresult .ne. 0) then
-    write(*,*)"cannot open file '",trim(file),"'"
+    write(*,*)"cannot open file '",trim(adjustl(file)),"'"
     goto 1
   end if
   !Initial allocations
@@ -46,7 +46,7 @@ logical function readTS(file, nskip, x)
   do
     read(unit=un, fmt='(a)', iostat=ioresult, end=1000) string
     if (ioresult .ne. 0) then
-      write(*,*)"read error at line ",line," of file '",trim(file),"'"
+      write(*,*)"read error at line ",line," of file '",trim(adjustl(file)),"'"
       goto 1
     end if
     string= adjustl(string)
@@ -70,7 +70,7 @@ logical function readTS(file, nskip, x)
       n= n + 1
       read(unit=string, fmt=*, iostat=ioresult) tmp%times(n), tmp%values(n)
       if (ioresult .ne. 0) then
-        write(*,*)"read error at line ",line," of file '",trim(file),"'"
+        write(*,*)"read error at line ",line," of file '",trim(adjustl(file)),"'"
         goto 1
       end if
     end if
@@ -78,7 +78,7 @@ logical function readTS(file, nskip, x)
   end do
   1000 continue
   if (n .lt. 2) then
-    write(*,*)"found less than two records in file '",trim(file),"'"
+    write(*,*)"found less than two records in file '",trim(adjustl(file)),"'"
     goto 1
   end if
   close(un)
@@ -91,7 +91,7 @@ logical function readTS(file, nskip, x)
   deallocate(tmp%values)
   ! Check data
   if (any(x%times(2:n)-x%times(1:(n-1)) .le. ZERO)) then
-    write(*,*)"times not strictly ascending in file '",trim(file),"'"
+    write(*,*)"times not strictly ascending in file '",trim(adjustl(file)),"'"
     goto 1
   end if
   ! Return
@@ -117,38 +117,57 @@ double precision function interpol(time, x, latest, lweight, na)
   integer, intent(inout):: latest     ! index of latest access (inout)
   integer, intent(in):: lweight       ! weight for begin of time interval
   double precision, intent(in):: na   ! return value on failure
-  ! const
-  double precision, parameter:: SMALL=1d-20
   ! locals
   integer:: i
   logical:: ok
   ! interpolation
   if (time .lt. x%times(1)) then
-    write(*,*)"interpolation failed: query time < time stamp of first record"
+    write(*,*) "interpolation failed: query time < time stamp of first record"
     interpol= na
   else if (time .gt. x%times(size(x%times))) then
-    write(*,*)"interpolation failed: query time > time stamp of final record"
+    write(*,*) "interpolation failed: query time > time stamp of final record"
     interpol= na
   else
     ok= .FALSE.
-    do i=min(max(1,latest),size(x%times)-1), (size(x%times)-1)
-      if ((time .ge. x%times(i)) .and. (time .le. x%times(i+1))) then
-        if ((lweight .lt. 0) .or. (lweight .gt. 1)) then
-          interpol= x%values(i) * (x%times(i+1) - time) / &
-            (x%times(i+1) - x%times(i)) + &
-            x%values(i+1) * (time - x%times(i)) / &
-            (x%times(i+1) - x%times(i))
-        else
-          interpol= x%values(i) * dble(lweight) + &
-            x%values(i+1) * dble(1 - lweight)
+    ! Forward search
+    if (time .ge. x%times(latest)) then
+      do i=min(max(1,latest),size(x%times)-1), (size(x%times)-1)
+        if ((time .ge. x%times(i)) .and. (time .le. x%times(i+1))) then
+          if ((lweight .lt. 0) .or. (lweight .gt. 1)) then
+            interpol= x%values(i) * (x%times(i+1) - time) / &
+              (x%times(i+1) - x%times(i)) + &
+              x%values(i+1) * (time - x%times(i)) / &
+              (x%times(i+1) - x%times(i))
+          else
+            interpol= x%values(i) * dble(lweight) + &
+              x%values(i+1) * dble(1 - lweight)
+          end if
+          latest= i
+          ok= .TRUE.
+          exit
         end if
-        latest= i
-        ok= .TRUE.
-        exit
-      end if
-    end do
+      end do
+    ! Backward search
+    else
+      do i=max(min(latest,size(x%times)), 2), 2, -1
+        if ((time .ge. x%times(i-1)) .and. (time .le. x%times(i))) then
+          if ((lweight .lt. 0) .or. (lweight .gt. 1)) then
+            interpol= x%values(i-1) * (x%times(i) - time) / &
+              (x%times(i) - x%times(i-1)) + &
+              x%values(i) * (time - x%times(i-1)) / &
+              (x%times(i) - x%times(i-1))
+          else
+            interpol= x%values(i-1) * dble(lweight) + &
+              x%values(i) * dble(1 - lweight)
+          end if
+          latest= i
+          ok= .TRUE.
+          exit
+        end if
+      end do
+    end if
     if (.not. ok) then
-      write(*,*)"interpolation failed: corrupted time series"
+      write(*,*) "interpolation failed: corrupted time series"
       interpol= na
     end if
   end if
@@ -172,14 +191,16 @@ double precision function forcing (time, lweight, na, file, nskip)
   if (firstCall) then
     firstCall= .FALSE.
     if (.not. readTS(file, nskip, x)) then
-      write(*,*) "initialization of forcing data failed"
+      write(*,*) "initialization of forcing data from file '", &
+        trim(adjustl(file)),"' failed"
+      forcing= na
     end if
   end if
   ! interpolate
   if (allocated(x%times)) then
     forcing= interpol(time=time, x=x, latest=latest, lweight=lweight, na=na)
   else
-    write(*,*) "no forcing data to interpolate"
+    write(*,*) "forcing data not allocated"
     forcing= na
   end if
 end function
@@ -208,26 +229,32 @@ contains
 !      constant interpolation with full weight given to the value at the begin
 !      of a time interval. Any other values (< 0 or > 1) result in linear
 !      interpolation with weights being set automatically.
-!   3) The value of 'na' (double precision). This value is returned in the case
-!      of errors (e.g. if the data file is corrupt of non-existing). It should
-!      either be a reasonable default value or some exceptional value definitely
-!      resulting in strange outputs. Note that Fortran double precision
-!      constants should be written in scientific notation with character 'd'
-!      being used instead of the usual 'e'. Examples for pi: 3.1425d0, 31415d-4.
-!   4) The name of the data file. Conventions for file contents:
+!   3) The name of the data file. Conventions for file contents:
 !      - There must be two numeric columns; column 1: time, column 2: value.
 !      - Times must be real numbers (e.g. unix time of offset from user datum).
 !      - Columns are expected to be separated by comma, blank, or tabulator.
 !      - Numeric data start in the first row unless nskip is set > 0.
 !      - The file may contain blank lines, comment lines are NOT supported.
-!   5) The value of 'nskip' (integer). This is the number of lines to skip
+!   4) The value of 'nskip' (integer). This is the number of lines to skip
 !      before reading numeric data from the file. Typical values are 0 or 1,
 !      depending on whether column names are present.
 
-double precision function temperature (time)
+function temperature (time) result (x)
   double precision, intent(in):: time
-  temperature= forcing(time=time, lweight=-1, na=20d0, &
-    file="temperature.csv", nskip=1)
+  ! ---- BEGIN OF ADJUSTABLE SETTINGS ----
+  character(len=256), parameter:: file= "temperature.csv"
+  integer, parameter:: nskip= 1
+  integer, parameter:: lweight= -1
+  ! ---- END OF ADJUSTABLE SETTINGS ----
+  double precision, parameter:: NA= huge(0d0)
+  character(len=512):: errmsg
+  double precision:: x
+  x= forcing(time=time, lweight=lweight, na=NA, file=file, nskip=nskip)
+  if (x .eq. NA) then
+    write(errmsg,'(3(a),f0.5)')"failed to retrieve forcing data from file '", &
+      trim(adjustl(file)),"' for query time ",time
+    call rexit(trim(adjustl(errmsg)))
+  end if
 end function
 
 end module

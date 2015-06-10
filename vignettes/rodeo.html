@@ -271,7 +271,7 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 file_genCode= paste0(gsub(&quot;\\&quot;,&quot;/&quot;,tempfile(),fixed=TRUE), &quot;.f95&quot;)
 write(x=code, file=file_genCode)
 cat(&quot;code written to&quot;,file_genCode)</code></pre>
-<pre><code>## code written to /tmp/RtmpCyV52l/file7f0d7bd45830.f95</code></pre>
+<pre><code>## code written to /tmp/RtmpWPZkbX/fileaabe22d179.f95</code></pre>
 <p>Inspection of the generated <em>Fortran95</em> code reveals that the interface of the central subroutine “derivs” is</p>
 <p><code>subroutine derivs(time, var, par, NLVL, dydt, pro)</code></p>
 <p>However, according to the <a href="http://cran.r-project.org/web/packages/deSolve/vignettes/compiledCode.pdf">vignette of the <em>deSolve</em> package</a> (page 6), the following interface is required</p>
@@ -425,7 +425,7 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 ##    !Open file 
 ##    open(unit=un, file=file, status=&quot;old&quot;, action=&quot;read&quot;, iostat=ioresult) 
 ##    if (ioresult .ne. 0) then 
-##      write(*,*)&quot;cannot open file '&quot;,trim(file),&quot;'&quot; 
+##      write(*,*)&quot;cannot open file '&quot;,trim(adjustl(file)),&quot;'&quot; 
 ##      goto 1 
 ##    end if 
 ##    !Initial allocations 
@@ -437,7 +437,7 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 ##    do 
 ##      read(unit=un, fmt='(a)', iostat=ioresult, end=1000) string 
 ##      if (ioresult .ne. 0) then 
-##        write(*,*)&quot;read error at line &quot;,line,&quot; of file '&quot;,trim(file),&quot;'&quot; 
+##        write(*,*)&quot;read error at line &quot;,line,&quot; of file '&quot;,trim(adjustl(file)),&quot;'&quot; 
 ##        goto 1 
 ##      end if 
 ##      string= adjustl(string) 
@@ -461,7 +461,7 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 ##        n= n + 1 
 ##        read(unit=string, fmt=*, iostat=ioresult) tmp%times(n), tmp%values(n) 
 ##        if (ioresult .ne. 0) then 
-##          write(*,*)&quot;read error at line &quot;,line,&quot; of file '&quot;,trim(file),&quot;'&quot; 
+##          write(*,*)&quot;read error at line &quot;,line,&quot; of file '&quot;,trim(adjustl(file)),&quot;'&quot; 
 ##          goto 1 
 ##        end if 
 ##      end if 
@@ -469,7 +469,7 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 ##    end do 
 ##    1000 continue 
 ##    if (n .lt. 2) then 
-##      write(*,*)&quot;found less than two records in file '&quot;,trim(file),&quot;'&quot; 
+##      write(*,*)&quot;found less than two records in file '&quot;,trim(adjustl(file)),&quot;'&quot; 
 ##      goto 1 
 ##    end if 
 ##    close(un) 
@@ -482,7 +482,7 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 ##    deallocate(tmp%values) 
 ##    ! Check data 
 ##    if (any(x%times(2:n)-x%times(1:(n-1)) .le. ZERO)) then 
-##      write(*,*)&quot;times not strictly ascending in file '&quot;,trim(file),&quot;'&quot; 
+##      write(*,*)&quot;times not strictly ascending in file '&quot;,trim(adjustl(file)),&quot;'&quot; 
 ##      goto 1 
 ##    end if 
 ##    ! Return 
@@ -508,38 +508,57 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 ##    integer, intent(inout):: latest     ! index of latest access (inout) 
 ##    integer, intent(in):: lweight       ! weight for begin of time interval 
 ##    double precision, intent(in):: na   ! return value on failure 
-##    ! const 
-##    double precision, parameter:: SMALL=1d-20 
 ##    ! locals 
 ##    integer:: i 
 ##    logical:: ok 
 ##    ! interpolation 
 ##    if (time .lt. x%times(1)) then 
-##      write(*,*)&quot;interpolation failed: query time &lt; time stamp of first record&quot; 
+##      write(*,*) &quot;interpolation failed: query time &lt; time stamp of first record&quot; 
 ##      interpol= na 
 ##    else if (time .gt. x%times(size(x%times))) then 
-##      write(*,*)&quot;interpolation failed: query time &gt; time stamp of final record&quot; 
+##      write(*,*) &quot;interpolation failed: query time &gt; time stamp of final record&quot; 
 ##      interpol= na 
 ##    else 
 ##      ok= .FALSE. 
-##      do i=min(max(1,latest),size(x%times)-1), (size(x%times)-1) 
-##        if ((time .ge. x%times(i)) .and. (time .le. x%times(i+1))) then 
-##          if ((lweight .lt. 0) .or. (lweight .gt. 1)) then 
-##            interpol= x%values(i) * (x%times(i+1) - time) / &amp; 
-##              (x%times(i+1) - x%times(i)) + &amp; 
-##              x%values(i+1) * (time - x%times(i)) / &amp; 
-##              (x%times(i+1) - x%times(i)) 
-##          else 
-##            interpol= x%values(i) * dble(lweight) + &amp; 
-##              x%values(i+1) * dble(1 - lweight) 
+##      ! Forward search 
+##      if (time .ge. x%times(latest)) then 
+##        do i=min(max(1,latest),size(x%times)-1), (size(x%times)-1) 
+##          if ((time .ge. x%times(i)) .and. (time .le. x%times(i+1))) then 
+##            if ((lweight .lt. 0) .or. (lweight .gt. 1)) then 
+##              interpol= x%values(i) * (x%times(i+1) - time) / &amp; 
+##                (x%times(i+1) - x%times(i)) + &amp; 
+##                x%values(i+1) * (time - x%times(i)) / &amp; 
+##                (x%times(i+1) - x%times(i)) 
+##            else 
+##              interpol= x%values(i) * dble(lweight) + &amp; 
+##                x%values(i+1) * dble(1 - lweight) 
+##            end if 
+##            latest= i 
+##            ok= .TRUE. 
+##            exit 
 ##          end if 
-##          latest= i 
-##          ok= .TRUE. 
-##          exit 
-##        end if 
-##      end do 
+##        end do 
+##      ! Backward search 
+##      else 
+##        do i=max(min(latest,size(x%times)), 2), 2, -1 
+##          if ((time .ge. x%times(i-1)) .and. (time .le. x%times(i))) then 
+##            if ((lweight .lt. 0) .or. (lweight .gt. 1)) then 
+##              interpol= x%values(i-1) * (x%times(i) - time) / &amp; 
+##                (x%times(i) - x%times(i-1)) + &amp; 
+##                x%values(i) * (time - x%times(i-1)) / &amp; 
+##                (x%times(i) - x%times(i-1)) 
+##            else 
+##              interpol= x%values(i-1) * dble(lweight) + &amp; 
+##                x%values(i) * dble(1 - lweight) 
+##            end if 
+##            latest= i 
+##            ok= .TRUE. 
+##            exit 
+##          end if 
+##        end do 
+##      end if 
 ##      if (.not. ok) then 
-##        write(*,*)&quot;interpolation failed: corrupted time series&quot; 
+##        write(*,*) &quot;interpolation failed: corrupted time series&quot; 
 ##        interpol= na 
 ##      end if 
 ##    end if 
@@ -563,14 +582,16 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 ##    if (firstCall) then 
 ##      firstCall= .FALSE. 
 ##      if (.not. readTS(file, nskip, x)) then 
-##        write(*,*) &quot;initialization of forcing data failed&quot; 
+##        write(*,*) &quot;initialization of forcing data from file '&quot;, &amp; 
+##          trim(adjustl(file)),&quot;' failed&quot; 
+##        forcing= na 
 ##      end if 
 ##    end if 
 ##    ! interpolate 
 ##    if (allocated(x%times)) then 
 ##      forcing= interpol(time=time, x=x, latest=latest, lweight=lweight, na=na) 
 ##    else 
-##      write(*,*) &quot;no forcing data to interpolate&quot; 
+##      write(*,*) &quot;forcing data not allocated&quot; 
 ##      forcing= na 
 ##    end if 
 ##  end function 
@@ -599,39 +620,56 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 ##  !      constant interpolation with full weight given to the value at the begin 
 ##  !      of a time interval. Any other values (&lt; 0 or &gt; 1) result in linear 
 ##  !      interpolation with weights being set automatically. 
-##  !   3) The value of 'na' (double precision). This value is returned in the case 
-##  !      of errors (e.g. if the data file is corrupt of non-existing). It should 
-##  !      either be a reasonable default value or some exceptional value definitely 
-##  !      resulting in strange outputs. Note that Fortran double precision 
-##  !      constants should be written in scientific notation with character 'd' 
-##  !      being used instead of the usual 'e'. Examples for pi: 3.1425d0, 31415d-4. 
-##  !   4) The name of the data file. Conventions for file contents: 
+##  !   3) The name of the data file. Conventions for file contents: 
 ##  !      - There must be two numeric columns; column 1: time, column 2: value. 
 ##  !      - Times must be real numbers (e.g. unix time of offset from user datum). 
 ##  !      - Columns are expected to be separated by comma, blank, or tabulator. 
 ##  !      - Numeric data start in the first row unless nskip is set &gt; 0. 
 ##  !      - The file may contain blank lines, comment lines are NOT supported. 
-##  !   5) The value of 'nskip' (integer). This is the number of lines to skip 
+##  !   4) The value of 'nskip' (integer). This is the number of lines to skip 
 ##  !      before reading numeric data from the file. Typical values are 0 or 1, 
 ##  !      depending on whether column names are present. 
 ##   
-##  double precision function temperature (time) 
+##  function temperature (time) result (x) 
 ##    double precision, intent(in):: time 
-##    temperature= forcing(time=time, lweight=-1, na=20d0, &amp; 
-##      file=&quot;temperature.csv&quot;, nskip=1) 
+##    ! ---- BEGIN OF ADJUSTABLE SETTINGS ---- 
+##    character(len=256), parameter:: file= &quot;temperature.csv&quot; 
+##    integer, parameter:: nskip= 1 
+##    integer, parameter:: lweight= -1 
+##    ! ---- END OF ADJUSTABLE SETTINGS ---- 
+##    double precision, parameter:: NA= huge(0d0) 
+##    character(len=512):: errmsg 
+##    double precision:: x 
+##    x= forcing(time=time, lweight=lweight, na=NA, file=file, nskip=nskip) 
+##    if (x .eq. NA) then 
+##      write(errmsg,'(3(a),f0.5)')&quot;failed to retrieve forcing data from file '&quot;, &amp; 
+##        trim(adjustl(file)),&quot;' for query time &quot;,time 
+##      call rexit(trim(adjustl(errmsg))) 
+##    end if 
 ##  end function 
 ##   
 ##  end module 
 ##   
 ##   
 ## </code></pre>
-<p>The following Fortran code demonstrates how the user-definfed forcing functions can be tested/debugged outside of the <code>rodeo</code> environment. The shown utility program can be compiled, for example, using a command like <code>gfortran &lt;file_with_modules&gt; &lt;file_with_program&gt; -o test</code>.</p>
-<pre><code>## program test 
+<p>The following Fortran code demonstrates how the user-defined forcing functions can be tested/debugged outside of the <code>rodeo</code> environment. The shown utility program can be compiled, for example, using a command like <code>gfortran &lt;file_with_modules&gt; &lt;file_with_program&gt; -o test</code>. Note that the subroutine <code>rexit</code> is available automatically if the code is used to build a shared library with <code>R CMD SHLIB</code>, i.e. the subroutine must not be defined.</p>
+<pre><code>## subroutine rexit(x) 
+##    character(len=*),intent(in):: x 
+##    write(*,*)x 
+##    stop 
+##  end subroutine 
+##   
+##  program test 
 ##  use functions 
 ##   
 ##  implicit none 
 ##   
-##  write(*,*) temperature(2.5d0) 
+##  write(*,*) temperature(0.d0) 
+##  write(*,*) temperature(5184000.d0) 
+##  write(*,*) temperature(2592000.d0) 
+##  write(*,*) temperature(31536000.d0) 
+##  write(*,*) temperature(11772000.d0) 
+##  write(*,*) temperature(18360000.d0) 
 ##   
 ##  end program 
 ## </code></pre>
