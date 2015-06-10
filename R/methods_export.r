@@ -6,7 +6,8 @@ setOpt= function(x, defaults, colnames) {
     if (is.null(names(x)) || any(names(x) == ""))
       stop("all elements in 'x' must be named")
     if (!all(names(x) %in% colnames))
-      stop("element name(s) of 'x' not in 'colnames'")
+      stop(paste0("element name(s) of 'x' not in 'colnames';",
+        " must be one of '",paste(colnames,collapse="', '"),"'"))
     i= match(colnames, names(x))
     res= ifelse(is.na(i), res, x[i])
   }
