@@ -15,7 +15,7 @@ checkTbl= function(tbl, tblName, colNames, nameCol, emptyOK) {
     if (!all(colNames %in% names(tbl)))
       stop(paste0("'",tblName,"' must have columns '",
         paste(colNames,collapse="', '"),"'"))
-    # Check for non-unique names
+    # Check entries in name column
     if (!is.null(nameCol)) {
       if (!(nameCol %in% names(tbl)))
         stop(paste0("column '",nameCol," not present in '",tblName,"'"))

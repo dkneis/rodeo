@@ -96,13 +96,19 @@ model$show()
 print(model$stoichiometryMatrix())
 ```
 
-Finally, one can use e.g. `exportDF` to export the object's basic information in a format which is suitable for inclusion in HTML or TEX documents.
+Finally, one can use e.g. `exportDF` to export the object's basic information in a format which is suitable for inclusion in HTML or TEX documents. The example below illustrates how information on state variables can be exported as TEX code.
 
 ```{r exportTables, eval=TRUE}
-df= model$getVars()
+# Select columns to export
+df= model$getVars()[,c("tex","unit","description")]
+# Define formatting functions
+bold= function(x){paste0("\\textbf{",x,"}")}
+mathmode= function(x) {paste0("$",x,"$")}
+# Export
 tex= exportDF(x=df, tex=TRUE,
-  funHead=setNames(replicate(ncol(df),
-    function(x){paste0("\\textbf{",x,"}")}),names(df))
+  colnames=c(tex="symbol"),
+  funHead=setNames(replicate(ncol(df),bold),names(df)),
+  funCell=list(tex=mathmode)
 )
 cat(tex)
 ```

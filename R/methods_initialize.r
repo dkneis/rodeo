@@ -15,15 +15,15 @@ rodeo$methods(
     stoi= data.frame(lapply(stoi, as.character), stringsAsFactors=FALSE)
   # Set variables ##############################################################
   checkTbl(tbl=vars, tblName="vars",
-    colNames=c("name","unit","description"), nameCol="name", emptyOK=FALSE)
+    colNames=c("name","unit","description","tex","html"), nameCol="name", emptyOK=FALSE)
   .self$VARS <<- vars
   # Set parameters #############################################################
   checkTbl(tbl=pars, tblName="pars",
-    colNames=c("name","unit","description"), nameCol="name", emptyOK=FALSE)
+    colNames=c("name","unit","description","tex","html"), nameCol="name", emptyOK=FALSE)
   .self$PARS <<- pars
   # Set functions ##############################################################
   checkTbl(tbl=funs, tblName="funs",
-    colNames=c("name","unit","description"), nameCol="name", emptyOK=TRUE)
+    colNames=c("name","unit","description","tex","html"), nameCol="name", emptyOK=TRUE)
   .self$FUNS <<- funs
   # Set processes ##############################################################
   # Basic checks
@@ -45,6 +45,17 @@ rodeo$methods(
       stop(paste0("invalid mathematical expression detected for process rate '",
         pros$name[i],"'; details: ",e))
     })
+  }
+  # Append columns with expressions translated to tex/html
+  pros$expression_tex= pros$expression
+  pros$expression_html= pros$expression
+  for (i in 1:nrow(pros)) {
+    pros$expression_tex[i]= substituteIdentifiers(expr=pros$expression_tex[i],
+      sub=c(setNames(vars$tex, vars$name), setNames(pars$tex, pars$name),
+      setNames(funs$tex, funs$name), time="time"),all=TRUE)
+    pros$expression_html[i]= substituteIdentifiers(expr=pros$expression_html[i],
+      sub=c(setNames(vars$html, vars$name), setNames(pars$html, pars$name),
+      setNames(funs$html, funs$name), time="time"),all=TRUE)
   }
   .self$PROS <<- pros
   # Set stoichiometry ##########################################################
@@ -90,9 +101,24 @@ rodeo$methods(
       "' is not a valid mathematical expression; details: ",e))
     })
   }
+  # Append columns with expressions translated to tex/html
+  stoi$expression_tex= stoi$expression
+  stoi$expression_html= stoi$expression
+  for (i in 1:nrow(stoi)) {
+    stoi$expression_tex[i]= substituteIdentifiers(expr=stoi$expression_tex[i],
+      sub=c(setNames(vars$tex, vars$name), setNames(pars$tex, pars$name),
+      setNames(funs$tex, funs$name), time="time"),all=TRUE)
+    stoi$expression_html[i]= substituteIdentifiers(expr=stoi$expression_html[i],
+      sub=c(setNames(vars$html, vars$name), setNames(pars$html, pars$name),
+      setNames(funs$html, funs$name), time="time"),all=TRUE)
+  }
+  # Add columns with the variables' symbols
+  stoi$variable_tex= vars$tex[match(stoi$variable, vars$name)]
+  stoi$variable_html= vars$html[match(stoi$variable, vars$name)]
   .self$STOI <<- stoi
   # General checks #############################################################
-  # Duplicate-name checks over multiple tables
+  # Duplicate checks over multiple tables
+  # (1) names
   n= c(vars$name, pars$name, funs$name, pros$name)
   bad= unique(n[which(duplicated(n))])
   if (length(bad) > 0)
@@ -100,6 +126,21 @@ rodeo$methods(
       " must be unique; the following ",
       ifelse(length(bad)>1,"names were","name was"),
       " declared more than once: '",paste(bad,collapse="', '"),"'"))
-
+  # (2) tex symbols
+  n= c(vars$tex, pars$tex, funs$tex)
+  bad= unique(n[which(duplicated(n))])
+  if (length(bad) > 0)
+    stop(paste0("tex symbols of variables, parameters, and functions",
+      " must be unique; the following ",
+      ifelse(length(bad)>1,"symbols are","symbol is"),
+      " used more than once: '",paste(bad,collapse="', '"),"'"))
+  # (3) html symbols
+  n= c(vars$html, pars$html, funs$html)
+  bad= unique(n[which(duplicated(n))])
+  if (length(bad) > 0)
+    stop(paste0("html symbols of variables, parameters, and functions",
+      " must be unique; the following ",
+      ifelse(length(bad)>1,"symbols are","symbol is"),
+      " used more than once: '",paste(bad,collapse="', '"),"'"))
 })
 

@@ -33,7 +33,7 @@ allow_= function(x) { gsub(pattern="_", replacement="\\_",
 # High-level formatting functions
 niceHead= function(x) { bold(firstUpper(x)) }
 math= function(x) { paste0("$",gsub(pattern="*", replacement="\\cdot ",
-  x=allow_(x), fixed=TRUE),"$") }
+  x=x, fixed=TRUE),"$") }
 @
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,13 +47,12 @@ Tables~\ref{tab:vars}, \ref{tab:pars}, and \ref{tab:funs} contain the declaratio
   \caption{Table of state variables. \label{tab:vars}}
   \begin{center}
 <<vars, results=tex, echo=FALSE>>=
-cat(
-  exportDF(x=model$getVars(), tex=TRUE,
-    funHead= setNames(replicate(ncol(model$getVars()),niceHead),
-      names(model$getVars())),
-    funCell= c(description=firstUpper, name=math)
-  )
-)
+tbl= model$getVars()[,c("tex","unit","description")]
+cat(exportDF(x=tbl, tex=TRUE,
+  colnames= c(tex="Symbol"),
+  funHead= setNames(replicate(ncol(tbl),niceHead), names(tbl)),
+  funCell= c(tex=math, description=firstUpper)
+))
 @
   \end{center}
 \end{table}
@@ -62,13 +61,12 @@ cat(
   \caption{Table of parameters. \label{tab:pars}}
   \begin{center}
 <<pars, results=tex, echo=FALSE>>=
-cat(
-  exportDF(x=model$getPars(), tex=TRUE,
-    funHead= setNames(replicate(ncol(model$getPars()),niceHead),
-      names(model$getPars())),
-    funCell= c(description=firstUpper, name=math)
-  )
-)
+tbl= model$getPars()[,c("tex","unit","description")]
+cat(exportDF(x=tbl, tex=TRUE,
+  colnames= c(tex="Symbol"),
+  funHead= setNames(replicate(ncol(tbl),niceHead), names(tbl)),
+  funCell= c(tex=math, description=firstUpper)
+))
 @
   \end{center}
 \end{table}
@@ -77,13 +75,12 @@ cat(
   \caption{Table of functions. \label{tab:funs}}
   \begin{center}
 <<funs, results=tex, echo=FALSE>>=
-cat(
-  exportDF(x=model$getFuns(), tex=TRUE,
-    funHead= setNames(replicate(ncol(model$getFuns()),niceHead),
-      names(model$getFuns())),
-    funCell= c(description=firstUpper, name=math)
-  )
-)
+tbl= model$getFuns()[,c("tex","unit","description")]
+cat(exportDF(x=tbl, tex=TRUE,
+  colnames= c(tex="Symbol"),
+  funHead= setNames(replicate(ncol(tbl),niceHead), names(tbl)),
+  funCell= c(tex=math, description=firstUpper)
+))
 @
   \end{center}
 \end{table}
@@ -99,14 +96,12 @@ The simulated processes are summarized in Table~\ref{tab:pros}. For models with 
   \caption{Table of processes. \label{tab:pros}}
   \begin{center}
 <<pros, results=tex, echo=FALSE>>=
-cat(
-  exportDF(x=model$getPros(), tex=TRUE,
-    colnames= c(expression="process rate expression"),
-    funHead= setNames(replicate(ncol(model$getPros()),niceHead),
-      names(model$getPros())),
-    funCell= c(description=firstUpper, expression=math)
-    )
-)
+tbl= model$getPros()[,c("name","unit","description","expression_tex")]
+cat(exportDF(x=tbl, tex=TRUE,
+  colnames= c(expression_tex="process rate expression"),
+  funHead= setNames(replicate(ncol(tbl),niceHead), names(tbl)),
+  funCell= c(description=firstUpper, expression_tex=math)
+))
 @
   \end{center}
 \end{table}
@@ -127,14 +122,12 @@ The link between state variables and processes is determined by the stoichiometr
   \caption{Stoichiometry in tabular form. \label{tab:stoi}}
   \begin{center}
 <<stoi, results=tex, echo=FALSE>>=
-cat(
-  exportDF(x=model$getStoi(), tex=TRUE,
-    colnames= c(expression="stoichiometry factors"),
-    funHead= setNames(replicate(ncol(model$getStoi()),niceHead),
-      names(model$getStoi())),
-    funCell= c(variable=math, expression=math)
-    )
-)
+tbl= model$getStoi()[,c("variable_tex","process","expression_tex")]
+cat(exportDF(x=tbl, tex=TRUE,
+  colnames= c(variable_tex="variable", expression_tex="stoichiometry factor"),
+  funHead= setNames(replicate(ncol(tbl),niceHead), names(tbl)),
+  funCell= c(variable_tex=math, expression_tex=math)
+))
 @
   \end{center}
 \end{table}
