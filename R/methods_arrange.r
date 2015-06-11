@@ -39,7 +39,7 @@ arrangeGeneric= function(x, itemNames, sep=".", warnUnused=TRUE) {
 }
 
 rodeo$methods( arrangeVars= function(x, sep=".", warnUnused=TRUE) {
-  "Create vector of state variables from list \\code{x}. The list elements can
+  "Build a vector of state variables from list \\code{x}. The list elements can
   either be vectors (with length according to the number of spatial levels) or
   scalars. The latter are recycled for all spatial levels. Element names are
   constructed by appending the level index to the original names using the
@@ -49,7 +49,7 @@ rodeo$methods( arrangeVars= function(x, sep=".", warnUnused=TRUE) {
 })
 
 rodeo$methods( arrangePars= function(x, sep=".", warnUnused=TRUE) {
-  "Create vector of parameters from list \\code{x}. The list elements can
+  "Build a vector of parameters from list \\code{x}. The list elements can
   either be vectors (with length according to the number of spatial levels) or
   scalars. The latter are recycled for all spatial levels. Element names are
   constructed by appending the level index to the original names using the
