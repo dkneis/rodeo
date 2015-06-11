@@ -1,5 +1,6 @@
 \documentclass[a4paper,10pt]{article}
 \usepackage{rotfloat}
+\usepackage{amssymb}
 
 \begin{document}
 \SweaveOpts{concordance=TRUE}
@@ -34,6 +35,11 @@ allow_= function(x) { gsub(pattern="_", replacement="\\_",
 niceHead= function(x) { bold(firstUpper(x)) }
 math= function(x) { paste0("$",gsub(pattern="*", replacement="\\cdot ",
   x=x, fixed=TRUE),"$") }
+signsymbol= function(x) {
+  if (as.numeric(x) > 0) return("$\\blacktriangle$")
+  if (as.numeric(x) < 0) return("$\\blacktriangledown$")
+  return("")
+}
 @
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -111,17 +117,12 @@ cat(exportDF(x=tbl, tex=TRUE,
 
 \section{Stoichiometry}
 
-The link between state variables and processes is determined by the stoichiometry information (Table~\ref{tab:stoi}, Fig.~\ref{fig:stoi}). In order to visualize the matrix, we need to
-\begin{enumerate}
-  \item assign values to parameters,
-  \item assign values to the state variables,
-  \item define any functions (in R code).
-\end{enumerate}
+The link between state variables and processes is determined by the stoichiometry information. It can be presented in tabular form (Table~\ref{tab:stoiExpr}), as a numeric matrix (Table~\ref{tab:stoiNum}), or as a quasi-figure (Fig.~\ref{fig:stoiSymb}).
 
 \begin{table}[!h]
-  \caption{Stoichiometry in tabular form. \label{tab:stoi}}
+  \caption{Stoichiometry in tabular form. \label{tab:stoiExpr}}
   \begin{center}
-<<stoi, results=tex, echo=FALSE>>=
+<<stoiExpr, results=tex, echo=FALSE>>=
 tbl= model$getStoi()[,c("variable_tex","process","expression_tex")]
 cat(exportDF(x=tbl, tex=TRUE,
   colnames= c(variable_tex="variable", expression_tex="stoichiometry factor"),
@@ -132,9 +133,14 @@ cat(exportDF(x=tbl, tex=TRUE,
   \end{center}
 \end{table}
 
-\begin{figure}[!h]
-  \begin{center}
-<<stoi_fig, results=tex, echo=TRUE, fig=TRUE>>=
+In order to populate the matrix with numeric data, we need to
+\begin{enumerate}
+  \item assign values to parameters,
+  \item assign values to the state variables,
+  \item define any functions (in R code).
+\end{enumerate}
+
+<<stoiComp, echo=FALSE>>=
 
 # Parameters
 pars= c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
@@ -151,12 +157,41 @@ monod= function(s,h) {s / (s + h)}
 # Time-dependent forcings
 c_z_in= function(seconds) { 0.1 * seconds/(7*86400 + seconds) }
 c_do_in= function(seconds) { 9.022 }
+@
 
-# Creates the plot
-model$plot(c(vars, pars, time=0))
+\begin{table}[!h]
+  \begin{center}
+  \caption{Stoichiometry matrix for given variable values, parameters, and functions. \label{tab:stoiNum}}
+<<stoiNum, results=tex, echo=FALSE>>=
+# Computes the stoichiometry matrix
+m= model$stoichiometryMatrix(c(vars, pars, time=0))
+tbl= cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE), as.data.frame(m))
+cat(exportDF(x=tbl, tex=TRUE,
+  colnames= setNames(c("Process",model$getVars()$tex[match(colnames(m),
+    model$getVars()$name)]), names(tbl)),
+  funHead= setNames(replicate(ncol(tbl),math), names(tbl)),
+  funCell= setNames(replicate(ncol(m),math), colnames(m))
+))
 @
   \end{center}
-  \caption{Graphical representation of the stoichiometry matrix. Triangles indicate the sign of the interaction between processes and state variables (upward: positive, downward: negative). Empty cells denote missing (direct) interactions. \label{fig:stoi}}
+\end{table}
+
+
+\begin{figure}[!h]
+  \begin{center}
+<<stoiSymb, results=tex, echo=FALSE>>=
+# Computes the stoichiometry matrix
+m= model$stoichiometryMatrix(c(vars, pars, time=0))
+tbl= cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE), as.data.frame(m))
+cat(exportDF(x=tbl, tex=TRUE,
+  colnames= setNames(c("Process",model$getVars()$tex[match(colnames(m),
+    model$getVars()$name)]), names(tbl)),
+  funHead= setNames(replicate(ncol(tbl),math), names(tbl)),
+  funCell= setNames(replicate(ncol(m),signsymbol), colnames(m))
+))
+@
+  \end{center}
+  \caption{Same information as in Tab.~\ref{tab:stoiNum} but the sign of the stoichiometry factors is represented by triangles ($\blacktriangle$: positive, $\blacktriangledown$: negative). Empty cells denote missing (direct) interactions. \label{fig:stoiSymb}}
 \end{figure}
 
 

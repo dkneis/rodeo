@@ -137,23 +137,35 @@ p= model$arrangePars(pars)
 v= model$arrangeVars(vars)
 ```
 
-## Plotting a model object
+## Computing and visualizing the stoichiometry matrix
 
-Having defined all functions and having set data, we can plot the stoichiometry matrix. This is very useful for complex models with many variables and processes.
+Having defined all functions and having set the values of variables and parameters, one can compute the stoichiometry factors.
 
-<table border = 0>
-<tr>
-<td>
-```{r plotObjCode, eval=FALSE}
-model$plot(c(v, p, time=0))
+```{r stoiCompute, eval=TRUE}
+m= model$stoichiometryMatrix(c(v, p, time=0))
+print(signif(m, 3))
 ```
-</td>
-<td>
-```{r plotObjResult, ref.label="plotObjCode", echo=FALSE, fig.width=2, fig.height=2, fig.align="center"}
+
+For presentations, it is often a good idea to replace the numeric values by symbols encoding the sign of the stoichiometry factors. The following example generates suitable HTML code. In order to test this, you need to
+
+ - create a new text file with the extension '.html'
+ - copy the output to this file and remove the '##' characters
+ - enclose the files contents by `<html>` and `</html>`
+ - open the file in a web browser
+
+```{r stoiSymbols, eval=TRUE}
+signsymbol= function(x) {
+  if (as.numeric(x) > 0) return("&#9651;")
+  if (as.numeric(x) < 0) return("&#9661;")
+  return("")
+}
+tbl= cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE), as.data.frame(m))
+cat(exportDF(x=tbl, tex=FALSE,
+  colnames= setNames(c("Process",model$getVars()$html[match(colnames(m),
+    model$getVars()$name)]), names(tbl)),
+  funCell= setNames(replicate(ncol(m),signsymbol), colnames(m))
+))
 ```
-</td>
-</tr>
-</table>
 
 ## Translating the model into source code
 
