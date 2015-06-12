@@ -96,6 +96,23 @@ model$show()
 print(model$stoichiometryMatrix())
 ```
 
+Finally, one can use e.g. `exportDF` to export the object's basic information in a format which is suitable for inclusion in HTML or TEX documents. The example below illustrates how information on state variables can be exported as TEX code.
+
+```{r exportTables, eval=TRUE}
+# Select columns to export
+df= model$getVars()[,c("tex","unit","description")]
+# Define formatting functions
+bold= function(x){paste0("\\textbf{",x,"}")}
+mathmode= function(x) {paste0("$",x,"$")}
+# Export
+tex= exportDF(x=df, tex=TRUE,
+  colnames=c(tex="symbol"),
+  funHead=setNames(replicate(ncol(df),bold),names(df)),
+  funCell=list(tex=mathmode)
+)
+cat(tex)
+```
+
 ## Defining functions and supplying data
 
 In order to work with the object, we need to define functions that are referenced in the model's mathematical expressions. This includes the forcings which are functions of a special argument with the reserved name 'time'. See the [section on forcings](#forcings) for details.
@@ -120,23 +137,35 @@ p= model$arrangePars(pars)
 v= model$arrangeVars(vars)
 ```
 
-## Plotting a model object
+## Computing and visualizing the stoichiometry matrix
 
-Having defined all functions and having set data, we can plot the stoichiometry matrix. This is very useful for complex models with many variables and processes.
+Having defined all functions and having set the values of variables and parameters, one can compute the stoichiometry factors.
 
-<table border = 0>
-<tr>
-<td>
-```{r plotObjCode, eval=FALSE}
-model$plot(c(v, p, time=0))
+```{r stoiCompute, eval=TRUE}
+m= model$stoichiometryMatrix(c(v, p, time=0))
+print(signif(m, 3))
 ```
-</td>
-<td>
-```{r plotObjResult, ref.label="plotObjCode", echo=FALSE, fig.width=2, fig.height=2, fig.align="center"}
+
+For presentations, it is often a good idea to replace the numeric values by symbols encoding the sign of the stoichiometry factors. The following example generates suitable HTML code. In order to test this, you need to
+
+ - create a new text file with the extension '.html'
+ - copy the output to this file and remove the '##' characters
+ - enclose the files contents by `<html>` and `</html>`
+ - open the file in a web browser
+
+```{r stoiSymbols, eval=TRUE}
+signsymbol= function(x) {
+  if (as.numeric(x) > 0) return("&#9651;")
+  if (as.numeric(x) < 0) return("&#9661;")
+  return("")
+}
+tbl= cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE), as.data.frame(m))
+cat(exportDF(x=tbl, tex=FALSE,
+  colnames= setNames(c("Process",model$getVars()$html[match(colnames(m),
+    model$getVars()$name)]), names(tbl)),
+  funCell= setNames(replicate(ncol(m),signsymbol), colnames(m))
+))
 ```
-</td>
-</tr>
-</table>
 
 ## Translating the model into source code
 
@@ -222,7 +251,7 @@ text= paste(text,"\n")
 cat(text)
 ```
 
-The model-specific functions (3) could be defines as :
+The model-specific functions (3) could be defined as :
 
 ```{r fortranFunctions, echo=FALSE}
 file_funCode= "functionsCode.f95"
@@ -292,7 +321,7 @@ text= paste(text,"\n")
 cat(text)
 ```
 
-The following Fortran code demonstrates how the user-definfed forcing functions can be tested/debugged outside of the `rodeo` environment. The shown utility program can be compiled, for example, using a command like `gfortran <file_with_modules> <file_with_program> -o test`. 
+The following Fortran code demonstrates how the user-defined forcing functions can be tested/debugged outside of the `rodeo` environment. The shown utility program can be compiled, for example, using a command like `gfortran <file_with_modules> <file_with_program> -o test`. Note that the subroutine `rexit` is available automatically if the code is used to build a shared library with `R CMD SHLIB`, i.e. the subroutine must not be defined.
 
 ```{r fortranForcingsTest, echo=FALSE}
 text= readLines("fortranForcingsTest.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
