@@ -351,7 +351,7 @@ In real-world applications, the 'stop-and-go' approach is often simpler to use a
 
 This section demonstrates how the 'functions-of-time' approach can be used in Fortran-based models assuming that information on forcings is stored in delimited text files (column 1: time, column 2: value). Such files can be created, for example, with any spreadsheet software, data base system, or R.
 
-The following Fortran code defines a forcing variable 'temperature' whose time variable values are read from a csv-formatted data file (using comma, blank, or TAB as separator).
+The following Fortran code defines two forcing variable 'temperature' and 'temperature2' whose time-dependent values are read from csv-formatted data files (using comma, blank, or TAB as separator).
 
 Note that the first part of the file (module 'forcings') is fully generic. Only the second part (module 'functions') is meant to be edited by users.
 
@@ -361,7 +361,16 @@ text= paste(text,"\n")
 cat(text)
 ```
 
-The following Fortran code demonstrates how the user-defined forcing functions can be tested/debugged outside of the `rodeo` environment. The shown utility program can be compiled, for example, using a command like `gfortran <file_with_modules> <file_with_program> -o test`. Note that the subroutine `rexit` is available automatically if the code is used to build a shared library with `R CMD SHLIB`, i.e. the subroutine must not be defined.
+The file 'fortranForcingsInclude.f95' included from the above code (using `include` statements) has the contents shown below. Use of the include mechanism avoids redundant writing of generic code sections in cases where multiple forcings need to be defined. 
+
+```{r fortranForcingsInclude, echo=FALSE}
+text= readLines("fortranForcingsInclude.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
+text= paste(text,"\n")
+cat(text)
+```
+
+
+The following Fortran code demonstrates how the user-defined forcing functions can be tested/debugged outside of the `rodeo` environment. The shown utility program can be compiled, for example, using a command like `gfortran <file_with_modules> <file_with_program> -I. -o test`. Note that the subroutine `rexit` is available automatically if the code is used to build a shared library with `R CMD SHLIB`, i.e. the subroutine must not be defined.
 
 ```{r fortranForcingsTest, echo=FALSE}
 text= readLines("fortranForcingsTest.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
