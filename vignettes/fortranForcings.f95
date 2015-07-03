@@ -173,40 +173,7 @@ double precision function interpol(time, x, latest, lweight, na)
   end if
 end function
 
-!###############################################################################
-! Function to return the value of a forcing variable
-double precision function forcing (time, lweight, na, file, nskip)
-  ! args
-  double precision, intent(in):: time    ! query time
-  integer, intent(in):: lweight          ! weight for begin of time interval
-  double precision, intent(in):: na      ! return value on failure
-  character(len=*), intent(in):: file    ! text file with time series data
-  integer, intent(in):: nskip            ! number of lines to skip in file
-  ! constants
-  ! local
-  logical, save:: firstCall= .TRUE.
-  integer, save:: latest= 1
-  type(TSeries), save:: x
-  ! init
-  if (firstCall) then
-    firstCall= .FALSE.
-    if (.not. readTS(file, nskip, x)) then
-      write(*,*) "initialization of forcing data from file '", &
-        trim(adjustl(file)),"' failed"
-      forcing= na
-    end if
-  end if
-  ! interpolate
-  if (allocated(x%times)) then
-    forcing= interpol(time=time, x=x, latest=latest, lweight=lweight, na=na)
-  else
-    write(*,*) "forcing data not allocated"
-    forcing= na
-  end if
-end function
-
 end module
-
 
 !###############################################################################
 !# PART 2: MODULE WITH USER DEFINED FUNCTIONS
@@ -224,37 +191,37 @@ contains
 ! You need to define a function like this for every time-variable forcing. You
 ! must adjust:
 !   1) The name of the function. A unique name is required for each forcing.
-!   2) The value of 'lweight' (integer). Use 0 for constant interpolation with
-!      full weight given to the value at the end of a time interval. Use 1 for
-!      constant interpolation with full weight given to the value at the begin
-!      of a time interval. Any other values (< 0 or > 1) result in linear
-!      interpolation with weights being set automatically.
-!   3) The name of the data file. Conventions for file contents:
+!   2) The name of the data file. Conventions for file contents:
 !      - There must be two numeric columns; column 1: time, column 2: value.
 !      - Times must be real numbers (e.g. unix time of offset from user datum).
 !      - Columns are expected to be separated by comma, blank, or tabulator.
 !      - Numeric data start in the first row unless nskip is set > 0.
 !      - The file may contain blank lines, comment lines are NOT supported.
-!   4) The value of 'nskip' (integer). This is the number of lines to skip
+!   3) The value of 'nskip' (integer). This is the number of lines to skip
 !      before reading numeric data from the file. Typical values are 0 or 1,
 !      depending on whether column names are present.
+!   4) The value of 'lweight' (integer). Use 0 for constant interpolation with
+!      full weight given to the value at the end of a time interval. Use 1 for
+!      constant interpolation with full weight given to the value at the begin
+!      of a time interval. Any other values (< 0 or > 1) result in linear
+!      interpolation with weights being set automatically.
 
-function temperature (time) result (x)
-  double precision, intent(in):: time
+function temperature (time) result (res)
   ! ---- BEGIN OF ADJUSTABLE SETTINGS ----
   character(len=256), parameter:: file= "temperature.csv"
   integer, parameter:: nskip= 1
   integer, parameter:: lweight= -1
   ! ---- END OF ADJUSTABLE SETTINGS ----
-  double precision, parameter:: NA= huge(0d0)
-  character(len=512):: errmsg
-  double precision:: x
-  x= forcing(time=time, lweight=lweight, na=NA, file=file, nskip=nskip)
-  if (x .eq. NA) then
-    write(errmsg,'(3(a),f0.5)')"failed to retrieve forcing data from file '", &
-      trim(adjustl(file)),"' for query time ",time
-    call rexit(trim(adjustl(errmsg)))
-  end if
+  include "fortranForcingsInclude.f95"
+end function
+
+function temperature2 (time) result (res)
+  ! ---- BEGIN OF ADJUSTABLE SETTINGS ----
+  character(len=256), parameter:: file= "temperature2.csv"
+  integer, parameter:: nskip= 1
+  integer, parameter:: lweight= -1
+  ! ---- END OF ADJUSTABLE SETTINGS ----
+  include "fortranForcingsInclude.f95"
 end function
 
 end module

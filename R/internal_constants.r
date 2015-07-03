@@ -20,6 +20,6 @@ rodeoConst= list(
   ),
 
   nameTime="time"
-  
+
 ) # End of list
 

@@ -8,14 +8,19 @@ rodeo$methods( generate = function(lang, name="derivs") {
   # Set language-specific code elements
   L= codeElem(lang)
 
-  # Check names of identifiers used in generated code for conflicts with
-  # user-defined names
-  names2check= c(.self$FUNS$name)
-  conflicts= names2check %in% rodeoConst$genIdent
+  # Check user-defined functions
+  funcnames= .self$FUNS$name
+  # (a) name conflicts with variables used in generated code
+  conflicts= funcnames %in% rodeoConst$genIdent
   if (any(conflicts))
     stop(paste0("identifier name(s) in generated code conflict(s) with name(s)",
       " of user-defined item(s); conflicting names(s): '",
-      paste(names2check[which(conflicts)], collapse="', '"),"'"))
+      paste(funcnames[which(conflicts)], collapse="', '"),"'"))
+  # (b) forbidden use of functions
+  if (lang == "r") {
+    if (any(c("min","max") %in% funcnames))
+      stop("can't use min/max function in generated R code; use pmin/pmax instead")
+  }
 
   # Define array indices for all items --> these refer to the 0D case
   indexVars= setNames(1:nrow(.self$VARS), .self$VARS$name)
