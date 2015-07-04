@@ -286,11 +286,13 @@ Consequently, we need to manually code in Fortran
 A suitable Fortan code for (1) and (2) is given below. Note that this code is fully generic except for the statement `NLVL=3` which defines the number of spatial boxes.
 
 ```{r fortranWrapper, echo=FALSE}
-file_auxCode= "wrapperCode.f95"
-#file_auxCode= "vignettes/wrapperCode.f95"
-text= readLines(file_auxCode, n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
-text= paste(text,"\n")
-cat(text)
+#file_auxCode= "wrapperCode.f95"
+# file_auxCode= "vignettes/wrapperCode.f95"
+# text= readLines(file_auxCode, n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
+# text= paste(text,"\n")
+# cat(text)
+
+file_auxCode = wrapper_code(NLVL = nbox)
 ```
 
 The model-specific functions (3) could be defined as :
