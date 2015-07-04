@@ -1,0 +1,34 @@
+---
+title: "Testing things"
+author: "Andrew M. Dolman"
+date: "19 June 2015"
+output: pdf_document
+---
+
+```{r}
+library(rodeo, quietly=TRUE)
+library(pander)
+library(knitr)
+library(tools)
+
+data(identifiers)
+print(format(identifiers, justify="left"))
+```
+
+```{r }
+markdownify_tex <- function(dataframe){
+  within(dataframe, {
+    symbol <- paste0("$", tex, "$")
+  })
+}
+
+df <- markdownify_tex(identifiers)[identifiers$type=="p", c("symbol", "unit", "description")]
+
+row.names(df) <- NULL
+names(df) <- toTitleCase(names(df))
+
+pander(df)
+kable(df)
+
+```
+
