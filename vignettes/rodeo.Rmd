@@ -1,11 +1,14 @@
 ---
 title: "Handling of ODE-models as R-objects (*rodeo*)"
 author: "David Kneis (david.kneis [at] tu-dresden.de)"
-date: "`r Sys.Date()`"
+date: '`r Sys.Date()`'
 output:
   html_document:
-    toc: true
-    number_sections: true
+    number_sections: yes
+    toc: yes
+  pdf_document:
+    toc: yes
+  word_document: default
 ---
 
 <!--
@@ -113,6 +116,25 @@ tex= exportDF(x=df, tex=TRUE,
 cat(tex)
 ```
 
+
+Alternatively, a markdown compatible dataframe can be generated and used with the knitr function kable. This will work with html, pdf or even Word (.docx) output.
+
+```{r knitrTables}
+to_markdown <- function(dat, which_cols){
+  cols <- which(names(dat) %in% which_cols)
+  for(i in cols){
+    dat[, i] <- ifelse(dat[, i] != "", paste0("$", dat[, i], "$"), "")
+    }
+  return(dat)
+} 
+
+ids <- model$getVars()[,c("tex", "unit", "description")]
+names(ids) <- c("Symbol", "Unit", "Description")
+kable(to_markdown(ids, which_cols=c("Symbol"))
+      , caption = "State variables")
+```
+
+
 ## Defining functions and supplying data
 
 In order to work with the object, we need to define functions that are referenced in the model's mathematical expressions. This includes the forcings which are functions of a special argument with the reserved name 'time'. See the [section on forcings](#forcings) for details.
@@ -167,44 +189,21 @@ cat(exportDF(x=tbl, tex=FALSE,
 ))
 ```
 
-A function to create a similar output as an R graphics has been written by Andew Dolman (see below). It needs the `ggplot2` package. Note that the symbols still not scale well with the size of the plot.
+A markdown compatible version looks like this:
 
-```{r plot_stoichio_matrix, eval=TRUE}
-if ("ggplot2" %in% installed.packages()[,1]) {
-
-  library(ggplot2)
-  plot_stoichio_matrix= function(model, v, p) {
-    m= model$stoichiometryMatrix(c(v, p, time=0))
-    df= data.frame(m)
-    df$process= rownames(df)
-    rownames(df)= NULL
-
-    #df2 <- tidyr::gather(df, variable, value, -process)
-    df2= reshape(df, direction = "long", v.names="value", idvar="process",
-      ids="process", timevar = "variable",
-      times = (names(df)[-which(names(df)=="process")]),
-      varying = list(names(df)[-which(names(df)=="process")]))
-    row.names(df2)= NULL
-    df2$sign= sign(df2$value)
-
-    #df2$sign <- plyr::mapvalues(df2$sign, from = c(-1, 0, 1), to = c("Down", NA, "UP"))
-    smbls= data.frame(sign = c(-1, 0, 1), txt = c("Down", NA, "UP"))
-    df2= merge(df2, smbls)
-    df2= subset(df2, is.na(txt)==FALSE)
-
-    plt= ggplot(data = df2, aes(x="a", y="a", colour=txt, shape=txt, fill=txt))
-    plt= plt + facet_grid(process ~ variable)
-    plt= plt + geom_point(size=15)
-    plt= plt + scale_shape_manual(values = c(25, 24))
-    plt= plt + theme_bw() + theme(panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(), axis.text = element_blank(),
-      axis.title = element_blank(), axis.ticks = element_blank(),
-      legend.position = "none")
-    return(plt)
-  }
-
-  plot_stoichio_matrix(model, v, p)
+```{r markdownStoic}
+signsymbol= function(x) {
+  if (as.numeric(x) > 0) return("$\\blacktriangle$")
+  if (as.numeric(x) < 0) return("$\\blacktriangledown$")
+  return("")
 }
+
+stoi_mat <- model$stoichiometryMatrix(c(v, p, time=0))
+stoi_mat <- data.frame(apply(stoi_mat, MARGIN = c(1, 2), signsymbol))
+stoi_mat <- setNames(stoi_mat, paste0("$", model$getVars()$tex[match(colnames(stoi_mat), model$getVars()$name)], "$"))
+stoi_mat <- cbind(Process=rownames(stoi_mat), stoi_mat)
+
+kable(stoi_mat, row.names = FALSE, caption = "Stoichiometric matrix")
 ```
 
 
@@ -335,6 +334,7 @@ layout(matrix(1:nbox, nrow=1))
 dyn.unload(dllfile)
 plot(out, which=paste("c_do",1:nbox,sep="."), mfrow=NULL)
 ```
+
 
 ```{r, echo=FALSE}
 # Clean up dll file
