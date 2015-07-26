@@ -18,8 +18,8 @@ rodeo$methods( generate = function(lang, name="derivs") {
       paste(funcnames[which(conflicts)], collapse="', '"),"'"))
   # (b) forbidden use of functions
   if (lang == "r") {
-    if (any(c("min","max") %in% funcnames))
-      stop("can't use min/max function in generated R code; use pmin/pmax instead")
+    if (any(c("min","max", "if") %in% funcnames))
+      stop("can't use min, max or if functions in generated R code; use pmin, pmax, ifelse instead")
   }
 
   # Define array indices for all items --> these refer to the 0D case
