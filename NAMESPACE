@@ -2,6 +2,7 @@
 
 export(exportDF)
 export(runModel)
+export(wrapper_code)
 exportClasses(rodeo)
 import(deSolve)
 import(knitr)
