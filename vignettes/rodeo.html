@@ -10,7 +10,7 @@
 
 <meta name="author" content="David Kneis (david.kneis [at] tu-dresden.de)" />
 
-<meta name="date" content="2015-06-29" />
+<meta name="date" content="2015-07-28" />
 
 <title>Handling of ODE-models as R-objects (rodeo)</title>
 
@@ -64,7 +64,7 @@ img {
 <div id="header">
 <h1 class="title">Handling of ODE-models as R-objects (<em>rodeo</em>)</h1>
 <h4 class="author"><em>David Kneis (david.kneis [at] tu-dresden.de)</em></h4>
-<h4 class="date"><em>2015-06-29</em></h4>
+<h4 class="date"><em>2015-07-28</em></h4>
 </div>
 
 <div id="TOC">
@@ -312,8 +312,9 @@ plot(out, mfrow=NULL)</code></pre>
 <h1><span class="header-section-number">4</span> Advanced topics</h1>
 <div id="handling-spatially-distributed-systems" class="section level2">
 <h2><span class="header-section-number">4.1</span> Handling spatially distributed systems</h2>
-<p>A zero-dimensional case (single reactor) has been considered so far. We will now extend the model for a collection of reactors.</p>
-<p>In the first step, we need to provide vectors (instead of scalars) for one variable and one parameter, at least. Variables and parameters with scalar values will be replicated to vectors of the required length.</p>
+<p>A zero-dimensional case (single reactor) has been considered so far. We will now extend the model for multiple spatial levels, i.e. for a collection of (isolated) reactors.</p>
+<p>First, we need to provide vectors (instead of scalars) for one variable and one parameter, at least. Variables and parameters with scalar values will be replicated to vectors of the required length. In the example, we initialize every modeled reactor with a different concentration of organic matter.</p>
+<p>Second, we need to pass the actual number of reactors to the derivatives function in the <code>NLVL</code> argument.</p>
 <pre class="r"><code>nbox= 3
 pars= list(kd=rep(5.78e-7, nbox), h_do=0.5, s_do_z=2.76, wind=1, depth=2,
   temp=20, q_in=1, q_ex=1)
@@ -334,7 +335,7 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 file_genCode= paste0(gsub(&quot;\\&quot;,&quot;/&quot;,tempfile(),fixed=TRUE), &quot;.f95&quot;)
 write(x=code, file=file_genCode)
 cat(&quot;code written to&quot;,file_genCode)</code></pre>
-<pre><code>## code written to /tmp/RtmpHrde4T/file16891c16cf47.f95</code></pre>
+<pre><code>## code written to /tmp/Rtmpu8CD5y/file117140934623.f95</code></pre>
 <p>Inspection of the generated <em>Fortran95</em> code reveals that the interface of the central subroutine “derivs” is</p>
 <p><code>subroutine derivs(time, var, par, NLVL, dydt, pro)</code></p>
 <p>However, according to the <a href="http://cran.r-project.org/web/packages/deSolve/vignettes/compiledCode.pdf">vignette of the <em>deSolve</em> package</a> (page 6), the following interface is required</p>

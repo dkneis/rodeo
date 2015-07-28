@@ -238,9 +238,11 @@ plot(out, mfrow=NULL)
 
 ## Handling spatially distributed systems
 
-A zero-dimensional case (single reactor) has been considered so far. We will now extend the model for a collection of reactors.
+A zero-dimensional case (single reactor) has been considered so far. We will now extend the model for multiple spatial levels, i.e. for a collection of (isolated) reactors.
 
-In the first step, we need to provide vectors (instead of scalars) for one variable and one parameter, at least. Variables and parameters with scalar values will be replicated to vectors of the required length.
+First, we need to provide vectors (instead of scalars) for one variable and one parameter, at least. Variables and parameters with scalar values will be replicated to vectors of the required length. In the example, we initialize every modeled reactor with a different concentration of organic matter.
+
+Second, we need to pass the actual number of reactors to the derivatives function in the `NLVL` argument.
 
 ```{r solve-1d, fig.width=8, fig.height=3}
 nbox= 3
