@@ -19,7 +19,9 @@ rodeoConst= list(
     lenLevels="NLVL", levelIndex= "level"
   ),
 
-  nameTime="time"
+  nameTime="time",
+
+  lang= c(r="r", fortran="f95")
 
 ) # End of list
 

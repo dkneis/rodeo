@@ -112,14 +112,15 @@ substituteIdentifiers= function(expr, sub, all=TRUE) {
 
 # Language specific code elements
 codeElem= function(lang) {
-  if (lang == "r") {
+  if (lang == rodeoConst$lang["r"]) {
     return( list(com="#", cont="", eleOpen="[", eleClose="]",
     vecOpen="c(", vecClose=")", listElem="$") )
-  } else if (lang == "f95") {
+  } else if (lang == rodeoConst$lang["fortran"]) {
     return( list(com="!", cont="&", eleOpen="(", eleClose=")",
     vecOpen="(/", vecClose="/)", listElem="%") )
   } else {
-    stop(paste0("language '",lang,"' not supported"))
+    stop(paste0("target language '",lang,"' not supported; must be one of: '",
+      paste(rodeoConst$lang, collapse="', '"),"'"))
   }
 }
 

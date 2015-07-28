@@ -17,7 +17,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
       " of user-defined item(s); conflicting names(s): '",
       paste(funcnames[which(conflicts)], collapse="', '"),"'"))
   # (b) forbidden use of functions
-  if (lang == "r") {
+  if (lang == rodeoConst$lang["r"]) {
     if (any(c("min","max") %in% funcnames))
       stop("can't use min/max function in generated R code; use pmin/pmax instead")
   }
@@ -69,7 +69,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
       stop(paste0("expression for process rate '",.self$PROS$name[n],
         "' does not contain a reference to a state variable or parameter (a dummy reference ",
         "is required at least, e.g. multiplied by a constant of zero)"))
-    if (lang == "f95") {
+    if (lang == rodeoConst$lang["fortran"]) {
       buffer= fortran.doubleConst(buffer)
       buffer= fortran.breakLine(text=buffer, conti=L$cont, newline=newline)
     }
@@ -101,7 +101,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
             rodeoConst$genIdent["vecPros"],L$eleOpen,
             rodeoConst$genIdent["ilistPros"],L$listElem,names(indexPros)[k],
             L$eleClose,
-            # Stoichiometry factor (expression with subtitutes for original identifiers)
+            # Stoichiometry factor (expression with substitutes for original identifiers)
             " * (",
             substituteIdentifiers(expr=STOX[k,n], sub=c(substVars,substPars,substFuns,
               time="time"),all=TRUE),
@@ -121,7 +121,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
         " for state variable '",colnames(STOX)[n],"'"))
     }
     # Specialities of Fortran
-    if (lang == "f95") {
+    if (lang == rodeoConst$lang["fortran"]) {
       buffer= fortran.doubleConst(buffer)
       buffer= fortran.breakLine(text=buffer, conti=L$cont, newline=newline)
     }
@@ -133,7 +133,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
   ##############################################################################
   # Generate interface in Fortran
   ##############################################################################
-  if (lang == "f95") {
+  if (lang == rodeoConst$lang["fortran"]) {
     code=paste0("!#################################################",newline)
     code=paste0(code,"!###  THIS IS A GENERATED FILE -- DO NOT EDIT  ###",newline)
     code=paste0(code,"!#################################################",newline)
@@ -151,13 +151,13 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"  ! Constant index arrays (for OD case or 1st level, respectively)",newline)
     code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenVars"],
       "), parameter:: ",rodeoConst$genIdent["ivecVars0D"],
-      " =(/(i, i=1, ",length(indexVars),")/)",newline)
+      " =(/(i, i=1, ",rodeoConst$genIdent["lenVars"],")/)",newline)
     code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenPars"],
       "), parameter:: ",rodeoConst$genIdent["ivecPars0D"],
-      " =(/(i, i=1, ",length(indexPars),")/)",newline)
+      " =(/(i, i=1, ",rodeoConst$genIdent["lenPars"],")/)",newline)
     code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenPros"],
       "), parameter:: ",rodeoConst$genIdent["ivecPros0D"],
-      " =(/(i, i=1, ",length(indexPros),")/)",newline)
+      " =(/(i, i=1, ",rodeoConst$genIdent["lenPros"],")/)",newline)
     code=paste0(code,"  ! Modifyable index arrays (to be adjusted for each spatial level)",newline)
     code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenVars"],
       "), target:: ",rodeoConst$genIdent["ivecVars"],newline)
@@ -287,7 +287,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
   ##############################################################################
   # Generate interface in R
   ##############################################################################
-  } else if (lang == "r") {
+  } else if (lang == rodeoConst$lang["r"]) {
     code=paste0("#################################################",newline)
     code=paste0(code,"###  THIS IS A GENERATED FILE -- DO NOT EDIT  ###",newline)
     code=paste0(code,"#################################################",newline)
@@ -296,20 +296,25 @@ rodeo$methods( generate = function(lang, name="derivs") {
       ", ",rodeoConst$genIdent["vecPars"],", ",rodeoConst$genIdent["lenLevels"],
       ", check=TRUE) {",newline)
     code=paste0(code,newline)
+    code=paste0(code,"  # Dimension constants",newline)
+    code=paste0(code,"  ",rodeoConst$genIdent["lenVars"],"=",nrow(.self$VARS),newline)
+    code=paste0(code,"  ",rodeoConst$genIdent["lenPars"],"=",nrow(.self$PARS),newline)
+    code=paste0(code,"  ",rodeoConst$genIdent["lenPros"],"=",nrow(.self$PROS),newline)
+    code=paste0(code,newline)
     code=paste0(code,"  # Check length of arguments",newline)
     code=paste0(code,"  if (check) {",newline)
     code=paste0(code,"    if (length(",rodeoConst$genIdent["vecVars"],
-      ") != (",length(indexVars)," * ",rodeoConst$genIdent["lenLevels"],"))",newline)
+      ") != (",rodeoConst$genIdent["lenVars"]," * ",rodeoConst$genIdent["lenLevels"],"))",newline)
     code=paste0(code,"      stop(paste0(\"length of argument '",rodeoConst$genIdent["vecVars"],
       "' is \",length(",rodeoConst$genIdent["vecVars"],"),",newline,
-      "        \" but it should be \",",length(indexVars)," * ",
+      "        \" but it should be \",",rodeoConst$genIdent["lenVars"]," * ",
       rodeoConst$genIdent["lenLevels"],",",newline,
       "        \" (number of variables * number of levels)\"))",newline)
     code=paste0(code,"    if (length(",rodeoConst$genIdent["vecPars"],
-      ") != (",length(indexPars)," * ",rodeoConst$genIdent["lenLevels"],"))",newline)
+      ") != (",rodeoConst$genIdent["lenPars"]," * ",rodeoConst$genIdent["lenLevels"],"))",newline)
     code=paste0(code,"      stop(paste0(\"length of argument '",rodeoConst$genIdent["vecPars"],
       "' is \",length(",rodeoConst$genIdent["vecPars"],"),",newline,
-      "        \" but it should be \",",length(indexPars)," * ",
+      "        \" but it should be \",",rodeoConst$genIdent["lenPars"]," * ",
       rodeoConst$genIdent["lenLevels"],",",newline,
       "        \" (number of parameters * number of levels)\"))",newline)
     code=paste0(code,"  }",newline)
@@ -342,10 +347,12 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"    ",code_pros,newline)
     code=paste0(code,"  }",newline)
     code=paste0(code,newline)
+
     code=paste0(code,"  # Set vector of process rates (all spatial levels)",newline)
     code=paste0(code,"  ",rodeoConst$genIdent["vecPros"]," = unname(fun_",
       rodeoConst$genIdent["vecPros"],"0D(1:",rodeoConst$genIdent["lenLevels"],"))",newline)
     code=paste0(code,newline)
+
     code=paste0(code,"  # Internal function: Derivatives at a particular level",newline)
     code=paste0(code,"  fun_",rodeoConst$genIdent["vecDrvs"],"0D = function (",
       rodeoConst$genIdent["levelIndex"],") {",newline)
@@ -366,18 +373,22 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"    ",code_drvs,newline)
     code=paste0(code,"  }",newline)
     code=paste0(code,newline)
+
     code=paste0(code,"  # Set vector of derivatives (all spatial levels)",newline)
     code=paste0(code,"  ",rodeoConst$genIdent["vecDrvs"]," = unname(fun_",
       rodeoConst$genIdent["vecDrvs"],"0D(1:",rodeoConst$genIdent["lenLevels"],"))",newline)
     code=paste0(code,newline)
 
     code=paste0(code,"  # Return a list",newline)
-    code=paste0(code,"  return(list(",rodeoConst$genIdent["vecDrvs"],"=",rodeoConst$genIdent["vecDrvs"],",",rodeoConst$genIdent["vecPros"],"=",rodeoConst$genIdent["vecPros"],"))",newline)
+    code=paste0(code,"  return(list(",
+      rodeoConst$genIdent["vecDrvs"],"=",rodeoConst$genIdent["vecDrvs"],",",
+      rodeoConst$genIdent["vecPros"],"=",rodeoConst$genIdent["vecPros"],"))",newline)
     code=paste0(code,"}",newline)
     return(code)
 
   } else {
-    stop(paste0("language '",lang,"' not supported"))
+    stop(paste0("target language '",lang,"' not supported; must be one of: '",
+      paste(rodeoConst$lang, collapse="', '"),"'"))
   }
 })
 
