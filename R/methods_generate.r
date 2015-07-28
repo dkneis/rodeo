@@ -10,17 +10,12 @@ rodeo$methods( generate = function(lang, name="derivs") {
 
   # Check user-defined functions
   funcnames= .self$FUNS$name
-  # (a) name conflicts with variables used in generated code
+  # name conflicts with variables used in generated code
   conflicts= funcnames %in% rodeoConst$genIdent
   if (any(conflicts))
     stop(paste0("identifier name(s) in generated code conflict(s) with name(s)",
       " of user-defined item(s); conflicting names(s): '",
       paste(funcnames[which(conflicts)], collapse="', '"),"'"))
-  # (b) forbidden use of functions
-  if (lang == rodeoConst$lang["r"]) {
-    if (any(c("min","max") %in% funcnames))
-      stop("can't use min/max function in generated R code; use pmin/pmax instead")
-  }
 
   # Define array indices for all items --> these refer to the 0D case
   indexVars= setNames(1:nrow(.self$VARS), .self$VARS$name)
@@ -54,21 +49,6 @@ rodeo$methods( generate = function(lang, name="derivs") {
       stop(paste0("substitution of identifiers in expression for process rate '",
         .self$PROS$name[n],"' failed; details: ",e))
     })
-    # In a spatially distributed model, the righthand side of each derivative
-    # should contain a reference to a spatially resolved variable or parameter.
-    # Reason: In a spatially distributed model (nLevels > 1), the derivative of a
-    #   particular state variable must, on evaluation, expand to vectors of
-    #   length nLevels (for the sake of computationally efficient R code).
-    #   This expansion is (implicitly) caused by the appearance of a spatially
-    #   resolved variable of parameter on the righthand side.
-    # Note:  It is reasonable to assume that variables/parameters are referenced in the
-    #   process rate expressions rather than in the stoichiometry factors.
-    # Hint: One can always use a dummy variable/parameter and multiply by zero. 
-    if (!(grepl(pattern=paste0(rodeoConst$genIdent["vecVars"],L$eleOpen), x=buffer, fixed=TRUE) || 
-         grepl(pattern=paste0(rodeoConst$genIdent["vecPars"],L$eleOpen), x=buffer, fixed=TRUE)))
-      stop(paste0("expression for process rate '",.self$PROS$name[n],
-        "' does not contain a reference to a state variable or parameter (a dummy reference ",
-        "is required at least, e.g. multiplied by a constant of zero)"))
     if (lang == rodeoConst$lang["fortran"]) {
       buffer= fortran.doubleConst(buffer)
       buffer= fortran.breakLine(text=buffer, conti=L$cont, newline=newline)
@@ -113,13 +93,9 @@ rodeo$methods( generate = function(lang, name="derivs") {
         })
       }
     }
-    # Treat case where all stoichiometry factors are zero. Note: We cannot simply
-    # set the derivative to a constant of zero because, in a spatially distributed model,
-    # the value of the derivative would not auto-expand to a vector of length nLevels.
-    if (nchar(buffer) == 0) {
-      stop(paste0("expecting at least one non-zero stoichiometry factor",
-        " for state variable '",colnames(STOX)[n],"'"))
-    }
+    # Treat case where all stoichiometry factors are zero.
+    if (nchar(buffer) == 0)
+      buffer= "0"
     # Specialities of Fortran
     if (lang == rodeoConst$lang["fortran"]) {
       buffer= fortran.doubleConst(buffer)
@@ -349,8 +325,26 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,newline)
 
     code=paste0(code,"  # Set vector of process rates (all spatial levels)",newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["vecPros"]," = unname(fun_",
-      rodeoConst$genIdent["vecPros"],"0D(1:",rodeoConst$genIdent["lenLevels"],"))",newline)
+    code=paste0(code,"  ",rodeoConst$genIdent["vecPros"]," = as.vector(t(vapply(",
+      "X= 1:",rodeoConst$genIdent["lenLevels"],", ",
+      "FUN= fun_",rodeoConst$genIdent["vecPros"],"0D, ",newline,
+      "    FUN.VALUE= numeric(",rodeoConst$genIdent["lenPros"],"), USE.NAMES=FALSE)))", newline)
+#    NOTE: The following vectorized alternative does not work in general, because
+#          the result does not necessarily expand to a vector of the proper length.
+#          For example, it wouldn't work if the righthandside of an ODE doesn't
+#          contain a reference to a spatially resolved variable of parameter
+#          (e.g. due to a zero process rate or zero-only stoichiometry factors).
+#          Moreover, this code would require the user to write vector-compliant
+#          code, e.g. using 'pmin/pmax' instead if 'min/max' or 'ifelse' instead
+#          of just 'if'. This is dificult for the normal user and we can hardly
+#          check the interior of user-supplied functions automatically. It would
+#          also destroy the concept of a generic model code if R-specific
+#          constructs like pmin/pmax/ifelse need to be used.
+#    # DONT USE
+#    code=paste0(code,"  ",rodeoConst$genIdent["vecPros"]," = unname(fun_",
+#      rodeoConst$genIdent["vecPros"],"0D(1:",rodeoConst$genIdent["lenLevels"],"))",newline)
+#    code=paste0(code,newline)
+#    # END DONT USE
     code=paste0(code,newline)
 
     code=paste0(code,"  # Internal function: Derivatives at a particular level",newline)
@@ -375,9 +369,18 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,newline)
 
     code=paste0(code,"  # Set vector of derivatives (all spatial levels)",newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["vecDrvs"]," = unname(fun_",
-      rodeoConst$genIdent["vecDrvs"],"0D(1:",rodeoConst$genIdent["lenLevels"],"))",newline)
+    code=paste0(code,"  ",rodeoConst$genIdent["vecDrvs"]," = as.vector(t(vapply(",
+      "X= 1:",rodeoConst$genIdent["lenLevels"],", ",
+      "FUN= fun_",rodeoConst$genIdent["vecDrvs"],"0D, ",newline,
+      "    FUN.VALUE= numeric(",rodeoConst$genIdent["lenVars"],"), USE.NAMES=FALSE)))", newline)
     code=paste0(code,newline)
+#    NOTE: The following vectorized alternative does not work in general (see
+#          comments above for details).
+#    # DONT USE
+#    code=paste0(code,"  ",rodeoConst$genIdent["vecDrvs"]," = unname(fun_",
+#      rodeoConst$genIdent["vecDrvs"],"0D(1:",rodeoConst$genIdent["lenLevels"],"))",newline)
+#    code=paste0(code,newline)
+#    # END DONT USE
 
     code=paste0(code,"  # Return a list",newline)
     code=paste0(code,"  return(list(",
