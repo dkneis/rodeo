@@ -2,17 +2,21 @@
 !###  THIS IS A GENERATED FILE -- DO NOT EDIT  ###
 !#################################################
 
-module access_constants
+module dimensions_and_indices
   implicit none
   integer, private:: i
+  ! Dimension constants
+  integer, parameter:: NVAR=3
+  integer, parameter:: NPAR=8
+  integer, parameter:: NPRO=4
   ! Constant index arrays (for OD case or 1st level, respectively)
-  integer, dimension(3), parameter:: ivar0D =(/(i, i=1, 3)/)
-  integer, dimension(10), parameter:: ipar0D =(/(i, i=1, 10)/)
-  integer, dimension(4), parameter:: ipro0D =(/(i, i=1, 4)/)
+  integer, dimension(NVAR), parameter:: ivar0D =(/(i, i=1, NVAR)/)
+  integer, dimension(NPAR), parameter:: ipar0D =(/(i, i=1, NPAR)/)
+  integer, dimension(NPRO), parameter:: ipro0D =(/(i, i=1, NPRO)/)
   ! Modifyable index arrays (to be adjusted for each spatial level)
-  integer, dimension(3), target:: ivar
-  integer, dimension(10), target:: ipar
-  integer, dimension(4), target:: ipro
+  integer, dimension(NVAR), target:: ivar
+  integer, dimension(NPAR), target:: ipar
+  integer, dimension(NPRO), target:: ipro
 
   ! Lists of pointers to index arrays
   type t_var
@@ -23,14 +27,12 @@ module access_constants
   type t_par
     integer, pointer:: q_in => ipar(1)
     integer, pointer:: q_ex => ipar(2)
-    integer, pointer:: c_z_in => ipar(3)
-    integer, pointer:: c_do_in => ipar(4)
-    integer, pointer:: kd => ipar(5)
-    integer, pointer:: s_do_z => ipar(6)
-    integer, pointer:: h_do => ipar(7)
-    integer, pointer:: temp => ipar(8)
-    integer, pointer:: wind => ipar(9)
-    integer, pointer:: depth => ipar(10)
+    integer, pointer:: kd => ipar(3)
+    integer, pointer:: s_do_z => ipar(4)
+    integer, pointer:: h_do => ipar(5)
+    integer, pointer:: temp => ipar(6)
+    integer, pointer:: wind => ipar(7)
+    integer, pointer:: depth => ipar(8)
   end type
   type t_pro
     integer, pointer:: flow => ipro(1)
@@ -45,13 +47,9 @@ module access_constants
 end module
 
 subroutine reac(time, var, par, NLVL, dydt, pro)
-  use access_constants
+  use dimensions_and_indices
   use functions
   implicit none
-  ! Dimension constants
-  integer, parameter:: NVAR=3
-  integer, parameter:: NPAR=10
-  integer, parameter:: NPRO=4
   ! Inputs
   double precision, intent(in):: time
   double precision, dimension(NVAR*NLVL), intent(in):: var
@@ -115,12 +113,12 @@ subroutine reac(time, var, par, NLVL, dydt, pro)
     ! Set return vector
     dydt0D= (/&
       ! Variable 'c_do'
-       pro(r%flushing) * (par(p%c_do_in) - var(v%c_do)) +  pro(r%decay) *&
+       pro(r%flushing) * (c_do_in(time) - var(v%c_do)) +  pro(r%decay) *&
  (-par(p%s_do_z)) +  pro(r%aeration) * (1d0)&
     ,&
       ! Variable 'c_z'
-       pro(r%flushing) * (par(p%c_z_in) - var(v%c_z)) +  pro(r%decay) *&
- (-1d0)&
+       pro(r%flushing) * (c_z_in(time) - var(v%c_z)) +  pro(r%decay) * (-&
+1d0)&
     ,&
       ! Variable 'v'
        pro(r%flow) * (1d0)&

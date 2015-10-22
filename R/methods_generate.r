@@ -61,7 +61,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
   # Make constructor code for the vector of derivatives
   code_drvs=""
   code_drvs=paste0(code_drvs,rodeoConst$genIdent["vecDrvs"],"0D","= ",L$vecOpen,L$cont,newline)
-  STOX= .self$stoichiometryMatrix()
+  STOX= .self$stoichiometry()
   for (n in 1:ncol(STOX)) {
     if (n > 1) {
       code_drvs=paste0(code_drvs,"    ,",L$cont,newline)

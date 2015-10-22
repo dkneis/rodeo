@@ -93,7 +93,7 @@ To inspect the object's contents, we can use the following:
 model$show()
 
 # Show stoichiometry information as a matrix
-print(model$stoichiometryMatrix())
+print(model$stoichiometry())
 ```
 
 Finally, one can use e.g. `exportDF` to export the object's basic information in a format which is suitable for inclusion in HTML or TEX documents. The example below illustrates how information on state variables can be exported as TEX code.
@@ -159,7 +159,7 @@ v= model$arrangeVars(vars)
 Having defined all functions and having set the values of variables and parameters, one can compute the stoichiometry factors.
 
 ```{r stoiCompute, eval=TRUE}
-m= model$stoichiometryMatrix(c(v, p, time=0))
+m= model$stoichiometry(c(v, p, time=0))
 print(signif(m, 3))
 ```
 
@@ -192,7 +192,7 @@ signsymbol= function(x) {
   return("")
 }
 
-stoi_mat <- model$stoichiometryMatrix(c(v, p, time=0))
+stoi_mat <- model$stoichiometry(c(v, p, time=0))
 stoi_mat <- data.frame(apply(stoi_mat, MARGIN = c(1, 2), signsymbol))
 stoi_mat <- setNames(stoi_mat, paste0("$", model$getVars()$tex[match(colnames(stoi_mat), model$getVars()$name)], "$"))
 stoi_mat <- cbind(Process=rownames(stoi_mat), stoi_mat)

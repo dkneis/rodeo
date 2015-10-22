@@ -1,6 +1,7 @@
 \documentclass[a4paper,10pt]{article}
 \usepackage{rotfloat}
 \usepackage{amssymb}
+\usepackage{xcolor}
 
 \begin{document}
 \SweaveOpts{concordance=TRUE}
@@ -36,8 +37,8 @@ niceHead= function(x) { bold(firstUpper(x)) }
 math= function(x) { paste0("$",gsub(pattern="*", replacement="\\cdot ",
   x=x, fixed=TRUE),"$") }
 signsymbol= function(x) {
-  if (as.numeric(x) > 0) return("$\\blacktriangle$")
-  if (as.numeric(x) < 0) return("$\\blacktriangledown$")
+  if (as.numeric(x) > 0) return("\\textcolor{orange}{$\\blacktriangle$}")
+  if (as.numeric(x) < 0) return("\\textcolor{cyan}{$\\blacktriangledown$}")
   return("")
 }
 @
@@ -164,7 +165,7 @@ c_do_in= function(seconds) { 9.022 }
   \caption{Stoichiometry matrix for given variable values, parameters, and functions. \label{tab:stoiNum}}
 <<stoiNum, results=tex, echo=FALSE>>=
 # Computes the stoichiometry matrix
-m= model$stoichiometryMatrix(c(vars, pars, time=0))
+m= model$stoichiometry(c(vars, pars, time=0))
 tbl= cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE), as.data.frame(m))
 cat(exportDF(x=tbl, tex=TRUE,
   colnames= setNames(c("Process",model$getVars()$tex[match(colnames(m),
@@ -181,7 +182,7 @@ cat(exportDF(x=tbl, tex=TRUE,
   \begin{center}
 <<stoiSymb, results=tex, echo=FALSE>>=
 # Computes the stoichiometry matrix
-m= model$stoichiometryMatrix(c(vars, pars, time=0))
+m= model$stoichiometry(c(vars, pars, time=0))
 tbl= cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE), as.data.frame(m))
 cat(exportDF(x=tbl, tex=TRUE,
   colnames= setNames(c("Process",model$getVars()$tex[match(colnames(m),

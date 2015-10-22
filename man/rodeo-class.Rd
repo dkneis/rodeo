@@ -51,7 +51,7 @@ generated function/routine. \bold{Returns:} The generated code as a string.}
 
 \item{\code{initialize(vars, pars, funs, pros, stoi)}}{Initializes a rodeo object}
 
-\item{\code{stoichiometryMatrix(values = NULL)}}{Returns the stoichiometry information as a matrix of character expressions (if
+\item{\code{stoichiometry(values = NULL)}}{Returns the stoichiometry information as a matrix of character expressions (if
 \code{values} is \code{NULL}) or numeric data (if values of variables and
 parameters are specified in \code{values}).}
 }}

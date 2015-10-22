@@ -4,16 +4,25 @@
 
 reac = function (time, var, par, NLVL, check=TRUE) {
 
+  # Dimension constants
+  NVAR=3
+  NPAR=8
+  NPRO=4
+
   # Check length of arguments
   if (check) {
-    if (length(var) != (3 * NLVL))
+    if (length(var) != (NVAR * NLVL))
       stop(paste0("length of argument 'var' is ",length(var),
-        " but it should be "3 * NLVL,
+        " but it should be ",NVAR * NLVL,
         " (number of variables * number of levels)"))
+    if (length(par) != (NPAR * NLVL))
+      stop(paste0("length of argument 'par' is ",length(par),
+        " but it should be ",NPAR * NLVL,
+        " (number of parameters * number of levels)"))
   }
   # Lists of array indices
   v0D = list(    c_do=1, c_z=2, v=3  )
-  p0D = list(    q_in=1, q_ex=2, c_z_in=3, c_do_in=4, kd=5, s_do_z=6, h_do=7, temp=8, wind=9, depth=10  )
+  p0D = list(    q_in=1, q_ex=2, kd=3, s_do_z=4, h_do=5, temp=6, wind=7, depth=8  )
   r0D = list(    flow=1, flushing=2, decay=3, aeration=4  )
 
   # Function to update indices for particular level(s)
@@ -41,7 +50,8 @@ reac = function (time, var, par, NLVL, check=TRUE) {
   }
 
   # Set vector of process rates (all spatial levels)
-  pro = unname(fun_pro0D(1:NLVL))
+  pro = as.vector(t(vapply(X= 1:NLVL, FUN= fun_pro0D, 
+    FUN.VALUE= numeric(NPRO), USE.NAMES=FALSE)))
 
   # Internal function: Derivatives at a particular level
   fun_dydt0D = function (level) {
@@ -52,10 +62,10 @@ reac = function (time, var, par, NLVL, check=TRUE) {
     # Set return vector
     dydt0D= c(
       # Variable 'c_do'
-       pro[r$flushing] * (par[p$c_do_in] - var[v$c_do]) +  pro[r$decay] * (-par[p$s_do_z]) +  pro[r$aeration] * (1)
+       pro[r$flushing] * (c_do_in(time) - var[v$c_do]) +  pro[r$decay] * (-par[p$s_do_z]) +  pro[r$aeration] * (1)
     ,
       # Variable 'c_z'
-       pro[r$flushing] * (par[p$c_z_in] - var[v$c_z]) +  pro[r$decay] * (-1)
+       pro[r$flushing] * (c_z_in(time) - var[v$c_z]) +  pro[r$decay] * (-1)
     ,
       # Variable 'v'
        pro[r$flow] * (1)
@@ -63,7 +73,8 @@ reac = function (time, var, par, NLVL, check=TRUE) {
   }
 
   # Set vector of derivatives (all spatial levels)
-  dydt = unname(fun_dydt0D(1:NLVL))
+  dydt = as.vector(t(vapply(X= 1:NLVL, FUN= fun_dydt0D, 
+    FUN.VALUE= numeric(NVAR), USE.NAMES=FALSE)))
 
   # Return a list
   return(list(dydt=dydt,pro=pro))
