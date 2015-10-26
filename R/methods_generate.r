@@ -1,7 +1,9 @@
 rodeo$methods( generate = function(lang, name="derivs") {
   "Generates code to compute the variables' derivatives with respect
-  to time. \\bold{Arguments:} \\code{name}: A string giving the name for the
-  generated function/routine. \\bold{Returns:} The generated code as a string."
+  to time. \\bold{Arguments:} \\code{lang}: Specifies the target language.
+  Either 'f95' (for Fortran) or 'r'. \\code{name}: A string giving the name
+  for the generated function/routine.
+  \\bold{Returns:} The generated code as a string."
 
   newline="\n"
 
