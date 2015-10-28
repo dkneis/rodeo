@@ -19,6 +19,9 @@ checkTbl= function(tbl, tblName, colNames, nameCol, emptyOK) {
     if (!is.null(nameCol)) {
       if (!(nameCol %in% names(tbl)))
         stop(paste0("column '",nameCol," not present in '",tblName,"'"))
+      if (any(is.na(tbl[,nameCol])))
+        stop(paste0("NA values not allowed in column '",nameCol," of '",
+          tblName,"'"))
       if (any(duplicated(tbl[,nameCol])))
         stop(paste0("duplicate names detected in column '",nameCol," of '",
           tblName,"'"))
