@@ -21,15 +21,10 @@ rodeo$methods( stoichiometry = function(values=NULL) {
       stop("missing element name(s) in vector 'values'")
     if (any(duplicated(names(values))))
       stop("duplicated element name(s) in vector 'values'")
+    if (!all(is.numeric(values)))
+      stop("non-numeric element(s) in 'values'")
     if (!all(is.finite(values)))
       stop("non-finite element(s) in 'values'")
-    if (nrow(.self$FUNS) > 0) {
-      for (i in 1:nrow(.self$FUNS)) {
-        if (!exists(.self$FUNS$name[i], mode = "function"))
-          stop(paste0("function '",.self$FUNS$name[i],
-            "' is referenced but not defined (in R code)"))
-      }
-    }
     # Create environment holding all data -> required for evaluating expressions
     env= new.env()
     f=tempfile()
