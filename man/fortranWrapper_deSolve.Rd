@@ -4,10 +4,13 @@
 \alias{fortranWrapper_deSolve}
 \title{Fortran wrapper for deSolve methods}
 \usage{
-fortranWrapper_deSolve(NLVL = 1)
+fortranWrapper_deSolve(NLVL = 1, funcname = "derivs")
 }
 \arguments{
 \item{NLVL}{The desired number of spatial levels (boxes). Defaults to 1.}
+
+\item{funcname}{Name of the function to compute derivatives.
+  Default is 'derivs'.}
 }
 \value{
 A character string representing Fortran code. Must be written to

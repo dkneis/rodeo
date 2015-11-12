@@ -4,6 +4,8 @@
 #' integrators from package \code{deSolve} or methods from \code{rootSolve}.
 #'
 #' @param NLVL The desired number of spatial levels (boxes). Defaults to 1.
+#' @param funcname Name of the function to compute derivatives.
+#'   Default is 'derivs'.
 #'
 #' @return A character string representing Fortran code. Must be written to
 #'   disk, e.g. using \code{write} prior to compilation.
@@ -12,7 +14,7 @@
 #'
 #' @export
 
-fortranWrapper_deSolve= function (NLVL=1) {
+fortranWrapper_deSolve= function (NLVL=1, funcname="derivs") {
   paste0(
   "
   ! Definition of the number of spatial levels
@@ -48,8 +50,9 @@ fortranWrapper_deSolve= function (NLVL=1) {
     double precision, dimension(NPAR*NLVL):: par
     common /params/ par
     !Call to generated code
-    call derivs(t, y, par, NLVL, ydot, yout)
+    call ",funcname,"(t, y, par, NLVL, ydot, yout)
   end subroutine
   "
   )
 }
+
