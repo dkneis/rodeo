@@ -19,7 +19,11 @@ rodeoConst= list(
     lenLevels="NLVL", levelIndex= "level"
   ),
 
-  nameTime="time",
+  reservedNames= c(
+    time="time",     # external time
+    left="left",     # reference to left element in a 1D model
+    right="right"    # reference to right element in a 1D model
+  ),
 
   lang= c(r="r", fortran="f95")
 

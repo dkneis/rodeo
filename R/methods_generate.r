@@ -46,7 +46,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
     # Substitute original identifiers by references to vector elements
     tryCatch({
       buffer= substituteIdentifiers(expr=buffer, sub=c(substVars,substPars,substFuns,
-        time="time"), all=TRUE)
+        setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)), all=TRUE)
     }, error= function(e) {
       stop(paste0("substitution of identifiers in expression for process rate '",
         .self$PROS$name[n],"' failed; details: ",e))
@@ -86,7 +86,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
             # Stoichiometry factor (expression with substitutes for original identifiers)
             " * (",
             substituteIdentifiers(expr=STOX[k,n], sub=c(substVars,substPars,substFuns,
-              time="time"),all=TRUE),
+              setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)),all=TRUE),
             ")")
         }, error= function(e) {
           stop(paste0("substitution of identifiers in expression failed for",
@@ -163,7 +163,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"  type (t_pro):: ",rodeoConst$genIdent["ilistPros"],newline)
     code=paste0(code,"end module",newline)
     code=paste0(code,newline)
-    code=paste0(code,"subroutine ",name,"(time, ",rodeoConst$genIdent["vecVars"],
+    code=paste0(code,"subroutine ",name,"(",rodeoConst$reservedNames["time"],", ",rodeoConst$genIdent["vecVars"],
       ", ",rodeoConst$genIdent["vecPars"],
       ", ",rodeoConst$genIdent["lenLevels"],", ",rodeoConst$genIdent["vecDrvs"],
       ", ",rodeoConst$genIdent["vecPros"],
@@ -173,7 +173,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"  implicit none",newline)
     # Arguments of main method
     code=paste0(code,"  ! Inputs",newline)
-    code=paste0(code,"  double precision, intent(in):: time",newline)
+    code=paste0(code,"  double precision, intent(in):: ",rodeoConst$reservedNames["time"],newline)
     code=paste0(code,"  double precision, dimension(",
       rodeoConst$genIdent["lenVars"],"*",rodeoConst$genIdent["lenLevels"],
       "), intent(in):: ",rodeoConst$genIdent["vecVars"],newline)
@@ -260,7 +260,6 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"    ",code_drvs,newline)
     code=paste0(code,"  end function",newline)
     code=paste0(code,"end subroutine",newline)
-    return(code)
 
   ##############################################################################
   # Generate interface in R
@@ -270,7 +269,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"###  THIS IS A GENERATED FILE -- DO NOT EDIT  ###",newline)
     code=paste0(code,"#################################################",newline)
     code=paste0(code,newline)
-    code=paste0(code,name," = function (time, ",rodeoConst$genIdent["vecVars"],
+    code=paste0(code,name," = function (",rodeoConst$reservedNames["time"],", ",rodeoConst$genIdent["vecVars"],
       ", ",rodeoConst$genIdent["vecPars"],", ",rodeoConst$genIdent["lenLevels"],
       ", check=TRUE) {",newline)
     code=paste0(code,newline)
@@ -389,11 +388,31 @@ rodeo$methods( generate = function(lang, name="derivs") {
       rodeoConst$genIdent["vecDrvs"],"=",rodeoConst$genIdent["vecDrvs"],",",
       rodeoConst$genIdent["vecPros"],"=",rodeoConst$genIdent["vecPros"],"))",newline)
     code=paste0(code,"}",newline)
-    return(code)
 
   } else {
     stop(paste0("target language '",lang,"' not supported; must be one of: '",
       paste(rodeoConst$lang, collapse="', '"),"'"))
   }
+
+  # Post-process generated code to handle references to neighboring elements
+
+  for (item in c(rodeoConst$genIdent[c("vecVars", "vecPars")])) {
+    for (fun in rodeoConst$reservedNames[c("left", "right")]) {
+      pat= paste0(fun,"[(]",item,"[",codeElem(lang)$eleOpen,"]",
+        "([^",codeElem(lang)$eleClose,codeElem(lang)$eleOpen,"]+)",
+        "[",codeElem(lang)$eleClose,"][)]")
+      if (fun == rodeoConst$reservedNames["left"]) {
+        subst= paste0(item,codeElem(lang)$eleOpen,
+          codeElem(lang)$max,"(1,\\1-1)", codeElem(lang)$eleClose)
+      } else if (fun == rodeoConst$reservedNames["right"]) {
+        subst= paste0(item,codeElem(lang)$eleOpen,
+          codeElem(lang)$min,"(NLVL,\\1+1)", codeElem(lang)$eleClose)
+      }
+      code= gsub(pattern=pat, replacement=subst, x=code, fixed=FALSE)
+    }
+  }
+
+  return(code)
+
 })
 

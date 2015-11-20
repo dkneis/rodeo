@@ -25,9 +25,10 @@ checkTbl= function(tbl, tblName, colNames, nameCol, emptyOK) {
       if (any(duplicated(tbl[,nameCol])))
         stop(paste0("duplicate names detected in column '",nameCol," of '",
           tblName,"'"))
-      if (any(tbl[,nameCol] == rodeoConst$nameTime))
-        stop(paste0("reserved name '",rodeoConst$nameTime,
-          "' cannot appear in column '",nameCol," of '",tblName,"'"))
+      if (any(tbl[,nameCol] %in% rodeoConst$reservedNames))
+        stop(paste0("column '",nameCol," of '",tblName,"' must not",
+          " contain any of the reserved words '",
+          paste(rodeoConst$reservedNames, collapse="', '"),"'"))
     }
     # Check whether names are legal identifiers
     bad= tbl[,nameCol][!grepl(pattern="^[a-zA-Z]+[a-zA-Z0-9_]*$", x=tbl[,nameCol])]
@@ -117,10 +118,10 @@ substituteIdentifiers= function(expr, sub, all=TRUE) {
 codeElem= function(lang) {
   if (lang == rodeoConst$lang["r"]) {
     return( list(com="#", cont="", eleOpen="[", eleClose="]",
-    vecOpen="c(", vecClose=")", listElem="$") )
+      vecOpen="c(", vecClose=")", listElem="$", min="min", max="max") )
   } else if (lang == rodeoConst$lang["fortran"]) {
     return( list(com="!", cont="&", eleOpen="(", eleClose=")",
-    vecOpen="(/", vecClose="/)", listElem="%") )
+      vecOpen="(/", vecClose="/)", listElem="%", min="min", max="max") )
   } else {
     stop(paste0("target language '",lang,"' not supported; must be one of: '",
       paste(rodeoConst$lang, collapse="', '"),"'"))

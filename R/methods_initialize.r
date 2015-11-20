@@ -38,7 +38,7 @@ rodeo$methods(
   # Check for undeclared items in expressions
   for (i in 1:nrow(pros)) {
     bad= undeclared(pros$expression[i], c(vars$name, pars$name, funs$name,
-      rodeoConst$nameTime))
+      rodeoConst$reservedNames))
     if (length(bad) > 0)
       stop(paste0("expression for process '",pros$name[i],
         "' contains undeclared item(s) '",paste(bad,collapse="', '"),"'"))
@@ -58,10 +58,12 @@ rodeo$methods(
   for (i in 1:nrow(pros)) {
     pros$expression_tex[i]= substituteIdentifiers(expr=pros$expression_tex[i],
       sub=c(setNames(vars$tex, vars$name), setNames(pars$tex, pars$name),
-      setNames(funs$tex, funs$name), time="time"),all=TRUE)
+      setNames(funs$tex, funs$name),
+      setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)),all=TRUE)
     pros$expression_html[i]= substituteIdentifiers(expr=pros$expression_html[i],
       sub=c(setNames(vars$html, vars$name), setNames(pars$html, pars$name),
-      setNames(funs$html, funs$name), time="time"),all=TRUE)
+      setNames(funs$html, funs$name),
+      setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)),all=TRUE)
   }
   .self$PROS <<- pros
   # Set stoichiometry ##########################################################
@@ -91,7 +93,7 @@ rodeo$methods(
   # Check for undeclared items in expressions
   for (i in 1:nrow(stoi)) {
     bad= undeclared(stoi$expression[i], c(vars$name, pars$name, funs$name,
-      rodeoConst$nameTime))
+      rodeoConst$reservedNames))
     if (length(bad) > 0)
       stop(paste0("stoichiometry factor for variable '",
         stoi$variable[i],"' and process '",stoi$process[i],
@@ -113,10 +115,12 @@ rodeo$methods(
   for (i in 1:nrow(stoi)) {
     stoi$expression_tex[i]= substituteIdentifiers(expr=stoi$expression_tex[i],
       sub=c(setNames(vars$tex, vars$name), setNames(pars$tex, pars$name),
-      setNames(funs$tex, funs$name), time="time"),all=TRUE)
+      setNames(funs$tex, funs$name),
+      setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)),all=TRUE)
     stoi$expression_html[i]= substituteIdentifiers(expr=stoi$expression_html[i],
       sub=c(setNames(vars$html, vars$name), setNames(pars$html, pars$name),
-      setNames(funs$html, funs$name), time="time"),all=TRUE)
+      setNames(funs$html, funs$name),
+      setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)),all=TRUE)
   }
   # Add columns with the variables' symbols
   stoi$variable_tex= vars$tex[match(stoi$variable, vars$name)]
