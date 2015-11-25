@@ -1,20 +1,26 @@
-#' Fortran wrapper for deSolve methods
+#' Wrapping generated Fortran for use with deSolve and rootSolve
 #'
-#' Creates wrapper code to make generated Fortran code compatible with the
-#' integrators from package \code{deSolve} or methods from \code{rootSolve}.
+#' Creates wrapper code to make \code{rodeo}-generated Fortran code compatible
+#' with the numerical methods from packages \code{deSolve} or \code{rootSolve}.
 #'
 #' @param NLVL The desired number of spatial levels (boxes). Defaults to 1.
-#' @param funcname Name of the function to compute derivatives.
-#'   Default is 'derivs'.
+#' @param funcname Name of the generated function that computes derivatives.
 #'
-#' @return A character string representing Fortran code. Must be written to
-#'   disk, e.g. using \code{write} prior to compilation.
+#' @return A character string holding generated Fortran code. Must be written to
+#'   disk, e.g. using \code{write} prior to compilation. The generated code
+#'   provides two subroutines.
+#'   The first subroutine with the fixed name 'initmod' is to be passed to
+#'   the \code{initfunc} argument of \code{deSolve::ode} or
+#'   \code{rootSolve::steady}, for example.
+#'   The second subroutine is to be passed to the \code{func} argument of the
+#'   \code{deSolve} or \code{rootSolve} methods. The subroutines names is
+#'   created by appending the suffix '_wrapper' to the value of \code{funcname}.
 #'
 #' @author David Kneis \email{david.kneis@@tu-dresden.de}
 #'
 #' @export
 
-fortranWrapper_deSolve= function (NLVL=1, funcname="derivs") {
+solverInterface= function (NLVL=1, funcname="derivs") {
   paste0(
   "
   ! Definition of the number of spatial levels
@@ -34,7 +40,7 @@ fortranWrapper_deSolve= function (NLVL=1, funcname="derivs") {
   end subroutine
 
   ! Generic wrapper around the generated code
-  subroutine derivs_wrapped (neq, t, y, ydot, yout, ip)
+  subroutine ",funcname,"_wrapped (neq, t, y, ydot, yout, ip)
     use dimensions_and_indices   ! Module is provided by the generated code
     use spatial_dimension
     implicit none
