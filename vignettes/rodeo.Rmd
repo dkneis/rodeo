@@ -345,28 +345,24 @@ In real-world applications, the 'stop-and-go' approach is often simpler to use a
 
 ### Using the 'functions-of-time' approach with Fortran-based models
 
-This section demonstrates how the 'functions-of-time' approach can be used in Fortran-based models assuming that information on forcings is stored in delimited text files (column 1: time, column 2: value). Such files can be created, for example, with any spreadsheet software, data base system, or R.
+This section demonstrates how the 'functions-of-time' approach can be used in Fortran-based models assuming that information on forcings is stored in delimited text files. Such files can be created, for example, with any spreadsheet software, data base system, or R. Assume that we have time series of two meteorological variables exported to a text file 'meteo.txt':
 
-The following Fortran code defines two forcing variable 'temperature' and 'temperature2' whose time-dependent values are read from csv-formatted data files (using comma, blank, or TAB as separator).
-
-Note that the first part of the file (module 'forcings') is fully generic. Only the second part (module 'functions') is meant to be edited by users.
-
-```{r fortranForcings, echo=FALSE}
-text= readLines("fortranForcings.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
-text= paste(text,"\n")
-cat(text)
+```{r meteoData, echo=TRUE}
+dat= data.frame(time=1:10, temp=round(rnorm(n=10, mean=20, sd=3)), humid=round(runif(10)*100))
+write.table(x=dat, file="meteo.txt", col.names=TRUE, row.names=FALSE, sep="\t", quote=FALSE)
+print(dat)
 ```
 
-The file 'fortranForcingsInclude.f95' included from the above code (using `include` statements) has the contents shown below. Use of the include mechanism avoids redundant writing of generic code sections in cases where multiple forcings need to be defined. 
+We can now use `forcingFunctions` to generate the  appropriate forcing function in Fortran. In this example, we request linear interpolation via the method's `mode` argument. Note that the lengthy path names after the `include` statements point to files in `rodeo`'s installation folder, thus, the names don't require manual adaption.
 
-```{r fortranForcingsInclude, echo=FALSE}
-text= readLines("fortranForcingsInclude.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
-text= paste(text,"\n")
-cat(text)
+```{r forcingFunctions, echo=TRUE, eval=TRUE}
+dat= data.frame(name=c("temp","humid"), column=c("temp","humid"), file="meteo.txt", mode=-1)
+code= forcingFunctions(dat)
+write(x=code, file="forc.f95")
+cat(code)
 ```
 
-
-The following Fortran code demonstrates how the user-defined forcing functions can be tested/debugged outside of the `rodeo` environment. The shown utility program can be compiled, for example, using a command like `gfortran <file_with_modules> <file_with_program> -I. -o test`. Note that the subroutine `rexit` is available automatically if the code is used to build a shared library with `R CMD SHLIB`, i.e. the subroutine must not be defined.
+The following Fortran code demonstrates how the user-defined forcing functions can be tested/debugged outside of the `rodeo` environment. The shown utility program can be compiled, for example, using a command like `gfortran <file_with_generated_module> <file_with_program> -o test`. Note that the subroutines `rwarn` and `rexit` are available automatically if the code is used to build a shared library with `R CMD SHLIB`, i.e. the subroutine must not be defined.
 
 ```{r fortranForcingsTest, echo=FALSE}
 text= readLines("fortranForcingsTest.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)

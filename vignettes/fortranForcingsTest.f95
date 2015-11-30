@@ -1,27 +1,27 @@
+
+! auxiliary routines for testing outside R
+subroutine rwarn(x)
+  character(len=*),intent(in):: x
+  write(*,*)x
+end subroutine
+
 subroutine rexit(x)
   character(len=*),intent(in):: x
   write(*,*)x
   stop
 end subroutine
 
+! test program
 program test
-use functions
+use forcings   ! imports the generated module with forcing functions
 
 implicit none
 
-write(*,*) temperature(0.d0)
-write(*,*) temperature(5184000.d0)
-write(*,*) temperature(2592000.d0)
-write(*,*) temperature(31536000.d0)
-write(*,*) temperature(11772000.d0)
-write(*,*) temperature(18360000.d0)
+integer:: i
+double precision, dimension(5):: times= dble((/ 1., 1.5, 2., 2.5, 3. /))
 
-write(*,*) temperature2(0.d0)
-write(*,*) temperature2(5184000.d0)
-write(*,*) temperature2(2592000.d0)
-write(*,*) temperature2(31536000.d0)
-write(*,*) temperature2(11772000.d0)
-write(*,*) temperature2(18360000.d0)
-
+do i=1, size(times)
+  write(*,*) times(i), temp(times(i)), humid(times(i))
+end do
 end program
 
