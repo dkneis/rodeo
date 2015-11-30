@@ -37,7 +37,7 @@ for (i in 1:nrow(model$PROS)) {
 }
 
 print(model$STOI)
-print(model$stoichiometryMatrix())
+print(model$stoichiometry())
 
 
 O2sat= function(t) {14.652 - 0.41022*t + 0.007991*t^2 - 0.000077774*t^3}
