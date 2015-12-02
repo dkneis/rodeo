@@ -497,7 +497,7 @@ if (system(command) != 0)
 <p>We are now prepared to load the shared library and run the simulation based on the Fortran code. Note the additional arguments <code>dllname</code>, <code>initfunc</code>, and <code>nout</code> being passed to the numerical solver (use <code>?lsoda</code> to see the documentation for them). Note that setting a wrong value for <code>nout</code> easily makes R crash.</p>
 <pre class="r"><code>dyn.load(dllfile)
 out= ode(y=v, times=t, func=&quot;derivs_wrapped&quot;, parms=p, NLVL=nbox,
-  dllname=dllname, initfunc=&quot;initmod&quot;, nout=nrow(model$PROS)*nbox)
+  dllname=dllname, initfunc=&quot;initmod&quot;, nout=model$lenPros()*nbox)
 layout(matrix(1:nbox, nrow=1))
 dyn.unload(dllfile)
 plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</code></pre>

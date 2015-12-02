@@ -11,7 +11,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
   L= codeElem(lang)
 
   # Check user-defined functions
-  funcnames= .self$FUNS$name
+  funcnames= .self$.funs$name
   # name conflicts with variables used in generated code
   conflicts= funcnames %in% rodeoConst$genIdent
   if (any(conflicts))
@@ -20,9 +20,9 @@ rodeo$methods( generate = function(lang, name="derivs") {
       paste(funcnames[which(conflicts)], collapse="', '"),"'"))
 
   # Define array indices for all items --> these refer to the 0D case
-  indexVars= setNames(1:nrow(.self$VARS), .self$VARS$name)
-  indexPars= setNames(1:nrow(.self$PARS), .self$PARS$name)
-  indexPros= setNames(1:nrow(.self$PROS), .self$PROS$name)
+  indexVars= setNames(1:nrow(.self$.vars), .self$.vars$name)
+  indexPars= setNames(1:nrow(.self$.pars), .self$.pars$name)
+  indexPros= setNames(1:nrow(.self$.pros), .self$.pros$name)
 
   # Define substitutes for identifiers
   substVars= setNames(paste0(rodeoConst$genIdent["vecVars"],L$eleOpen,
@@ -34,22 +34,22 @@ rodeo$methods( generate = function(lang, name="derivs") {
   substPros= setNames(paste0(rodeoConst$genIdent["vecPros"],L$eleOpen,
     rodeoConst$genIdent["ilistPros"],L$listElem,names(indexPros),
     L$eleClose), names(indexPros))
-  substFuns= setNames(.self$FUNS$name, .self$FUNS$name) # means no substitution
+  substFuns= setNames(.self$.funs$name, .self$.funs$name) # means no substitution
 
   # Make constructor code for the vector of process rates
   code_pros=""
   code_pros=paste0(code_pros,rodeoConst$genIdent["vecPros"],"0D","=",L$vecOpen,L$cont,newline)
-  for (n in 1:nrow(.self$PROS)) {
+  for (n in 1:nrow(.self$.pros)) {
     if (n > 1) code_pros=paste0(code_pros,"    ,",L$cont,newline)
-    code_pros=paste0(code_pros,"      ",L$com," Process rate '",.self$PROS$name[n],"'",newline)
-    buffer= .self$PROS$expression[n]
+    code_pros=paste0(code_pros,"      ",L$com," Process rate '",.self$.pros$name[n],"'",newline)
+    buffer= .self$.pros$expression[n]
     # Substitute original identifiers by references to vector elements
     tryCatch({
       buffer= substituteIdentifiers(expr=buffer, sub=c(substVars,substPars,substFuns,
         setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)), all=TRUE)
     }, error= function(e) {
       stop(paste0("substitution of identifiers in expression for process rate '",
-        .self$PROS$name[n],"' failed; details: ",e))
+        .self$.pros$name[n],"' failed; details: ",e))
     })
     if (lang == rodeoConst$lang["fortran"]) {
       buffer= fortran.doubleConst(buffer)
@@ -71,7 +71,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code_drvs=paste0(code_drvs,"      ",L$com," Variable '",colnames(STOX)[n],"'",newline)
     # Assemble expressions
     buffer=""
-    for (k in 1:nrow(.self$PROS)) {
+    for (k in 1:nrow(.self$.pros)) {
       # Skip terms where stoichiometry factor is exactly zero (e.g. because not set)
       if (grepl(pattern="[^0]", x=STOX[k,n])) {
         if (nchar(buffer) > 0) {
@@ -90,7 +90,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
             ")")
         }, error= function(e) {
           stop(paste0("substitution of identifiers in expression failed for",
-            " stoichiometry factor of process '",.self$PROS$name[k],
+            " stoichiometry factor of process '",.self$.pros$name[k],
             "', variable '",colnames(STOX)[n],"'; details: ",e))
         })
       }
@@ -121,11 +121,11 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"  integer, private:: i",newline)
     code=paste0(code,"  ! Dimension constants",newline)
     code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent["lenVars"],
-      "=",nrow(.self$VARS),newline)
+      "=",nrow(.self$.vars),newline)
     code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent["lenPars"],
-      "=",nrow(.self$PARS),newline)
+      "=",nrow(.self$.pars),newline)
     code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent["lenPros"],
-      "=",nrow(.self$PROS),newline)
+      "=",nrow(.self$.pros),newline)
     code=paste0(code,"  ! Constant index arrays (for OD case or 1st level, respectively)",newline)
     code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenVars"],
       "), parameter:: ",rodeoConst$genIdent["ivecVars0D"],
@@ -169,7 +169,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
       ", ",rodeoConst$genIdent["vecPros"],
       ")",newline)
     code=paste0(code,"  use dimensions_and_indices",newline)
-    code=paste0(code,"  ",ifelse(nrow(.self$FUNS) > 0,"","!"),"use functions",newline)
+    code=paste0(code,"  ",ifelse(nrow(.self$.funs) > 0,"","!"),"use functions",newline)
     code=paste0(code,"  implicit none",newline)
     # Arguments of main method
     code=paste0(code,"  ! Inputs",newline)
@@ -274,9 +274,9 @@ rodeo$methods( generate = function(lang, name="derivs") {
       ", check=TRUE) {",newline)
     code=paste0(code,newline)
     code=paste0(code,"  # Dimension constants",newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["lenVars"],"=",nrow(.self$VARS),newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["lenPars"],"=",nrow(.self$PARS),newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["lenPros"],"=",nrow(.self$PROS),newline)
+    code=paste0(code,"  ",rodeoConst$genIdent["lenVars"],"=",nrow(.self$.vars),newline)
+    code=paste0(code,"  ",rodeoConst$genIdent["lenPars"],"=",nrow(.self$.pars),newline)
+    code=paste0(code,"  ",rodeoConst$genIdent["lenPros"],"=",nrow(.self$.pros),newline)
     code=paste0(code,newline)
     code=paste0(code,"  # Check length of arguments",newline)
     code=paste0(code,"  if (check) {",newline)

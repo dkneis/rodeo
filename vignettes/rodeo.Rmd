@@ -322,7 +322,7 @@ We are now prepared to load the shared library and run the simulation based on t
 ```{r solve-1d-F, fig.width=8, fig.height=3}
 dyn.load(dllfile)
 out= ode(y=v, times=t, func="derivs_wrapped", parms=p, NLVL=nbox,
-  dllname=dllname, initfunc="initmod", nout=nrow(model$PROS)*nbox)
+  dllname=dllname, initfunc="initmod", nout=model$lenPros()*nbox)
 layout(matrix(1:nbox, nrow=1))
 dyn.unload(dllfile)
 plot(out, which=paste("c_do",1:nbox,sep="."), mfrow=NULL)

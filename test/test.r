@@ -30,13 +30,13 @@ subst= rbind(
   c("h_do", "p[2]")
 )
 
-for (i in 1:nrow(model$PROS)) {
-  expr= model$PROS$expression[i]
+for (i in 1:model$lenPros()) {
+  expr= model$getPros()$expression[i]
   print(expr)
   print(substituteIdentifiers(expr, sub=setNames(subst[,2], subst[,1]), all=FALSE))
 }
 
-print(model$STOI)
+print(model$getStoi())
 print(model$stoichiometry())
 
 

@@ -45,7 +45,7 @@ rodeo$methods( arrangeVars= function(x, sep=".", warnUnused=TRUE) {
   constructed by appending the level index to the original names using the
   specified separator. If there is a single level only, element names are
   identical to the original names (no suffix)."
-  arrangeGeneric(x=x, itemNames=.self$VARS$name, sep=sep, warnUnused=warnUnused)
+  arrangeGeneric(x=x, itemNames=.self$.vars$name, sep=sep, warnUnused=warnUnused)
 })
 
 rodeo$methods( arrangePars= function(x, sep=".", warnUnused=TRUE) {
@@ -55,6 +55,6 @@ rodeo$methods( arrangePars= function(x, sep=".", warnUnused=TRUE) {
   constructed by appending the level index to the original names using the
   specified separator. If there is a single level only, element names are
   identical to the original names (no suffix)."
-  arrangeGeneric(x=x, itemNames=.self$PARS$name, sep=sep, warnUnused=warnUnused)
+  arrangeGeneric(x=x, itemNames=.self$.pars$name, sep=sep, warnUnused=warnUnused)
 })
 

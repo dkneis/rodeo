@@ -4,11 +4,11 @@ rodeo$methods( stoichiometry = function(values=NULL) {
    parameters are specified in \\code{values})."
 
   # Build the matrix of expressions
-  m= matrix("0", ncol=nrow(.self$VARS), nrow=nrow(.self$PROS))
-  colnames(m)= .self$VARS$name
-  rownames(m)= .self$PROS$name
-  for (i in 1:nrow(.self$STOI)) {
-    m[.self$STOI$process[i], .self$STOI$variable[i]]= .self$STOI$expression[i]
+  m= matrix("0", ncol=nrow(.self$.vars), nrow=nrow(.self$.pros))
+  colnames(m)= .self$.vars$name
+  rownames(m)= .self$.pros$name
+  for (i in 1:nrow(.self$.stoi)) {
+    m[.self$.stoi$process[i], .self$.stoi$variable[i]]= .self$.stoi$expression[i]
   }
 
   # Return the matrix of expressions if no values are supplied ...

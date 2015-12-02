@@ -18,19 +18,19 @@ rodeo$methods(
     colNames=c("name","unit","description"), nameCol="name", emptyOK=FALSE)
   if (is.na(match("tex", names(vars)))) vars$tex= vars$name
   if (is.na(match("html", names(vars)))) vars$html= vars$name
-  .self$VARS <<- vars
+  .self$.vars <<- vars
   # Set parameters #############################################################
   checkTbl(tbl=pars, tblName="pars",
     colNames=c("name","unit","description"), nameCol="name", emptyOK=FALSE)
   if (is.na(match("tex", names(pars)))) pars$tex= pars$name
   if (is.na(match("html", names(pars)))) pars$html= pars$name
-  .self$PARS <<- pars
+  .self$.pars <<- pars
   # Set functions ##############################################################
   checkTbl(tbl=funs, tblName="funs",
     colNames=c("name","unit","description"), nameCol="name", emptyOK=TRUE)
   if (is.na(match("tex", names(funs)))) funs$tex= funs$name
   if (is.na(match("html", names(funs)))) funs$html= funs$name
-  .self$FUNS <<- funs
+  .self$.funs <<- funs
   # Set processes ##############################################################
   # Basic checks
   checkTbl(tbl=pros, tblName="pros", colNames=c("name","unit","description",
@@ -65,7 +65,7 @@ rodeo$methods(
       setNames(funs$html, funs$name),
       setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)),all=TRUE)
   }
-  .self$PROS <<- pros
+  .self$.pros <<- pros
   # Set stoichiometry ##########################################################
   # Basic checks
   checkTbl(tbl=stoi, tblName="stoi", colNames=c("variable","process",
@@ -125,7 +125,7 @@ rodeo$methods(
   # Add columns with the variables' symbols
   stoi$variable_tex= vars$tex[match(stoi$variable, vars$name)]
   stoi$variable_html= vars$html[match(stoi$variable, vars$name)]
-  .self$STOI <<- stoi
+  .self$.stoi <<- stoi
   # General checks #############################################################
   # Duplicate checks over multiple tables
   # (1) names

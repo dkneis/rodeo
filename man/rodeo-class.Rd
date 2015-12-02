@@ -11,22 +11,22 @@ A reference class to represent an ODE-based model.
 \section{Fields}{
 
 \describe{
-\item{\code{PROS}}{A data frame with fields 'name', 'unit', 'description', and
+\item{\code{.pros}}{A data frame with fields 'name', 'unit', 'description', and
 'expression' defining the process rates.}
 
-\item{\code{STOI}}{A data frame with fields 'variable', 'process', and 'expression'
+\item{\code{.stoi}}{A data frame with fields 'variable', 'process', and 'expression'
 reprenting the stoichiometry matrix in data base format.}
 
-\item{\code{VARS}}{A data frame with fields 'name', 'unit', 'description' declaring
+\item{\code{.vars}}{A data frame with fields 'name', 'unit', 'description' declaring
 the state variables of the model. The declared names become valid
-identifiers to be used in the expression fields of \code{PROS} or \code{STOI}.}
+identifiers to be used in the expression fields of \code{.pros} or \code{.stoi}.}
 
-\item{\code{PARS}}{A data frame of the same structure as \code{vars} declaring the
+\item{\code{.pars}}{A data frame of the same structure as \code{vars} declaring the
 parameters of the model. The declared names become valid
-identifiers to be used in the expression fields of \code{PROS} or \code{STOI}.}
+identifiers to be used in the expression fields of \code{.pros} or \code{.stoi}.}
 
-\item{\code{FUNS}}{A data frame of the same structure as \code{vars} declaring any
-functions referenced in the expression fields of \code{PROS} or \code{STOI}.}
+\item{\code{.funs}}{A data frame of the same structure as \code{vars} declaring any
+functions referenced in the expression fields of \code{.pros} or \code{.stoi}.}
 }}
 \section{Methods}{
 
