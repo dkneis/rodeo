@@ -53,6 +53,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
     })
     if (lang == rodeoConst$lang["fortran"]) {
       buffer= fortran.doubleConst(buffer)
+      buffer= fortran.powerOperator(buffer)
       buffer= fortran.breakLine(text=buffer, conti=L$cont, newline=newline)
     }
     code_pros= paste0(code_pros,"      ",buffer,L$cont,newline)   # Add to code
@@ -101,6 +102,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
     # Specialities of Fortran
     if (lang == rodeoConst$lang["fortran"]) {
       buffer= fortran.doubleConst(buffer)
+      buffer= fortran.powerOperator(buffer)
       buffer= fortran.breakLine(text=buffer, conti=L$cont, newline=newline)
     }
     # Add to code

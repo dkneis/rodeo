@@ -177,3 +177,8 @@ fortran.doubleConst= function(text) {
   return(text)
 }
 
+# Convert power operator ^ into **
+fortran.powerOperator= function(text) {
+  return(gsub(pattern="^", replacement="**", x=text, fixed=TRUE))
+}
+
