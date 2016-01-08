@@ -137,9 +137,11 @@ fortran.breakLine= function(text, conti, newline) {
   for (i in 1:nchar(text)) {
     k= k+1
     if (substr(text,i,i) %in% c("+","-","*","/",",") && (k >= minlen)) {
-      k= 0
-      buf= paste0(buf,substr(text,from,i),conti,newline)
-      from=i+1
+      if (substr(text,i,min(i+1, nchar(text))) != "**") {
+        k= 0
+        buf= paste0(buf,substr(text,from,i),conti,newline)
+        from=i+1
+      }
     }
   }
   if (from <= nchar(text))
