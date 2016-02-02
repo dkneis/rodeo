@@ -332,6 +332,7 @@ plot(out, which=paste("c_do",1:nbox,sep="."), mfrow=NULL)
 # Clean up dll file
 invisible(file.remove(list.files(pattern=paste0(".+",.Platform$dynlib.ext))))
 ```
+
 ## Forcings
 
 ### Two alternative options
@@ -369,3 +370,75 @@ text= readLines("fortranForcingsTest.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="
 text= paste(text,"\n")
 cat(text)
 ```
+# Short guide on writing `rodeo`-compatible Fortran functions
+
+## Reference example
+
+As a reference, the following example code can be used which declares a function of two arguments. Comments have been added to explain the individual statements. In Fortran, comments are generally initiated with the exclamation mark (!). They may appear right after statements or on separate lines.
+
+```
+1  double precision function FUNCNAME (ARG1, ARG2) ! declare the function
+2  implicit none                                   ! force declarations
+3  double precision, intent(in):: ARG1, ARG2       ! declare argument(s)
+4  double precision:: LOCAL                        ! declare local variable(s)
+5  double precision, parameter:: CONST=1.d0        ! declare local constant(s)
+6  LOCAL= ARG1 * CONST + ARG2                      ! any local computation(s)
+7  FUNCNAME= LOCAL                                 ! set return value
+8  end function                                    ! closes the function
+```
+For compatibility with `rodeo`, the function result must be a scalar of type `double precision` (a floating point number of typically 8 byte). There are several ways to achieve this but the simplest and recommended syntax is put the type declaration `double precision` right before the function's name (line 1). Then, the return value must be set by an assignment to the function's name (line 7). This is best done at a single location in the body code, typically at the very end.
+
+It is a good habit to always put `implicit none` in the first line of the function body (line 2). This is to disable so-called implicit typing (a rather dangerous technique of automatic data type assignment). With this statement, all arguments (line 3) and local variables or constants (lines 4 and 5) need to be explicitly declared. The repetition of the argument's names in lines 1 and 3 may be a bit annoying (but one can use copy and paste). All declarations need to be made at the top of the function's body (right after the `implicit none`) before any other statements.
+
+In Fortran, identifier names are not case-sensitive (as opposed to R). This applies to the name of the function itself as well as to the names of arguments and local variables or parameters.
+
+Note: It is actually sufficient to use the `implicit none` statement at the beginning of the module that contains all function declarations. Repetition of the statement in the individual functions does not do any harm, however. 
+
+## Common pitfalls
+
+### Double precision variables and constants
+
+Fortran has several types to represent floating point numbers that vary in precision but `rodeo` generally uses the type `double precision`. Thus, any local variables and parameters should also be declared as `double precision`. To declare a numeric constant of this type, e.g. `pi`, one needs to use the syntax `3.1415d0`, i.e. the conventional 'e' in scientific notation is replaced by 'd'. An alternative but less portable syntax exists but it is not mentioned here.
+
+```
+double precision, parameter:: pi= 3.1415d0, e= 2.7183d0   ! math constants 
+double precision, parameter:: kilograms_per_gram = 1.d-3  ! 1/1000
+double precision, parameter:: distance_to_moon = 3.844d+5 ! 384400 km
+```
+
+Note the `parameter` keyword used to inform the compiler that the declared item(s) are constants rather than variables.
+
+### Integers in numeric expressions
+
+It is recommended to avoid integers in arithmetic expressions as the result may be unexpected. Use `double precision` constants instead of `integer` constants or, alternatively, explicitly convert `integer` constants to `double precision` by means of the `dble` intrinsic function.
+
+```
+average= (value1 + value2) / 2d0       ! does not use an integer at all
+average= (value1 + value2) / dble(2)   ! explicit type conversion
+```
+
+It is often even better not to use any literal constants, leading to a code like
+
+```
+double precision, parameter:: TWO= 2.d0
+! possibly other statements
+average= (value1 + value2) / TWO
+```
+
+Using uppercase names for constants is a widespread habit but this is a matter of style only.
+
+### Continuation lines
+
+Source code lines should not exceed 80 characters (though some compilers support longer lines). If an expression does not fit on a single line, the ampersand (&) must be used to indicate continuation lines. It is recommended to put the & at the end of any unfinished line as in the following example:
+
+```
+a = term1 + term2 + &
+    term3 + term4 + &
+    term5
+```
+
+Missing & characters are a frequent cause of compile time errors sometimes being rather obscure.
+
+## More information
+
+The [Fortran Wiki](http://fortranwiki.org/fortran/show/HomePage) is a good source of additional information, providing links to standard documents, books, etc.

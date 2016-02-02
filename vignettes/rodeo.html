@@ -10,7 +10,7 @@
 
 <meta name="author" content="David Kneis (david.kneis [at] tu-dresden.de)" />
 
-<meta name="date" content="2015-11-30" />
+<meta name="date" content="2016-02-02" />
 
 <title>Handling of ODE-models as R-objects (rodeo)</title>
 
@@ -64,7 +64,7 @@ img {
 <div id="header">
 <h1 class="title">Handling of ODE-models as R-objects (<em>rodeo</em>)</h1>
 <h4 class="author"><em>David Kneis (david.kneis [at] tu-dresden.de)</em></h4>
-<h4 class="date"><em>2015-11-30</em></h4>
+<h4 class="date"><em>2016-02-02</em></h4>
 </div>
 
 <div id="TOC">
@@ -85,6 +85,15 @@ img {
 <li><a href="#two-alternative-options"><span class="toc-section-number">4.3.1</span> Two alternative options</a></li>
 <li><a href="#using-the-functions-of-time-approach-with-fortran-based-models"><span class="toc-section-number">4.3.2</span> Using the ‘functions-of-time’ approach with Fortran-based models</a></li>
 </ul></li>
+</ul></li>
+<li><a href="#short-guide-on-writing-rodeo-compatible-fortran-functions"><span class="toc-section-number">5</span> Short guide on writing <code>rodeo</code>-compatible Fortran functions</a><ul>
+<li><a href="#reference-example"><span class="toc-section-number">5.1</span> Reference example</a></li>
+<li><a href="#common-pitfalls"><span class="toc-section-number">5.2</span> Common pitfalls</a><ul>
+<li><a href="#double-precision-variables-and-constants"><span class="toc-section-number">5.2.1</span> Double precision variables and constants</a></li>
+<li><a href="#integers-in-numeric-expressions"><span class="toc-section-number">5.2.2</span> Integers in numeric expressions</a></li>
+<li><a href="#continuation-lines"><span class="toc-section-number">5.2.3</span> Continuation lines</a></li>
+</ul></li>
+<li><a href="#more-information"><span class="toc-section-number">5.3</span> More information</a></li>
 </ul></li>
 </ul>
 </div>
@@ -394,7 +403,7 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 file_genCode= paste0(gsub(&quot;\\&quot;,&quot;/&quot;,tempfile(),fixed=TRUE), &quot;.f95&quot;)
 write(x=code, file=file_genCode)
 cat(&quot;code written to&quot;,file_genCode)</code></pre>
-<pre><code>## code written to /tmp/Rtmp5FHcEn/file37f87096683b.f95</code></pre>
+<pre><code>## code written to /tmp/RtmpcmvPXR/file51e14d428108.f95</code></pre>
 <p>Inspection of the generated <em>Fortran95</em> code reveals that the interface of the central subroutine “derivs” is</p>
 <p><code>subroutine derivs(time, var, par, NLVL, dydt, pro)</code></p>
 <p>However, according to the <a href="http://cran.r-project.org/web/packages/deSolve/vignettes/compiledCode.pdf">vignette of the <em>deSolve</em> package</a> (page 6), the following interface is required</p>
@@ -521,16 +530,16 @@ plot(out, which=paste(&quot;c_do&quot;,1:nbox,sep=&quot;.&quot;), mfrow=NULL)</c
 write.table(x=dat, file=&quot;meteo.txt&quot;, col.names=TRUE, row.names=FALSE, sep=&quot;\t&quot;, quote=FALSE)
 print(dat)</code></pre>
 <pre><code>##    time temp humid
-## 1     1   22    97
-## 2     2   16    25
-## 3     3   23    28
-## 4     4   20     7
-## 5     5   22    50
-## 6     6   19    48
-## 7     7   18    81
-## 8     8   26    90
-## 9     9   21     5
-## 10   10   20    11</code></pre>
+## 1     1   18     9
+## 2     2   18    75
+## 3     3   22    27
+## 4     4   21    45
+## 5     5   24    33
+## 6     6   21    21
+## 7     7   18    79
+## 8     8   20     9
+## 9     9   24    54
+## 10   10   19    82</code></pre>
 <p>We can now use <code>forcingFunctions</code> to generate the appropriate forcing function in Fortran. In this example, we request linear interpolation via the method’s <code>mode</code> argument. Note that the lengthy path names after the <code>include</code> statements point to files in <code>rodeo</code>’s installation folder, thus, the names don’t require manual adaption.</p>
 <pre class="r"><code>dat= data.frame(name=c(&quot;temp&quot;,&quot;humid&quot;), column=c(&quot;temp&quot;,&quot;humid&quot;), file=&quot;meteo.txt&quot;, mode=-1)
 code= forcingFunctions(dat)
@@ -586,6 +595,59 @@ cat(code)</code></pre>
 ##  end program 
 ## </code></pre>
 </div>
+</div>
+</div>
+<div id="short-guide-on-writing-rodeo-compatible-fortran-functions" class="section level1">
+<h1><span class="header-section-number">5</span> Short guide on writing <code>rodeo</code>-compatible Fortran functions</h1>
+<div id="reference-example" class="section level2">
+<h2><span class="header-section-number">5.1</span> Reference example</h2>
+<p>As a reference, the following example code can be used which declares a function of two arguments. Comments have been added to explain the individual statements. In Fortran, comments are generally initiated with the exclamation mark (!). They may appear right after statements or on separate lines.</p>
+<pre><code>1  double precision function FUNCNAME (ARG1, ARG2) ! declare the function
+2  implicit none                                   ! force declarations
+3  double precision, intent(in):: ARG1, ARG2       ! declare argument(s)
+4  double precision:: LOCAL                        ! declare local variable(s)
+5  double precision, parameter:: CONST=1.d0        ! declare local constant(s)
+6  LOCAL= ARG1 * CONST + ARG2                      ! any local computation(s)
+7  FUNCNAME= LOCAL                                 ! set return value
+8  end function                                    ! closes the function</code></pre>
+<p>For compatibility with <code>rodeo</code>, the function result must be a scalar of type <code>double precision</code> (a floating point number of typically 8 byte). There are several ways to achieve this but the simplest and recommended syntax is put the type declaration <code>double precision</code> right before the function’s name (line 1). Then, the return value must be set by an assignment to the function’s name (line 7). This is best done at a single location in the body code, typically at the very end.</p>
+<p>It is a good habit to always put <code>implicit none</code> in the first line of the function body (line 2). This is to disable so-called implicit typing (a rather dangerous technique of automatic data type assignment). With this statement, all arguments (line 3) and local variables or constants (lines 4 and 5) need to be explicitly declared. The repetition of the argument’s names in lines 1 and 3 may be a bit annoying (but one can use copy and paste). All declarations need to be made at the top of the function’s body (right after the <code>implicit none</code>) before any other statements.</p>
+<p>In Fortran, identifier names are not case-sensitive (as opposed to R). This applies to the name of the function itself as well as to the names of arguments and local variables or parameters.</p>
+<p>Note: It is actually sufficient to use the <code>implicit none</code> statement at the beginning of the module that contains all function declarations. Repetition of the statement in the individual functions does not do any harm, however.</p>
+</div>
+<div id="common-pitfalls" class="section level2">
+<h2><span class="header-section-number">5.2</span> Common pitfalls</h2>
+<div id="double-precision-variables-and-constants" class="section level3">
+<h3><span class="header-section-number">5.2.1</span> Double precision variables and constants</h3>
+<p>Fortran has several types to represent floating point numbers that vary in precision but <code>rodeo</code> generally uses the type <code>double precision</code>. Thus, any local variables and parameters should also be declared as <code>double precision</code>. To declare a numeric constant of this type, e.g. <code>pi</code>, one needs to use the syntax <code>3.1415d0</code>, i.e. the conventional ‘e’ in scientific notation is replaced by ‘d’. An alternative but less portable syntax exists but it is not mentioned here.</p>
+<pre><code>double precision, parameter:: pi= 3.1415d0, e= 2.7183d0   ! math constants 
+double precision, parameter:: kilograms_per_gram = 1.d-3  ! 1/1000
+double precision, parameter:: distance_to_moon = 3.844d+5 ! 384400 km</code></pre>
+<p>Note the <code>parameter</code> keyword used to inform the compiler that the declared item(s) are constants rather than variables.</p>
+</div>
+<div id="integers-in-numeric-expressions" class="section level3">
+<h3><span class="header-section-number">5.2.2</span> Integers in numeric expressions</h3>
+<p>It is recommended to avoid integers in arithmetic expressions as the result may be unexpected. Use <code>double precision</code> constants instead of <code>integer</code> constants or, alternatively, explicitly convert <code>integer</code> constants to <code>double precision</code> by means of the <code>dble</code> intrinsic function.</p>
+<pre><code>average= (value1 + value2) / 2d0       ! does not use an integer at all
+average= (value1 + value2) / dble(2)   ! explicit type conversion</code></pre>
+<p>It is often even better not to use any literal constants, leading to a code like</p>
+<pre><code>double precision, parameter:: TWO= 2.d0
+! possibly other statements
+average= (value1 + value2) / TWO</code></pre>
+<p>Using uppercase names for constants is a widespread habit but this is a matter of style only.</p>
+</div>
+<div id="continuation-lines" class="section level3">
+<h3><span class="header-section-number">5.2.3</span> Continuation lines</h3>
+<p>Source code lines should not exceed 80 characters (though some compilers support longer lines). If an expression does not fit on a single line, the ampersand (&amp;) must be used to indicate continuation lines. It is recommended to put the &amp; at the end of any unfinished line as in the following example:</p>
+<pre><code>a = term1 + term2 + &amp;
+    term3 + term4 + &amp;
+    term5</code></pre>
+<p>Missing &amp; characters are a frequent cause of compile time errors sometimes being rather obscure.</p>
+</div>
+</div>
+<div id="more-information" class="section level2">
+<h2><span class="header-section-number">5.3</span> More information</h2>
+<p>The <a href="http://fortranwiki.org/fortran/show/HomePage">Fortran Wiki</a> is a good source of additional information, providing links to standard documents, books, etc.</p>
 </div>
 </div>
 
