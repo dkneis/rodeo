@@ -3,7 +3,7 @@ rodeo  -  Handling of ODE-models as R-objects
 
 This R-package currently provides a single reference class named just like the package (``rodeo``). Objects of this class represent ODE-based models (i.e. models consisting of a set of simultaneous differential equations).
 
-For compatibility with the ``rodeo`` class, models must be (re)written in a vector notation. A central element of this notation is the stoichiometry matrix (also called Petersen matrix; http://en.wikipedia.org/wiki/Petersen_matrix). This notation is widely used in, e.g., chemical and wastewater engineering or biogeoscience.
+For compatibility with the ``rodeo`` class, models must be (re)written in a vector notation. A central element of this notation is the stoichiometry matrix, also called [Petersen matrix](http://en.wikipedia.org/wiki/Petersen_matrix). This notation is widely used in, e.g., chemical and wastewater engineering or biogeoscience.
 
 
 The ``rodeo`` class provides methods to perform the following:
@@ -14,3 +14,4 @@ The ``rodeo`` class provides methods to perform the following:
 
   - The stoichiometry matrix can be visualized graphically. This helps in getting an overview on the simulated processes, state variables, and interactions.
 
+See the [package vignette](https://github.com/dkneis/rodeo/blob/master/vignettes/rodeo.pdf) for further details.
