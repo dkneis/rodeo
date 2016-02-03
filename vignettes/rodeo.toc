@@ -1,0 +1,30 @@
+\select@language {american}
+\contentsline {section}{\numberline {1}When to use this package}{1}
+\contentsline {section}{\numberline {2}Example problem}{2}
+\contentsline {section}{\numberline {3}Basic use}{5}
+\contentsline {subsection}{\numberline {3.1}Creating and inspecting a model object}{5}
+\contentsline {subsection}{\numberline {3.2}Defining functions and supplying data}{5}
+\contentsline {subsection}{\numberline {3.3}Computing the stoichiometry matrix}{6}
+\contentsline {subsection}{\numberline {3.4}Translating the model into source code}{6}
+\contentsline {subsection}{\numberline {3.5}Solving the ODE system}{7}
+\contentsline {section}{\numberline {4}Advanced topics}{8}
+\contentsline {subsection}{\numberline {4.1}Spatially distributed systems (multi-box models)}{8}
+\contentsline {subsection}{\numberline {4.2}Increasing performance by means of Fortran}{8}
+\contentsline {subsection}{\numberline {4.3}Forcings (time-varying parameters)}{12}
+\contentsline {subsubsection}{\numberline {4.3.1}Two alternative options}{12}
+\contentsline {paragraph}{functions-of-time:}{12}
+\contentsline {paragraph}{stop-and-go:}{12}
+\contentsline {subsubsection}{\numberline {4.3.2}The 'functions-of-time' approach with Fortran models}{12}
+\contentsline {subsection}{\numberline {4.4}Generating model documentation}{14}
+\contentsline {subsubsection}{\numberline {4.4.1}Exporting formatted tables}{14}
+\contentsline {subsubsection}{\numberline {4.4.2}Visualizing the stoichiometry matrix}{15}
+\contentsline {paragraph}{Option 1: TEX}{15}
+\contentsline {paragraph}{Option 2: HTML}{16}
+\contentsline {paragraph}{Option 3: Markdown}{17}
+\contentsline {section}{\numberline {5}Writing \texttt {rodeo}-compatible \texttt {Fortran} functions}{17}
+\contentsline {subsection}{\numberline {5.1}Reference example}{17}
+\contentsline {subsection}{\numberline {5.2}Common pitfalls}{18}
+\contentsline {subsubsection}{\numberline {5.2.1}Double precision variables and constants}{18}
+\contentsline {subsubsection}{\numberline {5.2.2}Integers in numeric expressions}{19}
+\contentsline {subsubsection}{\numberline {5.2.3}Continuation lines}{19}
+\contentsline {subsection}{\numberline {5.3}More information on \texttt {Fortran} programming}{20}

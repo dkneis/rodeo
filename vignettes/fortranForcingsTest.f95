@@ -13,12 +13,13 @@ end subroutine
 
 ! test program
 program test
-use forcings   ! imports the generated module with forcing functions
+use forcings  ! imports generated module with forcing functions
 
 implicit none
 
 integer:: i
-double precision, dimension(5):: times= dble((/ 1., 1.5, 2., 2.5, 3. /))
+double precision, dimension(5):: times= &
+  dble((/ 1., 1.5, 2., 2.5, 3. /))
 
 do i=1, size(times)
   write(*,*) times(i), temp(times(i)), humid(times(i))
