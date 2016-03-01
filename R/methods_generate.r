@@ -146,7 +146,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenPros"],
       "), target:: ",rodeoConst$genIdent["ivecPros"],newline)
     code=paste0(code,newline)
-    code=paste0(code,"  ! Lists of pointers to index arrays",newline)
+    code=paste0(code,"  ! Lists of pointers to index arrays whose values depend on the level",newline)
     code=paste0(code,"  type t_var",newline)
     code=paste0(code,paste0("    integer, pointer:: ",names(indexVars)," => ",
       rodeoConst$genIdent["ivecVars"],"(",indexVars,")",newline,collapse=""))
