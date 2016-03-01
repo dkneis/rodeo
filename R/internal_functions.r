@@ -130,7 +130,7 @@ codeElem= function(lang) {
 
 # Break long Fortran lines
 fortran.breakLine= function(text, conti, newline) {
-  minlen= 65
+  minlen= 60
   buf=""
   from=1
   k= 0

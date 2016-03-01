@@ -130,10 +130,10 @@ rodeo$methods( generate = function(lang, name="derivs") {
       "=",nrow(.self$.pros),newline)
     code=paste0(code,"  ! Constant index arrays (for OD case or 1st level, respectively)",newline)
     code=paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["vars"],
-      "), parameter:: ",rodeoConst$genIdent$ivec0D["vars"],
+      "), target:: ",rodeoConst$genIdent$ivec0D["vars"],
       " =(/(i, i=1, ",rodeoConst$genIdent$len["vars"],")/)",newline)
     code=paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["pars"],
-      "), parameter:: ",rodeoConst$genIdent$ivec0D["pars"],
+      "), target:: ",rodeoConst$genIdent$ivec0D["pars"],
       " =(/(i, i=1, ",rodeoConst$genIdent$len["pars"],")/)",newline)
     code=paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["pros"],
       "), parameter:: ",rodeoConst$genIdent$ivec0D["pros"],
@@ -146,6 +146,21 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["pros"],
       "), target:: ",rodeoConst$genIdent$ivec["pros"],newline)
     code=paste0(code,newline)
+
+    code=paste0(code,"  ! Lists of pointers to index arrays for first level (0D case)",newline)
+    code=paste0(code,"  ! Note: Only used in conjunction with left() or right()",newline)
+    code=paste0(code,"  type t_var0D",newline)
+    code=paste0(code,paste0("    integer, pointer:: ",names(indexVars)," => ",
+      rodeoConst$genIdent$ivec0D["vars"],"(",indexVars,")",newline,collapse=""))
+    code=paste0(code,"  end type",newline)
+    code=paste0(code,"  type t_par0D",newline)
+    code=paste0(code,paste0("    integer, pointer:: ",names(indexPars)," => ",
+      rodeoConst$genIdent$ivec0D["pars"],"(",indexPars,")",newline,collapse=""))
+    code=paste0(code,"  end type",newline)
+    code=paste0(code,"  ! Instances of the above lists",newline)
+    code=paste0(code,"  type (t_var0D):: ",rodeoConst$genIdent$ilist0D["vars"],newline)
+    code=paste0(code,"  type (t_par0D):: ",rodeoConst$genIdent$ilist0D["pars"],newline)
+
     code=paste0(code,"  ! Lists of pointers to index arrays whose values depend on the level",newline)
     code=paste0(code,"  type t_var",newline)
     code=paste0(code,paste0("    integer, pointer:: ",names(indexVars)," => ",
@@ -163,6 +178,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"  type (t_var):: ",rodeoConst$genIdent$ilist["vars"],newline)
     code=paste0(code,"  type (t_par):: ",rodeoConst$genIdent$ilist["pars"],newline)
     code=paste0(code,"  type (t_pro):: ",rodeoConst$genIdent$ilist["pros"],newline)
+
     code=paste0(code,"end module",newline)
     code=paste0(code,newline)
     code=paste0(code,"subroutine ",name,"(",rodeoConst$reservedNames["time"],", ",rodeoConst$genIdent$vec["vars"],
@@ -397,18 +413,23 @@ rodeo$methods( generate = function(lang, name="derivs") {
   }
 
   # Post-process generated code to handle references to neighboring elements
-
   for (item in c("vars", "pars")) {
     for (fun in rodeoConst$reservedNames[c("left", "right")]) {
       pat= paste0(fun,"[(]",rodeoConst$genIdent$vec[item],"[",codeElem(lang)$eleOpen,"]",
-        "([^",codeElem(lang)$eleClose,codeElem(lang)$eleOpen,"]+)",
-        "[",codeElem(lang)$eleClose,"][)]")
+        rodeoConst$genIdent$ilist[item],"[",codeElem(lang)$listElem,"]",
+        "([^",codeElem(lang)$eleClose,"]+)","[",codeElem(lang)$eleClose,"][)]")
       if (fun == rodeoConst$reservedNames["left"]) {
+        leftmost= paste0("(",rodeoConst$genIdent$ilist0D[item],codeElem(lang)$listElem,
+          "\\1-1)*",rodeoConst$genIdent["nLevels"],"+1")
         subst= paste0(rodeoConst$genIdent$vec[item],codeElem(lang)$eleOpen,
-          codeElem(lang)$max,"(1,\\1-1)", codeElem(lang)$eleClose)
+          codeElem(lang)$max,"(",leftmost,",",
+          rodeoConst$genIdent$ilist[item],codeElem(lang)$listElem,"\\1-1)", codeElem(lang)$eleClose)
       } else if (fun == rodeoConst$reservedNames["right"]) {
+        rightmost= paste0(rodeoConst$genIdent$ilist0D[item],codeElem(lang)$listElem,
+          "\\1*",rodeoConst$genIdent["nLevels"])
         subst= paste0(rodeoConst$genIdent$vec[item],codeElem(lang)$eleOpen,
-          codeElem(lang)$min,"(NLVL,\\1+1)", codeElem(lang)$eleClose)
+          codeElem(lang)$min,"(",rightmost,",",
+          rodeoConst$genIdent$ilist[item],codeElem(lang)$listElem,"\\1+1)", codeElem(lang)$eleClose)
       }
       code= gsub(pattern=pat, replacement=subst, x=code, fixed=FALSE)
     }
