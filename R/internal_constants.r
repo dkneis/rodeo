@@ -9,21 +9,21 @@ rodeoConst= list(
   ),
 
   # Identifiers used in generated code
-  genIdent= c(
+  genIdent= list(
     # vectors with actual values of vars, pars, rates, derivatives
-    vecVars= "var", vecPars= "par", vecPros= "pro", vecDrvs= "dydt",
+    vec=     c(vars="var",    pars="par",    pros="pro", drvs="dydt"),
     # index vectors for the 0D case (or 1st level, respectively)
-    ivecVars0D= "ivar0D", ivecPars0D= "ipar0D", ivecPros0D= "ipro0D",
+    ivec0D=  c(vars="ivar0D", pars="ipar0D", pros="ipro0D"),
     # index vectors for the current level
-    ivecVars= "ivar", ivecPars= "ipar", ivecPros= "ipro",
+    ivec=    c(vars="ivar",   pars="ipar",   pros="ipro"),
     # (pointers to) indices of variables in first level
-    ilistVars0D= "v0D", ilistPars0D= "p0D", ilistPros0D= "r0D",
+    ilist0D= c(vars="v0D",    pars="p0D",    pros="r0D"),
     # (pointers to) indices of variables in current level
-    ilistVars= "v", ilistPars= "p", ilistPros= "r",
+    ilist=   c(vars="v",      pars="p",      pros="r"),
     # dimensions
-    lenVars=  "NVAR", lenPars=  "NPAR", lenPros=  "NPRO", lenLevels="NLVL",
-    # current level
-    levelIndex= "level"
+    len=     c(vars="NVAR",   pars="NPAR",   pros="NPRO"),
+    # number of levels and index of current level
+    nLevels="NLVL", iLevel= "level"
   ),
 
   reservedNames= c(

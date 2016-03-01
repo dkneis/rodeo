@@ -25,20 +25,20 @@ rodeo$methods( generate = function(lang, name="derivs") {
   indexPros= setNames(1:nrow(.self$.pros), .self$.pros$name)
 
   # Define substitutes for identifiers
-  substVars= setNames(paste0(rodeoConst$genIdent["vecVars"],L$eleOpen,
-    rodeoConst$genIdent["ilistVars"],L$listElem,names(indexVars),
+  substVars= setNames(paste0(rodeoConst$genIdent$vec["vars"],L$eleOpen,
+    rodeoConst$genIdent$ilist["vars"],L$listElem,names(indexVars),
     L$eleClose), names(indexVars))
-  substPars= setNames(paste0(rodeoConst$genIdent["vecPars"],L$eleOpen,
-    rodeoConst$genIdent["ilistPars"],L$listElem,names(indexPars),
+  substPars= setNames(paste0(rodeoConst$genIdent$vec["pars"],L$eleOpen,
+    rodeoConst$genIdent$ilist["pars"],L$listElem,names(indexPars),
     L$eleClose), names(indexPars))
-  substPros= setNames(paste0(rodeoConst$genIdent["vecPros"],L$eleOpen,
-    rodeoConst$genIdent["ilistPros"],L$listElem,names(indexPros),
+  substPros= setNames(paste0(rodeoConst$genIdent$vec["pros"],L$eleOpen,
+    rodeoConst$genIdent$ilist["pros"],L$listElem,names(indexPros),
     L$eleClose), names(indexPros))
   substFuns= setNames(.self$.funs$name, .self$.funs$name) # means no substitution
 
   # Make constructor code for the vector of process rates
   code_pros=""
-  code_pros=paste0(code_pros,rodeoConst$genIdent["vecPros"],"0D","=",L$vecOpen,L$cont,newline)
+  code_pros=paste0(code_pros,rodeoConst$genIdent$vec["pros"],"0D","=",L$vecOpen,L$cont,newline)
   for (n in 1:nrow(.self$.pros)) {
     if (n > 1) code_pros=paste0(code_pros,"    ,",L$cont,newline)
     code_pros=paste0(code_pros,"      ",L$com," Process rate '",.self$.pros$name[n],"'",newline)
@@ -63,7 +63,7 @@ rodeo$methods( generate = function(lang, name="derivs") {
 
   # Make constructor code for the vector of derivatives
   code_drvs=""
-  code_drvs=paste0(code_drvs,rodeoConst$genIdent["vecDrvs"],"0D","= ",L$vecOpen,L$cont,newline)
+  code_drvs=paste0(code_drvs,rodeoConst$genIdent$vec["drvs"],"0D","= ",L$vecOpen,L$cont,newline)
   STOX= .self$stoichiometry()
   for (n in 1:ncol(STOX)) {
     if (n > 1) {
@@ -81,8 +81,8 @@ rodeo$methods( generate = function(lang, name="derivs") {
         tryCatch({
           buffer=paste0(buffer," ",
             # Process rate (reference to already computed value stored in vector)
-            rodeoConst$genIdent["vecPros"],L$eleOpen,
-            rodeoConst$genIdent["ilistPros"],L$listElem,names(indexPros)[k],
+            rodeoConst$genIdent$vec["pros"],L$eleOpen,
+            rodeoConst$genIdent$ilist["pros"],L$listElem,names(indexPros)[k],
             L$eleClose,
             # Stoichiometry factor (expression with substitutes for original identifiers)
             " * (",
@@ -122,53 +122,53 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"  implicit none",newline)
     code=paste0(code,"  integer, private:: i",newline)
     code=paste0(code,"  ! Dimension constants",newline)
-    code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent["lenVars"],
+    code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent$len["vars"],
       "=",nrow(.self$.vars),newline)
-    code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent["lenPars"],
+    code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent$len["pars"],
       "=",nrow(.self$.pars),newline)
-    code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent["lenPros"],
+    code=paste0(code,"  integer, parameter:: ",rodeoConst$genIdent$len["pros"],
       "=",nrow(.self$.pros),newline)
     code=paste0(code,"  ! Constant index arrays (for OD case or 1st level, respectively)",newline)
-    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenVars"],
-      "), parameter:: ",rodeoConst$genIdent["ivecVars0D"],
-      " =(/(i, i=1, ",rodeoConst$genIdent["lenVars"],")/)",newline)
-    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenPars"],
-      "), parameter:: ",rodeoConst$genIdent["ivecPars0D"],
-      " =(/(i, i=1, ",rodeoConst$genIdent["lenPars"],")/)",newline)
-    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenPros"],
-      "), parameter:: ",rodeoConst$genIdent["ivecPros0D"],
-      " =(/(i, i=1, ",rodeoConst$genIdent["lenPros"],")/)",newline)
+    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["vars"],
+      "), parameter:: ",rodeoConst$genIdent$ivec0D["vars"],
+      " =(/(i, i=1, ",rodeoConst$genIdent$len["vars"],")/)",newline)
+    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["pars"],
+      "), parameter:: ",rodeoConst$genIdent$ivec0D["pars"],
+      " =(/(i, i=1, ",rodeoConst$genIdent$len["pars"],")/)",newline)
+    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["pros"],
+      "), parameter:: ",rodeoConst$genIdent$ivec0D["pros"],
+      " =(/(i, i=1, ",rodeoConst$genIdent$len["pros"],")/)",newline)
     code=paste0(code,"  ! Modifyable index arrays (to be adjusted for each spatial level)",newline)
-    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenVars"],
-      "), target:: ",rodeoConst$genIdent["ivecVars"],newline)
-    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenPars"],
-      "), target:: ",rodeoConst$genIdent["ivecPars"],newline)
-    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent["lenPros"],
-      "), target:: ",rodeoConst$genIdent["ivecPros"],newline)
+    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["vars"],
+      "), target:: ",rodeoConst$genIdent$ivec["vars"],newline)
+    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["pars"],
+      "), target:: ",rodeoConst$genIdent$ivec["pars"],newline)
+    code=paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["pros"],
+      "), target:: ",rodeoConst$genIdent$ivec["pros"],newline)
     code=paste0(code,newline)
     code=paste0(code,"  ! Lists of pointers to index arrays whose values depend on the level",newline)
     code=paste0(code,"  type t_var",newline)
     code=paste0(code,paste0("    integer, pointer:: ",names(indexVars)," => ",
-      rodeoConst$genIdent["ivecVars"],"(",indexVars,")",newline,collapse=""))
+      rodeoConst$genIdent$ivec["vars"],"(",indexVars,")",newline,collapse=""))
     code=paste0(code,"  end type",newline)
     code=paste0(code,"  type t_par",newline)
     code=paste0(code,paste0("    integer, pointer:: ",names(indexPars)," => ",
-      rodeoConst$genIdent["ivecPars"],"(",indexPars,")",newline,collapse=""))
+      rodeoConst$genIdent$ivec["pars"],"(",indexPars,")",newline,collapse=""))
     code=paste0(code,"  end type",newline)
     code=paste0(code,"  type t_pro",newline)
     code=paste0(code,paste0("    integer, pointer:: ",names(indexPros)," => ",
-      rodeoConst$genIdent["ivecPros"],"(",indexPros,")",newline,collapse=""))
+      rodeoConst$genIdent$ivec["pros"],"(",indexPros,")",newline,collapse=""))
     code=paste0(code,"  end type",newline)
     code=paste0(code,"  ! Instances of the above lists",newline)
-    code=paste0(code,"  type (t_var):: ",rodeoConst$genIdent["ilistVars"],newline)
-    code=paste0(code,"  type (t_par):: ",rodeoConst$genIdent["ilistPars"],newline)
-    code=paste0(code,"  type (t_pro):: ",rodeoConst$genIdent["ilistPros"],newline)
+    code=paste0(code,"  type (t_var):: ",rodeoConst$genIdent$ilist["vars"],newline)
+    code=paste0(code,"  type (t_par):: ",rodeoConst$genIdent$ilist["pars"],newline)
+    code=paste0(code,"  type (t_pro):: ",rodeoConst$genIdent$ilist["pros"],newline)
     code=paste0(code,"end module",newline)
     code=paste0(code,newline)
-    code=paste0(code,"subroutine ",name,"(",rodeoConst$reservedNames["time"],", ",rodeoConst$genIdent["vecVars"],
-      ", ",rodeoConst$genIdent["vecPars"],
-      ", ",rodeoConst$genIdent["lenLevels"],", ",rodeoConst$genIdent["vecDrvs"],
-      ", ",rodeoConst$genIdent["vecPros"],
+    code=paste0(code,"subroutine ",name,"(",rodeoConst$reservedNames["time"],", ",rodeoConst$genIdent$vec["vars"],
+      ", ",rodeoConst$genIdent$vec["pars"],
+      ", ",rodeoConst$genIdent["nLevels"],", ",rodeoConst$genIdent$vec["drvs"],
+      ", ",rodeoConst$genIdent$vec["pros"],
       ")",newline)
     code=paste0(code,"  use dimensions_and_indices",newline)
     code=paste0(code,"  ",ifelse(nrow(.self$.funs) > 0,"","!"),"use functions",newline)
@@ -177,41 +177,41 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"  ! Inputs",newline)
     code=paste0(code,"  double precision, intent(in):: ",rodeoConst$reservedNames["time"],newline)
     code=paste0(code,"  double precision, dimension(",
-      rodeoConst$genIdent["lenVars"],"*",rodeoConst$genIdent["lenLevels"],
-      "), intent(in):: ",rodeoConst$genIdent["vecVars"],newline)
+      rodeoConst$genIdent$len["vars"],"*",rodeoConst$genIdent["nLevels"],
+      "), intent(in):: ",rodeoConst$genIdent$vec["vars"],newline)
     code=paste0(code,"  double precision, dimension(",
-      rodeoConst$genIdent["lenPars"],"*",rodeoConst$genIdent["lenLevels"],
-      "), intent(in):: ",rodeoConst$genIdent["vecPars"],newline)
-    code=paste0(code,"  integer, intent(in):: ",rodeoConst$genIdent["lenLevels"],newline)
+      rodeoConst$genIdent$len["pars"],"*",rodeoConst$genIdent["nLevels"],
+      "), intent(in):: ",rodeoConst$genIdent$vec["pars"],newline)
+    code=paste0(code,"  integer, intent(in):: ",rodeoConst$genIdent["nLevels"],newline)
     code=paste0(code,"  ! Outputs",newline)
     code=paste0(code,"  double precision, dimension(",
-      rodeoConst$genIdent["lenVars"],"*",rodeoConst$genIdent["lenLevels"],
-      "), intent(out):: ",rodeoConst$genIdent["vecDrvs"],newline)
+      rodeoConst$genIdent$len["vars"],"*",rodeoConst$genIdent["nLevels"],
+      "), intent(out):: ",rodeoConst$genIdent$vec["drvs"],newline)
     code=paste0(code,"  double precision, dimension(",
-      rodeoConst$genIdent["lenPros"],"*",rodeoConst$genIdent["lenLevels"],
-      "), intent(out):: ",rodeoConst$genIdent["vecPros"],newline)
+      rodeoConst$genIdent$len["pros"],"*",rodeoConst$genIdent["nLevels"],
+      "), intent(out):: ",rodeoConst$genIdent$vec["pros"],newline)
     # Local variables
     code=paste0(code,"  ! Local variables",newline)
-    code=paste0(code,"  integer:: ",rodeoConst$genIdent["levelIndex"],", i",newline)
+    code=paste0(code,"  integer:: ",rodeoConst$genIdent["iLevel"],", i",newline)
     # Local constants
     code=paste0(code,newline)
     # Vectors of process rates and derivatives are set here
     code=paste0(code,"  ! Set vector of process rates (all spatial levels)",newline)
-    code=paste0(code,"  do ",rodeoConst$genIdent["levelIndex"]," = 1, ",rodeoConst$genIdent["lenLevels"],newline)
-    code=paste0(code,"    ",rodeoConst$genIdent["vecPros"],
-      "((/(i, i=",rodeoConst$genIdent["levelIndex"],", ((",rodeoConst$genIdent["lenPros"],"-1)*",
-      rodeoConst$genIdent["lenLevels"],"+",rodeoConst$genIdent["levelIndex"],"), ",
-      rodeoConst$genIdent["lenLevels"],")/))","= ",
-      rodeoConst$genIdent["vecPros"],"0D(",rodeoConst$genIdent["levelIndex"],")",newline)
+    code=paste0(code,"  do ",rodeoConst$genIdent["iLevel"]," = 1, ",rodeoConst$genIdent["nLevels"],newline)
+    code=paste0(code,"    ",rodeoConst$genIdent$vec["pros"],
+      "((/(i, i=",rodeoConst$genIdent["iLevel"],", ((",rodeoConst$genIdent$len["pros"],"-1)*",
+      rodeoConst$genIdent["nLevels"],"+",rodeoConst$genIdent["iLevel"],"), ",
+      rodeoConst$genIdent["nLevels"],")/))","= ",
+      rodeoConst$genIdent$vec["pros"],"0D(",rodeoConst$genIdent["iLevel"],")",newline)
     code=paste0(code,"  end do",newline)
     code=paste0(code,newline)
     code=paste0(code,"  ! Set vector of derivatives (all spatial levels)",newline)
-    code=paste0(code,"  do ",rodeoConst$genIdent["levelIndex"]," = 1, ",rodeoConst$genIdent["lenLevels"],newline)
-    code=paste0(code,"    ",rodeoConst$genIdent["vecDrvs"],
-      "((/(i, i=",rodeoConst$genIdent["levelIndex"],", ((",rodeoConst$genIdent["lenVars"],"-1)*",
-      rodeoConst$genIdent["lenLevels"],"+",rodeoConst$genIdent["levelIndex"],"), ",
-      rodeoConst$genIdent["lenLevels"],")/))","= ",
-      rodeoConst$genIdent["vecDrvs"],"0D(",rodeoConst$genIdent["levelIndex"],")",newline)
+    code=paste0(code,"  do ",rodeoConst$genIdent["iLevel"]," = 1, ",rodeoConst$genIdent["nLevels"],newline)
+    code=paste0(code,"    ",rodeoConst$genIdent$vec["drvs"],
+      "((/(i, i=",rodeoConst$genIdent["iLevel"],", ((",rodeoConst$genIdent$len["vars"],"-1)*",
+      rodeoConst$genIdent["nLevels"],"+",rodeoConst$genIdent["iLevel"],"), ",
+      rodeoConst$genIdent["nLevels"],")/))","= ",
+      rodeoConst$genIdent$vec["drvs"],"0D(",rodeoConst$genIdent["iLevel"],")",newline)
     code=paste0(code,"  end do",newline)
     code=paste0(code,newline)
     # Internal functions
@@ -219,45 +219,45 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,newline)
     # Process rates at a particular level
     code=paste0(code,"  ! Process rates at a particular level",newline)
-    code=paste0(code,"  function ",rodeoConst$genIdent["vecPros"],
-      "0D(",rodeoConst$genIdent["levelIndex"],")",newline)
+    code=paste0(code,"  function ",rodeoConst$genIdent$vec["pros"],
+      "0D(",rodeoConst$genIdent["iLevel"],")",newline)
     code=paste0(code,"    implicit none",newline)
     code=paste0(code,"    ! Inputs",newline)
-    code=paste0(code,"    integer, intent(in):: ",rodeoConst$genIdent["levelIndex"],newline)
+    code=paste0(code,"    integer, intent(in):: ",rodeoConst$genIdent["iLevel"],newline)
     code=paste0(code,"    ! Outputs",newline)
     code=paste0(code,"    double precision, dimension(",
-      rodeoConst$genIdent["lenPros"],"):: ",rodeoConst$genIdent["vecPros"],"0D",newline)
+      rodeoConst$genIdent$len["pros"],"):: ",rodeoConst$genIdent$vec["pros"],"0D",newline)
     code=paste0(code,"    ! Update indices",newline)
-    code=paste0(code,"    ",rodeoConst$genIdent["ivecVars"],"= (",
-      rodeoConst$genIdent["ivecVars0D"]," - 1) * ",rodeoConst$genIdent["lenLevels"],
-      " + ",rodeoConst$genIdent["levelIndex"],newline)
-    code=paste0(code,"    ",rodeoConst$genIdent["ivecPars"],"= (",
-      rodeoConst$genIdent["ivecPars0D"]," - 1) * ",rodeoConst$genIdent["lenLevels"],
-      " + ",rodeoConst$genIdent["levelIndex"],newline)
+    code=paste0(code,"    ",rodeoConst$genIdent$ivec["vars"],"= (",
+      rodeoConst$genIdent$ivec0D["vars"]," - 1) * ",rodeoConst$genIdent["nLevels"],
+      " + ",rodeoConst$genIdent["iLevel"],newline)
+    code=paste0(code,"    ",rodeoConst$genIdent$ivec["pars"],"= (",
+      rodeoConst$genIdent$ivec0D["pars"]," - 1) * ",rodeoConst$genIdent["nLevels"],
+      " + ",rodeoConst$genIdent["iLevel"],newline)
     code=paste0(code,"    ! Set return vector",newline)
     code=paste0(code,"    ",code_pros,newline)
     code=paste0(code,"  end function",newline)
     code=paste0(code,newline)
     # Derivatives at a particular level
     code=paste0(code,"  ! Derivatives at a particular level",newline)
-    code=paste0(code,"  function ",rodeoConst$genIdent["vecDrvs"],
-      "0D(",rodeoConst$genIdent["levelIndex"],")",newline)
+    code=paste0(code,"  function ",rodeoConst$genIdent$vec["drvs"],
+      "0D(",rodeoConst$genIdent["iLevel"],")",newline)
     code=paste0(code,"    implicit none",newline)
     code=paste0(code,"    ! Inputs",newline)
-    code=paste0(code,"    integer, intent(in):: ",rodeoConst$genIdent["levelIndex"],newline)
+    code=paste0(code,"    integer, intent(in):: ",rodeoConst$genIdent["iLevel"],newline)
     code=paste0(code,"    ! Outputs",newline)
     code=paste0(code,"    double precision, dimension(",
-      rodeoConst$genIdent["lenVars"],"):: ",rodeoConst$genIdent["vecDrvs"],"0D",newline)
+      rodeoConst$genIdent$len["vars"],"):: ",rodeoConst$genIdent$vec["drvs"],"0D",newline)
     code=paste0(code,"    ! Update indices",newline)
-    code=paste0(code,"    ",rodeoConst$genIdent["ivecVars"],"= (",
-      rodeoConst$genIdent["ivecVars0D"]," - 1) * ",rodeoConst$genIdent["lenLevels"],
-      " + ",rodeoConst$genIdent["levelIndex"],newline)
-    code=paste0(code,"    ",rodeoConst$genIdent["ivecPars"],"= (",
-      rodeoConst$genIdent["ivecPars0D"]," - 1) * ",rodeoConst$genIdent["lenLevels"],
-      " + ",rodeoConst$genIdent["levelIndex"],newline)
-    code=paste0(code,"    ",rodeoConst$genIdent["ivecPros"],"= (",
-      rodeoConst$genIdent["ivecPros0D"]," - 1) * ",rodeoConst$genIdent["lenLevels"],
-      " + ",rodeoConst$genIdent["levelIndex"],newline)
+    code=paste0(code,"    ",rodeoConst$genIdent$ivec["vars"],"= (",
+      rodeoConst$genIdent$ivec0D["vars"]," - 1) * ",rodeoConst$genIdent["nLevels"],
+      " + ",rodeoConst$genIdent["iLevel"],newline)
+    code=paste0(code,"    ",rodeoConst$genIdent$ivec["pars"],"= (",
+      rodeoConst$genIdent$ivec0D["pars"]," - 1) * ",rodeoConst$genIdent["nLevels"],
+      " + ",rodeoConst$genIdent["iLevel"],newline)
+    code=paste0(code,"    ",rodeoConst$genIdent$ivec["pros"],"= (",
+      rodeoConst$genIdent$ivec0D["pros"]," - 1) * ",rodeoConst$genIdent["nLevels"],
+      " + ",rodeoConst$genIdent["iLevel"],newline)
     code=paste0(code,"    ! Set return vector",newline)
     code=paste0(code,"    ",code_drvs,newline)
     code=paste0(code,"  end function",newline)
@@ -271,67 +271,67 @@ rodeo$methods( generate = function(lang, name="derivs") {
     code=paste0(code,"###  THIS IS A GENERATED FILE -- DO NOT EDIT  ###",newline)
     code=paste0(code,"#################################################",newline)
     code=paste0(code,newline)
-    code=paste0(code,name," = function (",rodeoConst$reservedNames["time"],", ",rodeoConst$genIdent["vecVars"],
-      ", ",rodeoConst$genIdent["vecPars"],", ",rodeoConst$genIdent["lenLevels"],
+    code=paste0(code,name," = function (",rodeoConst$reservedNames["time"],", ",rodeoConst$genIdent$vec["vars"],
+      ", ",rodeoConst$genIdent$vec["pars"],", ",rodeoConst$genIdent["nLevels"],
       ", check=TRUE) {",newline)
     code=paste0(code,newline)
     code=paste0(code,"  # Dimension constants",newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["lenVars"],"=",nrow(.self$.vars),newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["lenPars"],"=",nrow(.self$.pars),newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["lenPros"],"=",nrow(.self$.pros),newline)
+    code=paste0(code,"  ",rodeoConst$genIdent$len["vars"],"=",nrow(.self$.vars),newline)
+    code=paste0(code,"  ",rodeoConst$genIdent$len["pars"],"=",nrow(.self$.pars),newline)
+    code=paste0(code,"  ",rodeoConst$genIdent$len["pros"],"=",nrow(.self$.pros),newline)
     code=paste0(code,newline)
     code=paste0(code,"  # Check length of arguments",newline)
     code=paste0(code,"  if (check) {",newline)
-    code=paste0(code,"    if (length(",rodeoConst$genIdent["vecVars"],
-      ") != (",rodeoConst$genIdent["lenVars"]," * ",rodeoConst$genIdent["lenLevels"],"))",newline)
-    code=paste0(code,"      stop(paste0(\"length of argument '",rodeoConst$genIdent["vecVars"],
-      "' is \",length(",rodeoConst$genIdent["vecVars"],"),",newline,
-      "        \" but it should be \",",rodeoConst$genIdent["lenVars"]," * ",
-      rodeoConst$genIdent["lenLevels"],",",newline,
+    code=paste0(code,"    if (length(",rodeoConst$genIdent$vec["vars"],
+      ") != (",rodeoConst$genIdent$len["vars"]," * ",rodeoConst$genIdent["nLevels"],"))",newline)
+    code=paste0(code,"      stop(paste0(\"length of argument '",rodeoConst$genIdent$vec["vars"],
+      "' is \",length(",rodeoConst$genIdent$vec["vars"],"),",newline,
+      "        \" but it should be \",",rodeoConst$genIdent$len["vars"]," * ",
+      rodeoConst$genIdent["nLevels"],",",newline,
       "        \" (number of variables * number of levels)\"))",newline)
-    code=paste0(code,"    if (length(",rodeoConst$genIdent["vecPars"],
-      ") != (",rodeoConst$genIdent["lenPars"]," * ",rodeoConst$genIdent["lenLevels"],"))",newline)
-    code=paste0(code,"      stop(paste0(\"length of argument '",rodeoConst$genIdent["vecPars"],
-      "' is \",length(",rodeoConst$genIdent["vecPars"],"),",newline,
-      "        \" but it should be \",",rodeoConst$genIdent["lenPars"]," * ",
-      rodeoConst$genIdent["lenLevels"],",",newline,
+    code=paste0(code,"    if (length(",rodeoConst$genIdent$vec["pars"],
+      ") != (",rodeoConst$genIdent$len["pars"]," * ",rodeoConst$genIdent["nLevels"],"))",newline)
+    code=paste0(code,"      stop(paste0(\"length of argument '",rodeoConst$genIdent$vec["pars"],
+      "' is \",length(",rodeoConst$genIdent$vec["pars"],"),",newline,
+      "        \" but it should be \",",rodeoConst$genIdent$len["pars"]," * ",
+      rodeoConst$genIdent["nLevels"],",",newline,
       "        \" (number of parameters * number of levels)\"))",newline)
     code=paste0(code,"  }",newline)
     code=paste0(code,"  # Lists of array indices",newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["ilistVars0D"]," = list(",
+    code=paste0(code,"  ",rodeoConst$genIdent$ilist0D["vars"]," = list(",
       "    ",paste0(names(indexVars),"=",indexVars,collapse=", "),"  )",newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["ilistPars0D"]," = list(",
+    code=paste0(code,"  ",rodeoConst$genIdent$ilist0D["pars"]," = list(",
       "    ",paste0(names(indexPars),"=",indexPars,collapse=", "),"  )",newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["ilistPros0D"]," = list(",
+    code=paste0(code,"  ",rodeoConst$genIdent$ilist0D["pros"]," = list(",
       "    ",paste0(names(indexPros),"=",indexPros,collapse=", "),"  )",newline)
     code=paste0(code,newline)
     code=paste0(code,"  # Function to update indices for particular level(s)",newline)
-    code=paste0(code,"  adjIdx= function (x, ",rodeoConst$genIdent["lenLevels"],
-      ", ",rodeoConst$genIdent["levelIndex"],") { (x - 1) * ",
-      rodeoConst$genIdent["lenLevels"]," + ",rodeoConst$genIdent["levelIndex"]," }",newline)
+    code=paste0(code,"  adjIdx= function (x, ",rodeoConst$genIdent["nLevels"],
+      ", ",rodeoConst$genIdent["iLevel"],") { (x - 1) * ",
+      rodeoConst$genIdent["nLevels"]," + ",rodeoConst$genIdent["iLevel"]," }",newline)
     code=paste0(code,newline)
     code=paste0(code,"  # Internal function: Process rates at a particular level",newline)
-    code=paste0(code,"  fun_",rodeoConst$genIdent["vecPros"],"0D = function (",
-      rodeoConst$genIdent["levelIndex"],") {",newline)
+    code=paste0(code,"  fun_",rodeoConst$genIdent$vec["pros"],"0D = function (",
+      rodeoConst$genIdent["iLevel"],") {",newline)
     code=paste0(code,"    # Update indices",newline)
-    code=paste0(code,"    ",rodeoConst$genIdent["ilistVars"]," = lapply(",
-      rodeoConst$genIdent["ilistVars0D"],", adjIdx ,",
-      rodeoConst$genIdent["lenLevels"],"=",rodeoConst$genIdent["lenLevels"],", ",
-      rodeoConst$genIdent["levelIndex"],"=",rodeoConst$genIdent["levelIndex"],")",newline)
-    code=paste0(code,"    ",rodeoConst$genIdent["ilistPars"]," = lapply(",
-      rodeoConst$genIdent["ilistPars0D"],", adjIdx ,",
-      rodeoConst$genIdent["lenLevels"],"=",rodeoConst$genIdent["lenLevels"],", ",
-      rodeoConst$genIdent["levelIndex"],"=",rodeoConst$genIdent["levelIndex"],")",newline)
+    code=paste0(code,"    ",rodeoConst$genIdent$ilist["vars"]," = lapply(",
+      rodeoConst$genIdent$ilist0D["vars"],", adjIdx ,",
+      rodeoConst$genIdent["nLevels"],"=",rodeoConst$genIdent["nLevels"],", ",
+      rodeoConst$genIdent["iLevel"],"=",rodeoConst$genIdent["iLevel"],")",newline)
+    code=paste0(code,"    ",rodeoConst$genIdent$ilist["pars"]," = lapply(",
+      rodeoConst$genIdent$ilist0D["pars"],", adjIdx ,",
+      rodeoConst$genIdent["nLevels"],"=",rodeoConst$genIdent["nLevels"],", ",
+      rodeoConst$genIdent["iLevel"],"=",rodeoConst$genIdent["iLevel"],")",newline)
     code=paste0(code,"    # Set return vector",newline)
     code=paste0(code,"    ",code_pros,newline)
     code=paste0(code,"  }",newline)
     code=paste0(code,newline)
 
     code=paste0(code,"  # Set vector of process rates (all spatial levels)",newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["vecPros"]," = as.vector(t(vapply(",
-      "X= 1:",rodeoConst$genIdent["lenLevels"],", ",
-      "FUN= fun_",rodeoConst$genIdent["vecPros"],"0D, ",newline,
-      "    FUN.VALUE= numeric(",rodeoConst$genIdent["lenPros"],"), USE.NAMES=FALSE)))", newline)
+    code=paste0(code,"  ",rodeoConst$genIdent$vec["pros"]," = as.vector(t(vapply(",
+      "X= 1:",rodeoConst$genIdent["nLevels"],", ",
+      "FUN= fun_",rodeoConst$genIdent$vec["pros"],"0D, ",newline,
+      "    FUN.VALUE= numeric(",rodeoConst$genIdent$len["pros"],"), USE.NAMES=FALSE)))", newline)
 #    NOTE: The following vectorized alternative does not work in general, because
 #          the result does not necessarily expand to a vector of the proper length.
 #          For example, it wouldn't work if the righthandside of an ODE doesn't
@@ -344,51 +344,51 @@ rodeo$methods( generate = function(lang, name="derivs") {
 #          also destroy the concept of a generic model code if R-specific
 #          constructs like pmin/pmax/ifelse need to be used.
 #    # DONT USE
-#    code=paste0(code,"  ",rodeoConst$genIdent["vecPros"]," = unname(fun_",
-#      rodeoConst$genIdent["vecPros"],"0D(1:",rodeoConst$genIdent["lenLevels"],"))",newline)
+#    code=paste0(code,"  ",rodeoConst$genIdent$vec["pros"]," = unname(fun_",
+#      rodeoConst$genIdent$vec["pros"],"0D(1:",rodeoConst$genIdent["nLevels"],"))",newline)
 #    code=paste0(code,newline)
 #    # END DONT USE
     code=paste0(code,newline)
 
     code=paste0(code,"  # Internal function: Derivatives at a particular level",newline)
-    code=paste0(code,"  fun_",rodeoConst$genIdent["vecDrvs"],"0D = function (",
-      rodeoConst$genIdent["levelIndex"],") {",newline)
+    code=paste0(code,"  fun_",rodeoConst$genIdent$vec["drvs"],"0D = function (",
+      rodeoConst$genIdent["iLevel"],") {",newline)
     code=paste0(code,"    # Update indices",newline)
-    code=paste0(code,"    ",rodeoConst$genIdent["ilistVars"]," = lapply(",
-      rodeoConst$genIdent["ilistVars0D"],", adjIdx ,",
-      rodeoConst$genIdent["lenLevels"],"=",rodeoConst$genIdent["lenLevels"],", ",
-      rodeoConst$genIdent["levelIndex"],"=",rodeoConst$genIdent["levelIndex"],")",newline)
-    code=paste0(code,"    ",rodeoConst$genIdent["ilistPars"]," = lapply(",
-      rodeoConst$genIdent["ilistPars0D"],", adjIdx ,",
-      rodeoConst$genIdent["lenLevels"],"=",rodeoConst$genIdent["lenLevels"],", ",
-      rodeoConst$genIdent["levelIndex"],"=",rodeoConst$genIdent["levelIndex"],")",newline)
-    code=paste0(code,"    ",rodeoConst$genIdent["ilistPros"]," = lapply(",
-      rodeoConst$genIdent["ilistPros0D"],", adjIdx ,",
-      rodeoConst$genIdent["lenLevels"],"=",rodeoConst$genIdent["lenLevels"],", ",
-      rodeoConst$genIdent["levelIndex"],"=",rodeoConst$genIdent["levelIndex"],")",newline)
+    code=paste0(code,"    ",rodeoConst$genIdent$ilist["vars"]," = lapply(",
+      rodeoConst$genIdent$ilist0D["vars"],", adjIdx ,",
+      rodeoConst$genIdent["nLevels"],"=",rodeoConst$genIdent["nLevels"],", ",
+      rodeoConst$genIdent["iLevel"],"=",rodeoConst$genIdent["iLevel"],")",newline)
+    code=paste0(code,"    ",rodeoConst$genIdent$ilist["pars"]," = lapply(",
+      rodeoConst$genIdent$ilist0D["pars"],", adjIdx ,",
+      rodeoConst$genIdent["nLevels"],"=",rodeoConst$genIdent["nLevels"],", ",
+      rodeoConst$genIdent["iLevel"],"=",rodeoConst$genIdent["iLevel"],")",newline)
+    code=paste0(code,"    ",rodeoConst$genIdent$ilist["pros"]," = lapply(",
+      rodeoConst$genIdent$ilist0D["pros"],", adjIdx ,",
+      rodeoConst$genIdent["nLevels"],"=",rodeoConst$genIdent["nLevels"],", ",
+      rodeoConst$genIdent["iLevel"],"=",rodeoConst$genIdent["iLevel"],")",newline)
     code=paste0(code,"    # Set return vector",newline)
     code=paste0(code,"    ",code_drvs,newline)
     code=paste0(code,"  }",newline)
     code=paste0(code,newline)
 
     code=paste0(code,"  # Set vector of derivatives (all spatial levels)",newline)
-    code=paste0(code,"  ",rodeoConst$genIdent["vecDrvs"]," = as.vector(t(vapply(",
-      "X= 1:",rodeoConst$genIdent["lenLevels"],", ",
-      "FUN= fun_",rodeoConst$genIdent["vecDrvs"],"0D, ",newline,
-      "    FUN.VALUE= numeric(",rodeoConst$genIdent["lenVars"],"), USE.NAMES=FALSE)))", newline)
+    code=paste0(code,"  ",rodeoConst$genIdent$vec["drvs"]," = as.vector(t(vapply(",
+      "X= 1:",rodeoConst$genIdent["nLevels"],", ",
+      "FUN= fun_",rodeoConst$genIdent$vec["drvs"],"0D, ",newline,
+      "    FUN.VALUE= numeric(",rodeoConst$genIdent$len["vars"],"), USE.NAMES=FALSE)))", newline)
     code=paste0(code,newline)
 #    NOTE: The following vectorized alternative does not work in general (see
 #          comments above for details).
 #    # DONT USE
-#    code=paste0(code,"  ",rodeoConst$genIdent["vecDrvs"]," = unname(fun_",
-#      rodeoConst$genIdent["vecDrvs"],"0D(1:",rodeoConst$genIdent["lenLevels"],"))",newline)
+#    code=paste0(code,"  ",rodeoConst$genIdent$vec["drvs"]," = unname(fun_",
+#      rodeoConst$genIdent$vec["drvs"],"0D(1:",rodeoConst$genIdent["nLevels"],"))",newline)
 #    code=paste0(code,newline)
 #    # END DONT USE
 
     code=paste0(code,"  # Return a list",newline)
     code=paste0(code,"  return(list(",
-      rodeoConst$genIdent["vecDrvs"],"=",rodeoConst$genIdent["vecDrvs"],",",
-      rodeoConst$genIdent["vecPros"],"=",rodeoConst$genIdent["vecPros"],"))",newline)
+      rodeoConst$genIdent$vec["drvs"],"=",rodeoConst$genIdent$vec["drvs"],",",
+      rodeoConst$genIdent$vec["pros"],"=",rodeoConst$genIdent$vec["pros"],"))",newline)
     code=paste0(code,"}",newline)
 
   } else {
@@ -398,16 +398,16 @@ rodeo$methods( generate = function(lang, name="derivs") {
 
   # Post-process generated code to handle references to neighboring elements
 
-  for (item in c(rodeoConst$genIdent[c("vecVars", "vecPars")])) {
+  for (item in c("vars", "pars")) {
     for (fun in rodeoConst$reservedNames[c("left", "right")]) {
-      pat= paste0(fun,"[(]",item,"[",codeElem(lang)$eleOpen,"]",
+      pat= paste0(fun,"[(]",rodeoConst$genIdent$vec[item],"[",codeElem(lang)$eleOpen,"]",
         "([^",codeElem(lang)$eleClose,codeElem(lang)$eleOpen,"]+)",
         "[",codeElem(lang)$eleClose,"][)]")
       if (fun == rodeoConst$reservedNames["left"]) {
-        subst= paste0(item,codeElem(lang)$eleOpen,
+        subst= paste0(rodeoConst$genIdent$vec[item],codeElem(lang)$eleOpen,
           codeElem(lang)$max,"(1,\\1-1)", codeElem(lang)$eleClose)
       } else if (fun == rodeoConst$reservedNames["right"]) {
-        subst= paste0(item,codeElem(lang)$eleOpen,
+        subst= paste0(rodeoConst$genIdent$vec[item],codeElem(lang)$eleOpen,
           codeElem(lang)$min,"(NLVL,\\1+1)", codeElem(lang)$eleClose)
       }
       code= gsub(pattern=pat, replacement=subst, x=code, fixed=FALSE)
