@@ -10,15 +10,35 @@ module dimensions_and_indices
   integer, parameter:: NPAR=8
   integer, parameter:: NPRO=4
   ! Constant index arrays (for OD case or 1st level, respectively)
-  integer, dimension(NVAR), parameter:: ivar0D =(/(i, i=1, NVAR)/)
-  integer, dimension(NPAR), parameter:: ipar0D =(/(i, i=1, NPAR)/)
+  integer, dimension(NVAR), target:: ivar0D =(/(i, i=1, NVAR)/)
+  integer, dimension(NPAR), target:: ipar0D =(/(i, i=1, NPAR)/)
   integer, dimension(NPRO), parameter:: ipro0D =(/(i, i=1, NPRO)/)
   ! Modifyable index arrays (to be adjusted for each spatial level)
   integer, dimension(NVAR), target:: ivar
   integer, dimension(NPAR), target:: ipar
   integer, dimension(NPRO), target:: ipro
 
-  ! Lists of pointers to index arrays
+  ! Lists of pointers to index arrays for first level (0D case)
+  ! Note: Only used in conjunction with left() or right()
+  type t_var0D
+    integer, pointer:: c_do => ivar0D(1)
+    integer, pointer:: c_z => ivar0D(2)
+    integer, pointer:: v => ivar0D(3)
+  end type
+  type t_par0D
+    integer, pointer:: q_in => ipar0D(1)
+    integer, pointer:: q_ex => ipar0D(2)
+    integer, pointer:: kd => ipar0D(3)
+    integer, pointer:: s_do_z => ipar0D(4)
+    integer, pointer:: h_do => ipar0D(5)
+    integer, pointer:: temp => ipar0D(6)
+    integer, pointer:: wind => ipar0D(7)
+    integer, pointer:: depth => ipar0D(8)
+  end type
+  ! Instances of the above lists
+  type (t_var0D):: v0D
+  type (t_par0D):: p0D
+  ! Lists of pointers to index arrays whose values depend on the level
   type t_var
     integer, pointer:: c_do => ivar(1)
     integer, pointer:: c_z => ivar(2)
@@ -117,8 +137,8 @@ subroutine derivs(time, var, par, NLVL, dydt, pro)
  (-par(p%s_do_z)) +  pro(r%aeration) * (1d0)&
     ,&
       ! Variable 'c_z'
-       pro(r%flushing) * (c_z_in(time) - var(v%c_z)) +  pro(r%decay) * (-&
-1d0)&
+       pro(r%flushing) * (c_z_in(time) - var(v%c_z)) +  pro(r%decay) *&
+ (-1d0)&
     ,&
       ! Variable 'v'
        pro(r%flow) * (1d0)&

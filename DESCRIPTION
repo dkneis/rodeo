@@ -11,4 +11,4 @@ Description: The package allows for the representation of ODE-based models in
 License: GPL (>= 2)
 Depends:
     methods, deSolve, knitr
-VignetteBuilder: knitr
+

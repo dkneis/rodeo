@@ -27,67 +27,13 @@
 
 \definecolor{shadecolor}{gray}{0.9}
 
+%\VignetteIndexEntry{A code generator for ODE-based models in R}
+
 \begin{document}
 
 % Turn prompts off in R code
 <<echo=FALSE>>=
 options(continue=" ", prompt=" ")
-@
-
-% R-functions
-<<exportTable, echo=FALSE>>=
-  library(readxl)
-  exportTable= function(file, colFmt=NULL, from=NULL, to=NULL, tmpDir="tmp") {
-    if (!dir.exists(tmpDir))
-      stop("temporary directory '",tmpDir,"' does not exist")
-    # Read data frame
-    if (grepl(pattern=".+[.]xlsx$", x=file)) {
-	  x=read_excel(path=file)
-	} else {
-	  x=read.table(file=file, sep="\t", header=TRUE)	
-	}
-    if (is.null(colFmt))
-      colFmt= setNames(rep("l", ncol(x)), names(x))
-	# Post-process contents
-	from= ifelse(is.null(from),1,from)
-	to=   ifelse(is.null(to),nrow(x),to)
-    x= x[from:to,names(colFmt)]
-    names(x)= gsub(pattern="_", replacement="\\_", x=names(x), fixed=TRUE)
-    for (i in 1:ncol(x)) {
-      x[,i]= gsub(pattern="_", replacement="\\_", x=x[,i], fixed=TRUE)
-      x[is.na(x[,i]),i]= ""
-    }
-    fileTex= paste0(tmpDir,"/",gsub(pattern="/", replacement="__", x=normalizePath(file), fixed=TRUE),".from",from,"to",to,".tmp")    
-    # Tex formats (open)
-    write(x=paste(c(
-      "\\begin{mdframed}[backgroundcolor=shadecolor, innerleftmargin=2pt]",
-      "\\begin{small}",
-      "\\begin{ttfamily}",
-      "\\begin{hyphenrules}{nohyphenation}",
-      collapse="\n"
-    )), file=fileTex, append=FALSE)
-    # Export
-    write(x=paste0("\\begin{tabular}{",paste(colFmt, collapse=""),"}"),
-      file=fileTex, append=TRUE)
-    if (from == 1) {
-	    write(x=paste(paste(names(x), collapse=" & "), "\\\\"),
-	      file=fileTex, append=TRUE)
-	}
-    for (i in 1:nrow(x)) {
-      write(x=paste(paste(unlist(x[i,]), collapse=" & "), "\\\\"),
-	    file=fileTex, append=TRUE)
-    }
-    write(x="\\end{tabular}", file=fileTex, append=TRUE)
-    # Tex formats (close)
-    write(x=paste(c(
-      "\\end{hyphenrules}",
-      "\\end{ttfamily}",
-      "\\end{small}",
-      "\\end{mdframed}",
-      collapse="\n"
-    )), file=fileTex, append=TRUE)
-    return(fileTex)
-  }
 @
 
 \lstset{basicstyle=\ttfamily\small,

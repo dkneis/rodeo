@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.1.9)  3 FEB 2016 11:07
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.1.9)  3 MAR 2016 12:09
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1036,24 +1036,24 @@ LaTeX Warning: Unused global option(s):
 (./rodeo.aux)
 \openout1 = `rodeo.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 30.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 30.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 32.
+LaTeX Font Info:    ... okay on input line 32.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 32.
+LaTeX Font Info:    ... okay on input line 32.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 32.
+LaTeX Font Info:    ... okay on input line 32.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 32.
+LaTeX Font Info:    ... okay on input line 32.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 32.
+LaTeX Font Info:    ... okay on input line 32.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 32.
+LaTeX Font Info:    ... okay on input line 32.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 32.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 32.
  (/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    ... okay on input line 32.
 
 (/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -1144,26 +1144,26 @@ LaTeX Font Info:    Font shape `TS1/aett/m/sl' in size <10> not available
  [5
 
 ] [6]
-<rodeo-013.pdf, id=37, 433.62pt x 433.62pt>
-File: rodeo-013.pdf Graphic file (type pdf)
- <use rodeo-013.pdf>
-Package pdftex.def Info: rodeo-013.pdf used on input line 306.
+<rodeo-012.pdf, id=37, 433.62pt x 433.62pt>
+File: rodeo-012.pdf Graphic file (type pdf)
+ <use rodeo-012.pdf>
+Package pdftex.def Info: rodeo-012.pdf used on input line 306.
 (pdftex.def)             Requested size: 276.00105pt x 276.0139pt.
- [7 <./rodeo-013.pdf>] <rodeo-015.pdf, id=48, 433.62pt x 180.675pt>
-File: rodeo-015.pdf Graphic file (type pdf)
- <use rodeo-015.pdf>
-Package pdftex.def Info: rodeo-015.pdf used on input line 340.
+ [7 <./rodeo-012.pdf>] <rodeo-014.pdf, id=48, 433.62pt x 180.675pt>
+File: rodeo-014.pdf Graphic file (type pdf)
+ <use rodeo-014.pdf>
+Package pdftex.def Info: rodeo-014.pdf used on input line 340.
 (pdftex.def)             Requested size: 276.00105pt x 115.00578pt.
 
 [8
 
- <./rodeo-015.pdf>] [9] [10] <rodeo-021.pdf, id=64, 433.62pt x 180.675pt>
-File: rodeo-021.pdf Graphic file (type pdf)
+ <./rodeo-014.pdf>] [9] [10] <rodeo-020.pdf, id=64, 433.62pt x 180.675pt>
+File: rodeo-020.pdf Graphic file (type pdf)
 
-<use rodeo-021.pdf>
-Package pdftex.def Info: rodeo-021.pdf used on input line 478.
+<use rodeo-020.pdf>
+Package pdftex.def Info: rodeo-020.pdf used on input line 478.
 (pdftex.def)             Requested size: 276.00105pt x 115.00578pt.
- [11 <./rodeo-021.pdf>] [12] [13]
+ [11 <./rodeo-020.pdf>] [12] [13]
 Overfull \hbox (3.15944pt too wide) in paragraph at lines 610--611
 []\T1/aer/m/n/10 generates the fol-low-ing L[]T[]X code hold-ing tab-u-lar in-f
 or-ma-tion on the model's
@@ -1204,7 +1204,7 @@ xlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/share/texlive/t
 exmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texmf/font
 s/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-su
 per/sfst1000.pfb>
-Output written on rodeo.pdf (20 pages, 297083 bytes).
+Output written on rodeo.pdf (20 pages, 297109 bytes).
 PDF statistics:
  159 PDF objects out of 1000 (max. 8388607)
  112 compressed objects within 2 object streams

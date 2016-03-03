@@ -27,11 +27,11 @@
 
 \definecolor{shadecolor}{gray}{0.9}
 
+%\VignetteIndexEntry{A code generator for ODE-based models in R}
+
 \begin{document}
 
 % Turn prompts off in R code
-
-% R-functions
 
 \lstset{basicstyle=\ttfamily\small,
   commentstyle=\textsl,
@@ -303,7 +303,7 @@ In addition to the dynamics of the state variables, we also get the dynamics of 
  layout(1)
 \end{Sinput}
 \end{Schunk}
-\includegraphics{rodeo-013}
+\includegraphics{rodeo-012}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -337,7 +337,7 @@ Second, we need to pass the actual number of reactors to the derivatives functio
  plot(out, which=paste("c_do",1:nbox,sep="."), mfrow=NULL)
 \end{Sinput}
 \end{Schunk}
-\includegraphics{rodeo-015}
+\includegraphics{rodeo-014}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -475,7 +475,7 @@ We are now prepared to load the shared library and run the simulation based on t
  plot(out, which=paste("c_do",1:nbox,sep="."), mfrow=NULL)
 \end{Sinput}
 \end{Schunk}
-\includegraphics{rodeo-021}
+\includegraphics{rodeo-020}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -506,16 +506,16 @@ This section demonstrates how the 'functions-of-time' approach can be used in Fo
 \end{Sinput}
 \begin{Soutput}
    time temp humid
-1     1   17    16
-2     2   17    10
-3     3   17    50
-4     4   25    70
-5     5   18     6
-6     6   24    81
-7     7   21    68
-8     8   22    32
-9     9   18    52
-10   10   20    89
+1     1   21    36
+2     2   17    13
+3     3   23    55
+4     4   14    14
+5     5   19    35
+6     6   22    99
+7     7   16    84
+8     8   17    78
+9     9   19    65
+10   10   23    85
 \end{Soutput}
 \end{Schunk}
 
