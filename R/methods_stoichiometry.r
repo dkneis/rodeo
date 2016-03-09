@@ -1,7 +1,7 @@
 rodeo$methods( stoichiometry = function(values=NULL) {
   "Returns the stoichiometry information as a matrix of character expressions (if
-   \\code{values} is \\code{NULL}) or numeric data (if values of variables and
-   parameters are specified in \\code{values})."
+   \\code{values} is \\code{NULL}) or numeric data (if values of variables,
+   parameters, and time are specified as a named vector in \\code{values})."
 
   # Build the matrix of expressions
   m= matrix("0", ncol=nrow(.self$.vars), nrow=nrow(.self$.pros))

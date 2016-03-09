@@ -18,13 +18,14 @@
 \contentsline {subsection}{\numberline {4.4}Generating model documentation}{14}
 \contentsline {subsubsection}{\numberline {4.4.1}Exporting formatted tables}{14}
 \contentsline {subsubsection}{\numberline {4.4.2}Visualizing the stoichiometry matrix}{15}
-\contentsline {paragraph}{Option 1: TEX}{15}
-\contentsline {paragraph}{Option 2: HTML}{16}
-\contentsline {paragraph}{Option 3: Markdown}{17}
-\contentsline {section}{\numberline {5}Writing \texttt {rodeo}-compatible \texttt {Fortran} functions}{17}
-\contentsline {subsection}{\numberline {5.1}Reference example}{17}
-\contentsline {subsection}{\numberline {5.2}Common pitfalls}{18}
-\contentsline {subsubsection}{\numberline {5.2.1}Double precision variables and constants}{18}
-\contentsline {subsubsection}{\numberline {5.2.2}Integers in numeric expressions}{19}
-\contentsline {subsubsection}{\numberline {5.2.3}Continuation lines}{19}
-\contentsline {subsection}{\numberline {5.3}More information on \texttt {Fortran} programming}{20}
+\contentsline {paragraph}{Option 1: Plain R graphics}{15}
+\contentsline {paragraph}{Option 2: TEX}{16}
+\contentsline {paragraph}{Option 3: HTML}{17}
+\contentsline {paragraph}{Option 4: Markdown}{18}
+\contentsline {section}{\numberline {5}Writing \texttt {rodeo}-compatible \texttt {Fortran} functions}{18}
+\contentsline {subsection}{\numberline {5.1}Reference example}{18}
+\contentsline {subsection}{\numberline {5.2}Common pitfalls}{19}
+\contentsline {subsubsection}{\numberline {5.2.1}Double precision variables and constants}{19}
+\contentsline {subsubsection}{\numberline {5.2.2}Integers in numeric expressions}{20}
+\contentsline {subsubsection}{\numberline {5.2.3}Continuation lines}{20}
+\contentsline {subsection}{\numberline {5.3}More information on \texttt {Fortran} programming}{21}

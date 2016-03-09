@@ -53,9 +53,13 @@ for the generated function/routine.
 
 \item{\code{initialize(vars, pars, funs, pros, stoi)}}{Initializes a rodeo object}
 
+\item{\code{plotStoichiometry(values, cex = 1, colPositive = "darkorange",
+  colNegative = "steelblue4", colGrid = "grey")}}{Plots qualitative stoichiometry information based on the values of variables,
+parameters, and time passed as a named vector in \code{values}.}
+
 \item{\code{stoichiometry(values = NULL)}}{Returns the stoichiometry information as a matrix of character expressions (if
-\code{values} is \code{NULL}) or numeric data (if values of variables and
-parameters are specified in \code{values}).}
+\code{values} is \code{NULL}) or numeric data (if values of variables,
+parameters, and time are specified as a named vector in \code{values}).}
 }}
 \examples{
 # see vignette

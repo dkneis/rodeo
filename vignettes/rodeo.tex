@@ -506,16 +506,16 @@ This section demonstrates how the 'functions-of-time' approach can be used in Fo
 \end{Sinput}
 \begin{Soutput}
    time temp humid
-1     1   21    36
-2     2   17    13
-3     3   23    55
-4     4   14    14
-5     5   19    35
-6     6   22    99
-7     7   16    84
-8     8   17    78
-9     9   19    65
-10   10   23    85
+1     1   24    52
+2     2   18    29
+3     3   20    73
+4     4   24    40
+5     5   21    20
+6     6   15    49
+7     7   19    68
+8     8   14    13
+9     9   18    34
+10   10   18    92
 \end{Soutput}
 \end{Schunk}
 
@@ -660,8 +660,22 @@ Thanks to Andrew Dolman for the latter example.
 
 A graphical representation of the stoichiometry matrix is often a good means to communicate a model. To create such a graphics, one typically wants to replace the stoichiometry factors' numeric values by symbols encoding their sign only.
 
-\paragraph{Option 1: TEX}
+\paragraph{Option 1: Plain R graphics}
+One can use the class method \verb|plorStoichiometry| to visualize the matrix using standard R graphic facilities as demonstrated below. In practice, one needs to fiddle around a bit with the dimensions of the plot and the font size to get an acceptable scaling of symbols and text. Also, it is hardly possible to nicely display row and column names containing special things like sub- or superscripts.
 
+\begin{Schunk}
+\begin{Sinput}
+ pars= list(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
+  temp=20, q_in=1, q_ex=1)
+ vars= list(c_z=1, c_do=9.022, v=1.e6)
+ p= model$arrangePars(pars)
+ v= model$arrangeVars(vars)
+ model$plotStoichiometry(values=c(v, p, time=0), cex=0.3)
+\end{Sinput}
+\end{Schunk}
+\includegraphics{rodeo-029}
+
+\paragraph{Option 2: TEX}
 The following example generates suitable code for inclusion in \LaTeX{} documents.
 
 \begin{Schunk}
@@ -699,7 +713,7 @@ The contents of the variable \verb|tex| must be written to a text file and this 
 \input{./stoiGraphics.tex}
 \end{center}
 
-\paragraph{Option 2: HTML}
+\paragraph{Option 3: HTML}
 
 The following example generates suitable code for inclusion in HTML documents.
 
@@ -725,7 +739,7 @@ The following example generates suitable code for inclusion in HTML documents.
 
 To test this, one needs to write the contents of the variable \verb|html| to a text file and open that file in a web browser. In some cases, automatic conversion of the generated HTML into true graphics formats may be possible, e.~g. using auxiliary tools like \software{html2ps} and \software{convert} (on Linux systems).
 
-\paragraph{Option 3: Markdown}
+\paragraph{Option 4: Markdown}
 
 A \software{markdown} compatible version looks like this (contributed by Andrew Dolman):
 

@@ -521,8 +521,15 @@ Thanks to Andrew Dolman for the latter example.
 
 A graphical representation of the stoichiometry matrix is often a good means to communicate a model. To create such a graphics, one typically wants to replace the stoichiometry factors' numeric values by symbols encoding their sign only.
 
-\paragraph{Option 1: TEX}
+\paragraph{Option 1: Plain R graphics}
+One can use the class method \verb|plorStoichiometry| to visualize the matrix using standard R graphic facilities as demonstrated below. In practice, one needs to fiddle around a bit with the dimensions of the plot and the font size to get an acceptable scaling of symbols and text. Also, it is hardly possible to nicely display row and column names containing special things like sub- or superscripts.
 
+<<echo=TRUE, eval=TRUE, fig=TRUE, width=1.7, height=2.2>>=
+<<setDataSingleBox>>
+model$plotStoichiometry(values=c(v, p, time=0), cex=0.3)
+@
+
+\paragraph{Option 2: TEX}
 The following example generates suitable code for inclusion in \LaTeX{} documents.
 
 <<echo=TRUE, eval=TRUE>>=
@@ -557,7 +564,7 @@ write(tex, file="./stoiGraphics.tex")
 \input{./stoiGraphics.tex}
 \end{center}
 
-\paragraph{Option 2: HTML}
+\paragraph{Option 3: HTML}
 
 The following example generates suitable code for inclusion in HTML documents.
 
@@ -581,7 +588,7 @@ html= paste("<html>", html, "</html>", sep="\n")
 
 To test this, one needs to write the contents of the variable \verb|html| to a text file and open that file in a web browser. In some cases, automatic conversion of the generated HTML into true graphics formats may be possible, e.~g. using auxiliary tools like \software{html2ps} and \software{convert} (on Linux systems).
 
-\paragraph{Option 3: Markdown}
+\paragraph{Option 4: Markdown}
 
 A \software{markdown} compatible version looks like this (contributed by Andrew Dolman):
 
