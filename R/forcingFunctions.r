@@ -3,7 +3,7 @@
 #' Generates Fortran code to return the current values of forcing functions
 #' based on interpolation in tabulated time series data.
 #'
-#' @param x A data frame with the four colums 'name', 'file', 'column', 'mode'.
+#' @param x Data frame with colums 'name', 'file', 'column', 'mode', 'default'.
 #'   See below for expected entries. 
 #'
 #' @return A character string holding generated Fortran code. Must be written to
@@ -14,18 +14,20 @@
 #' \itemize{
 #'   \item{\code{name } Name of the forcing function as declared in the table
 #'     of functions.}
-#'   \item{\code{file } Name of the text file containing the time series data.
+#'   \item{\code{file } Name of the text file containing the time series data
+#'     either as an absolute or relative path.
 #'     Time information is expected as numeric values in the first column (e.g.
-#'     as number of seconds after some reference date.
-#'     The period is used as the decimal character in floating point numbers.
-#'     Numeric values can also be given in scientific format (e.g. as 0.314e+1).
+#'     as number of seconds after some reference date).
+#'     The period is used as the decimal character in floating point numbers, 
+#'     numeric values can also be given in scientific format (e.g. as 0.314e+1).
 #'     Allowed column delimiters are blank, tab, or comma. A sequence of white
 #'     spaces collapses to a single delimiter but this is not the case for
 #'     commas. It is strictly recommended to use a consistent delimiter
 #'     character within a particular file.
 #'     Blank lines are allowed everywhere in the file, comment lines must start
 #'     with a '#'. The first non-blank, non-comment line is interpreted as
-#'     column headers (the name of the first column is essentially ignored).
+#'     column headers and the name of the first column (holding time info)
+#'     is essentially ignored).
 #'     }
 #'   \item{\code{column } Name of the column in \code{file} from which data are
 #'     to be read.}
@@ -35,6 +37,12 @@
 #'     with full weight given to the value at the begin of a time interval. Any
 #'     other values (< 0 or > 1) result in linear interpolation with weights
 #'     being set automatically.}
+#'   \item{\code{default } Logical. If \code{FALSE}, the generated function has
+#'     the interface 'f(time)'. If \code{TRUE}, the generated function has a
+#'     two-argument interface 'f(time, z)'. If the actual argument 'z' is
+#'     \code{NaN}, the function behaves just like the single-argument version,
+#'     i.e. interpolation in tabulated data is performed. If 'z' is not
+#'     \code{NaN}, the function returns the value of 'z'.}
 #' }
 #'
 #' The generated code provides a single module named 'forcings' which defines
@@ -51,6 +59,12 @@
 #'  (at top level) or 'rwarn' (at lower levels). These two functions are
 #'  available automatically if the Fortran code is compiled using 'R CMD SHLIB'.
 #'  Otherwise, the two functions need to be defined (see examples below).
+#'
+#' In the two-argument version, the second argument is tested against \code{NaN}
+#'   using 'ISNAN'. This function is not part of the Fortran standard but it is
+#'   supported by most compilers, including gfortan. The Fortran 2003 standard
+#'   conformal function would be 'IS_IEEE_NAN' which is not yet supported by
+#'   compiler versions normally installed with R (March 2016).
 #'
 #' @examples
 #' \dontrun{
@@ -87,30 +101,50 @@ forcingFunctions= function(x) {
   # check args
   if (!is.data.frame(x))
     stop("expecting a data frame as input")
-  cols= c("name","column","mode","file")
+  cols= c("name","column","mode","file","default")
   if (!all(cols %in% names(x)))
     stop("provided data must have columns '",paste(cols, collapse="', '"),"'")
   if (any(duplicated(x$name)))
     stop("duplicate names of forcing functions")
   # process
   code="! THIS IS A GENERATED FILE \n"
-  code= paste0(code,"
-    include '",system.file('fortran/forcingsGenericMethods.f95',package='rodeo'),"'
-    module forcings
-    use forcings_generic
-    implicit none
-    private TSeries, readTS, interpol
-    contains"
-  )
-
+  code=paste0(code, "\n")
+  code= paste0(code,"include '",
+    system.file('fortran/forcingsGenericMethods.f95',package='rodeo'),"'")
+  code=paste0(code, "\n", "module forcings")
+  code=paste0(code, "\n", "use forcings_generic")
+  code=paste0(code, "\n", "implicit none")
+  code=paste0(code, "\n", "private TSeries, readTS, interpol")
+  code=paste0(code, "\n", "contains")
+  code=paste0(code, "\n")
   for (i in 1:nrow(x)) {
-    code= paste0(code, "
-      function ",x$name[i]," (time) result (res)
-        character(len=256), parameter:: file='",x$file[i],"'
-        character(len=256), parameter:: col='",x$column[i],"'
-        integer, parameter:: lweight= ",x$mode[i],"
-        include '",system.file('fortran/forcingsInclude.f95',package='rodeo'),"'\n",
-      "      end function")
+    if (x$default[i]) {
+      code= paste0(code,"\n","function ",x$name[i]," (time, dflt) result (res)")
+      code= paste0(code,"\n","  double precision, intent(in):: time, dflt")
+    } else {
+      code= paste0(code,"\n","  function ",x$name[i]," (time) result (res)")
+      code= paste0(code,"\n","  double precision, intent(in):: time")
+    }
+    code= paste0(code,"\n","  character(len=256), parameter:: file='",x$file[i],"'")
+    code= paste0(code,"\n","  character(len=256), parameter:: col='",x$column[i],"'")
+    code= paste0(code,"\n","  integer, parameter:: lweight= ",x$mode[i])
+    code= paste0(code,"\n","  logical, save:: firstCall= .TRUE.")
+    code= paste0(code,"\n","  integer, save:: latest= 1")
+    code= paste0(code,"\n","  type(TSeries), save:: x")
+    code= paste0(code,"\n","  double precision, parameter:: NA= huge(0d0)")
+    code= paste0(code,"\n","  character(len=512):: errmsg")
+    code= paste0(code,"\n","  double precision:: res")
+    if (x$default[i]) {
+      code= paste0(code,"\n","  logical:: interpolate")
+      code= paste0(code,"\n","  interpolate= isnan(dflt)")
+    } else {
+      code= paste0(code,"\n","  logical, parameter:: interpolate= .TRUE.")
+    }
+    code= paste0(code,"\n","  include '",
+      system.file('fortran/forcingsInclude.f95',package='rodeo'),"'")
+    code= paste0(code,"\n","end function")
   }
-  code=paste0(code, "\n", "    end module")
+  code=paste0(code, "\n", "end module")
 }
+
+
