@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.1.9)  9 MAR 2016 18:26
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.1.9)  16 MAR 2016 13:51
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1161,28 +1161,28 @@ Package pdftex.def Info: rodeo-014.pdf used on input line 340.
 File: rodeo-020.pdf Graphic file (type pdf)
 
 <use rodeo-020.pdf>
-Package pdftex.def Info: rodeo-020.pdf used on input line 478.
+Package pdftex.def Info: rodeo-020.pdf used on input line 480.
 (pdftex.def)             Requested size: 276.00105pt x 115.00578pt.
- [11 <./rodeo-020.pdf>] [12] [13]
-Overfull \hbox (3.15944pt too wide) in paragraph at lines 610--611
+ [11] [12 <./rodeo-020.pdf>] [13] [14]
+Overfull \hbox (3.15944pt too wide) in paragraph at lines 612--613
 []\T1/aer/m/n/10 generates the fol-low-ing L[]T[]X code hold-ing tab-u-lar in-f
 or-ma-tion on the model's
  []
 
-[14]
-Overfull \hbox (13.4005pt too wide) in paragraph at lines 664--665
+[15]
+Overfull \hbox (13.4005pt too wide) in paragraph at lines 666--667
  \T1/aer/bx/n/10 Op-tion 1: Plain R graph-ics[] \T1/aer/m/n/10 One can use the 
 class method []\T1/aett/bx/n/10 plorStoichiometry
  []
 
-[15] <rodeo-029.pdf, id=88, 122.4575pt x 158.5925pt>
+<rodeo-029.pdf, id=88, 122.4575pt x 158.5925pt>
 File: rodeo-029.pdf Graphic file (type pdf)
  <use rodeo-029.pdf>
-Package pdftex.def Info: rodeo-029.pdf used on input line 676.
+Package pdftex.def Info: rodeo-029.pdf used on input line 678.
 (pdftex.def)             Requested size: 276.00105pt x 357.50009pt.
-
-[16 <./rodeo-029.pdf>] (./stoiGraphics.tex) [17] [18] [19]
-Overfull \hbox (3.9786pt too wide) in paragraph at lines 822--822
+ [16]
+[17 <./rodeo-029.pdf>] (./stoiGraphics.tex) [18] [19]
+Overfull \hbox (3.9786pt too wide) in paragraph at lines 824--824
 []\T1/aett/m/n/9 double precision, parameter:: pi= 3.1415d0, e= 2.7183d0   ! ma
 th constants[] 
  []
@@ -1193,10 +1193,10 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
- 14649 strings out of 493304
- 248583 string characters out of 6139872
- 313481 words of memory out of 5000000
- 17770 multiletter control sequences out of 15000+600000
+ 14650 strings out of 493304
+ 248596 string characters out of 6139872
+ 313491 words of memory out of 5000000
+ 17771 multiletter control sequences out of 15000+600000
  39768 words of font info for 96 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
  53i,9n,43p,10436b,351s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1216,7 +1216,7 @@ xlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/share/texlive/t
 exmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texmf/font
 s/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-su
 per/sfst1000.pfb>
-Output written on rodeo.pdf (21 pages, 301973 bytes).
+Output written on rodeo.pdf (21 pages, 302229 bytes).
 PDF statistics:
  168 PDF objects out of 1000 (max. 8388607)
  118 compressed objects within 2 object streams

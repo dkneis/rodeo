@@ -287,7 +287,7 @@ After generating the code, we need to make it executable. In \software{R}, we ca
 \end{Sinput}
 \end{Schunk}
 
-\subsection{Solving the ODE system}
+\subsection{Solving the ODE system} \label{sec:solve-R}
 
 We are now ready to compute the evolution of the state variables over time by means of numerical integration. At this point, the proper order of the elements in the vectors \verb|v| and \verb|p| is essential since the generated function code uses \emph{by-index} access! Therefore, \verb|v| and \verb|p| should always be set by calls to the \verb|arrangeVars| and \verb|arrangePars| method, respectively.
 
@@ -456,7 +456,9 @@ As a next step, one needs to compile the generated code and the hand-coded funct
 \end{Schunk}
 
 
-We are now prepared to load the shared library and run the simulation based on the Fortran code. Note the additional arguments \verb|dllname|, \verb|initfunc|, and \verb|nout| being passed to the numerical solver (open the help page for \verb|lsoda| to see the documentation for them). Note that setting a wrong value for \verb|nout| easily makes \software{R} crash.
+We are now prepared to load the shared library and run the simulation based on the Fortran code. Note the additional arguments \verb|dllname|, \verb|initfunc|, and \verb|nout| being passed to the numerical solver (open the help page for \verb|lsoda| to see the documentation for them). Setting a wrong value for \verb|nout| easily makes \software{R} crash.
+
+Also note that, in contrast to the R-based version (see Sect.~\ref{sec:solve-R}), the number of reactors (boxes) is not passed to the solver as an additional parameter \verb|NLVL|. In the case of Fortran, this number is rather supplied to the \verb|solverInterface| method (see above) and it is thus hard-coded in the compiled code.
 
 \begin{Schunk}
 \begin{Sinput}
@@ -468,7 +470,7 @@ We are now prepared to load the shared library and run the simulation based on t
  p= model$arrangePars(pars)
  v= model$arrangeVars(vars)
  dyn.load(dllfile)
- out= ode(y=v, times=t, func="derivs_wrapped", parms=p, NLVL=nbox,
+ out= ode(y=v, times=t, func="derivs_wrapped", parms=p,
    dllname=dllname, initfunc="initmod", nout=model$lenPros()*nbox)
  layout(matrix(1:nbox, nrow=1))
  dyn.unload(dllfile)
@@ -506,16 +508,16 @@ This section demonstrates how the 'functions-of-time' approach can be used in Fo
 \end{Sinput}
 \begin{Soutput}
    time temp humid
-1     1   24    52
-2     2   18    29
-3     3   20    73
-4     4   24    40
-5     5   21    20
-6     6   15    49
-7     7   19    68
-8     8   14    13
-9     9   18    34
-10   10   18    92
+1     1   20     1
+2     2   16    68
+3     3   19    10
+4     4   19    87
+5     5   19    53
+6     6   20    74
+7     7   18    50
+8     8   19    43
+9     9   18    11
+10   10   21    99
 \end{Soutput}
 \end{Schunk}
 

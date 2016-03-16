@@ -246,7 +246,7 @@ code= model$generate(name="derivs",lang="r")
 derivs= eval(parse(text=code))
 @
 
-\subsection{Solving the ODE system}
+\subsection{Solving the ODE system} \label{sec:solve-R}
 
 We are now ready to compute the evolution of the state variables over time by means of numerical integration. At this point, the proper order of the elements in the vectors \verb|v| and \verb|p| is essential since the generated function code uses \emph{by-index} access! Therefore, \verb|v| and \verb|p| should always be set by calls to the \verb|arrangeVars| and \verb|arrangePars| method, respectively.
 
@@ -380,12 +380,14 @@ if (system(command) != 0)
 invisible(file.remove(list.files(pattern=".+[.]mod")))
 @
 
-We are now prepared to load the shared library and run the simulation based on the Fortran code. Note the additional arguments \verb|dllname|, \verb|initfunc|, and \verb|nout| being passed to the numerical solver (open the help page for \verb|lsoda| to see the documentation for them). Note that setting a wrong value for \verb|nout| easily makes \software{R} crash.
+We are now prepared to load the shared library and run the simulation based on the Fortran code. Note the additional arguments \verb|dllname|, \verb|initfunc|, and \verb|nout| being passed to the numerical solver (open the help page for \verb|lsoda| to see the documentation for them). Setting a wrong value for \verb|nout| easily makes \software{R} crash.
+
+Also note that, in contrast to the R-based version (see Sect.~\ref{sec:solve-R}), the number of reactors (boxes) is not passed to the solver as an additional parameter \verb|NLVL|. In the case of Fortran, this number is rather supplied to the \verb|solverInterface| method (see above) and it is thus hard-coded in the compiled code.
 
 <<echo=TRUE, eval=TRUE, fig=TRUE, width=6, height=2.5>>=
 <<setDataMultiBox>>
 dyn.load(dllfile)
-out= ode(y=v, times=t, func="derivs_wrapped", parms=p, NLVL=nbox,
+out= ode(y=v, times=t, func="derivs_wrapped", parms=p,
   dllname=dllname, initfunc="initmod", nout=model$lenPros()*nbox)
 layout(matrix(1:nbox, nrow=1))
 dyn.unload(dllfile)
