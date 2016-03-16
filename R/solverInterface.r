@@ -15,6 +15,8 @@
 #'   The second subroutine is to be passed to the \code{func} argument of the
 #'   \code{deSolve} or \code{rootSolve} methods. The subroutines names is
 #'   created by appending the suffix '_wrapper' to the value of \code{funcname}.
+#'   Hence, if \code{funcname} is 'derivs' (default), the subroutine name
+#'   passed to the solver must be 'derivs_wrapped'.
 #'
 #' @author David Kneis \email{david.kneis@@tu-dresden.de}
 #'
