@@ -7,7 +7,7 @@
 forcingFunctions(x)
 }
 \arguments{
-\item{x}{A data frame with the four colums 'name', 'file', 'column', 'mode'.
+\item{x}{Data frame with colums 'name', 'file', 'column', 'mode', 'default'.
   See below for expected entries.}
 }
 \value{
@@ -23,18 +23,20 @@ The fields of the input data frame are interpreted as follows:
 \itemize{
   \item{\code{name } Name of the forcing function as declared in the table
     of functions.}
-  \item{\code{file } Name of the text file containing the time series data.
+  \item{\code{file } Name of the text file containing the time series data
+    either as an absolute or relative path.
     Time information is expected as numeric values in the first column (e.g.
-    as number of seconds after some reference date.
-    The period is used as the decimal character in floating point numbers.
-    Numeric values can also be given in scientific format (e.g. as 0.314e+1).
+    as number of seconds after some reference date).
+    The period is used as the decimal character in floating point numbers,
+    numeric values can also be given in scientific format (e.g. as 0.314e+1).
     Allowed column delimiters are blank, tab, or comma. A sequence of white
     spaces collapses to a single delimiter but this is not the case for
     commas. It is strictly recommended to use a consistent delimiter
     character within a particular file.
     Blank lines are allowed everywhere in the file, comment lines must start
     with a '#'. The first non-blank, non-comment line is interpreted as
-    column headers (the name of the first column is essentially ignored).
+    column headers and the name of the first column (holding time info)
+    is essentially ignored).
     }
   \item{\code{column } Name of the column in \code{file} from which data are
     to be read.}
@@ -44,6 +46,12 @@ The fields of the input data frame are interpreted as follows:
     with full weight given to the value at the begin of a time interval. Any
     other values (< 0 or > 1) result in linear interpolation with weights
     being set automatically.}
+  \item{\code{default } Logical. If \code{FALSE}, the generated function has
+    the interface 'f(time)'. If \code{TRUE}, the generated function has a
+    two-argument interface 'f(time, z)'. If the actual argument 'z' is
+    \code{NaN}, the function behaves just like the single-argument version,
+    i.e. interpolation in tabulated data is performed. If 'z' is not
+    \code{NaN}, the function returns the value of 'z'.}
 }
 
 The generated code provides a single module named 'forcings' which defines
@@ -60,6 +68,12 @@ The generated function return scalar values of type double precision. If an
  (at top level) or 'rwarn' (at lower levels). These two functions are
  available automatically if the Fortran code is compiled using 'R CMD SHLIB'.
  Otherwise, the two functions need to be defined (see examples below).
+
+In the two-argument version, the second argument is tested against \code{NaN}
+  using 'ISNAN'. This function is not part of the Fortran standard but it is
+  supported by most compilers, including gfortan. The Fortran 2003 standard
+  conformal function would be 'IS_IEEE_NAN' which is not yet supported by
+  compiler versions normally installed with R (March 2016).
 }
 \examples{
 \dontrun{

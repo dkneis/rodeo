@@ -21,6 +21,8 @@ A character string holding generated Fortran code. Must be written to
   The second subroutine is to be passed to the \code{func} argument of the
   \code{deSolve} or \code{rootSolve} methods. The subroutines names is
   created by appending the suffix '_wrapper' to the value of \code{funcname}.
+  Hence, if \code{funcname} is 'derivs' (default), the subroutine name
+  passed to the solver must be 'derivs_wrapped'.
 }
 \description{
 Creates wrapper code to make \code{rodeo}-generated Fortran code compatible
