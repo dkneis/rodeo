@@ -508,16 +508,16 @@ This section demonstrates how the 'functions-of-time' approach can be used in Fo
 \end{Sinput}
 \begin{Soutput}
    time temp humid
-1     1   20     1
-2     2   16    68
-3     3   19    10
-4     4   19    87
-5     5   19    53
-6     6   20    74
-7     7   18    50
-8     8   19    43
-9     9   18    11
-10   10   21    99
+1     1   14    12
+2     2   19     4
+3     3   20    34
+4     4   16    28
+5     5   14     4
+6     6   20    38
+7     7   17    97
+8     8   21     2
+9     9   16    21
+10   10   25    71
 \end{Soutput}
 \end{Schunk}
 
@@ -526,7 +526,7 @@ We can now call \verb|forcingFunctions| to generate the  appropriate forcing fun
 \begin{Schunk}
 \begin{Sinput}
  dat= data.frame(name=c("temp","humid"),
-   column=c("temp","humid"), file="meteo.txt", mode=-1)
+   column=c("temp","humid"), file="meteo.txt", mode=-1, default=FALSE)
  code= forcingFunctions(dat)
  write(x=code, file="forc.f95")
  # Optionally inspect generated code

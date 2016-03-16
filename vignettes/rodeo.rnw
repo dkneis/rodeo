@@ -429,7 +429,7 @@ We can now call \verb|forcingFunctions| to generate the  appropriate forcing fun
 
 <<echo=TRUE, eval=TRUE>>=
 dat= data.frame(name=c("temp","humid"),
-  column=c("temp","humid"), file="meteo.txt", mode=-1)
+  column=c("temp","humid"), file="meteo.txt", mode=-1, default=FALSE)
 code= forcingFunctions(dat)
 write(x=code, file="forc.f95")
 # Optionally inspect generated code
