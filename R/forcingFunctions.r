@@ -135,13 +135,15 @@ forcingFunctions= function(x) {
     code= paste0(code,"\n","  character(len=512):: errmsg")
     code= paste0(code,"\n","  double precision:: res")
     if (x$default[i]) {
-      code= paste0(code,"\n","  logical:: interpolate")
-      code= paste0(code,"\n","  interpolate= isnan(dflt)")
-    } else {
-      code= paste0(code,"\n","  logical, parameter:: interpolate= .TRUE.")
+      code= paste0(code,"\n","  if (isnan(dflt)) then")
     }
     code= paste0(code,"\n","  include '",
       system.file('fortran/forcingsInclude.f95',package='rodeo'),"'")
+    if (x$default[i]) {
+      code= paste0(code,"\n","  else")
+      code= paste0(code,"\n","    res= dflt")
+      code= paste0(code,"\n","  end if")
+    }
     code= paste0(code,"\n","end function")
   }
   code=paste0(code, "\n", "end module")

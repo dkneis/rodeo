@@ -1,5 +1,4 @@
   ! BEGIN OF INCLUDE CODE
-  if (interpolate) then
     ! init
     if (firstCall) then
       firstCall= .FALSE.
@@ -20,8 +19,5 @@
     else
       call rexit("forcing data not allocated")
     end if
-  else
-    res= dflt
-  end if
   ! END OF INCLUDED CODE
 
