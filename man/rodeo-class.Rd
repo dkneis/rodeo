@@ -51,7 +51,7 @@ Either 'f95' (for Fortran) or 'r'. \code{name}: A string giving the name
 for the generated function/routine.
 \bold{Returns:} The generated code as a string.}
 
-\item{\code{initialize(vars, pars, funs, pros, stoi)}}{Initializes a rodeo object}
+\item{\code{initialize(vars, pars, funs, pros, stoi, asMatrix = FALSE)}}{Initializes a rodeo object}
 
 \item{\code{plotStoichiometry(values, cex = 1, colPositive = "darkorange",
   colNegative = "steelblue4", colGrid = "grey")}}{Plots qualitative stoichiometry information based on the values of variables,

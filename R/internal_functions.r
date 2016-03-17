@@ -8,9 +8,11 @@ checkTbl= function(tbl, tblName, colNames, nameCol, emptyOK) {
   if ((nrow(tbl) == 0) && (!emptyOK)) {
     stop(paste0("number of records in '",tblName,"' must not be zero"))
   } else if ((nrow(tbl) == 0) && emptyOK) {
-    return(tbl)
+    return(NULL)
   # Handle tables with some contents
   } else {
+    for (n in colNames)
+      tbl[,n]= as.character(tbl[,n])
     # Check column names
     if (!all(colNames %in% names(tbl)))
       stop(paste0("'",tblName,"' must have columns '",

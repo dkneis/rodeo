@@ -1,40 +1,37 @@
 rodeo$methods(
-  initialize = function(
-    vars,
-    pars,
-    funs,
-    pros,
-    stoi
+  initialize = function(vars, pars, funs, pros, stoi, asMatrix=FALSE
 ) {
   "Initializes a rodeo object"
-  # Convert table columns to character
-    vars= data.frame(lapply(vars, as.character), stringsAsFactors=FALSE)
-    pars= data.frame(lapply(pars, as.character), stringsAsFactors=FALSE)
-    funs= data.frame(lapply(funs, as.character), stringsAsFactors=FALSE)
-    pros= data.frame(lapply(pros, as.character), stringsAsFactors=FALSE)
-    stoi= data.frame(lapply(stoi, as.character), stringsAsFactors=FALSE)
   # Set variables ##############################################################
-  checkTbl(tbl=vars, tblName="vars",
-    colNames=c("name","unit","description"), nameCol="name", emptyOK=FALSE)
-  if (is.na(match("tex", names(vars)))) vars$tex= vars$name
-  if (is.na(match("html", names(vars)))) vars$html= vars$name
+  cn= c("name","unit","description")
+  checkTbl(tbl=vars, tblName="vars", colNames=cn, nameCol="name", emptyOK=FALSE)
+  for (n in cn)
+    vars[,n]= as.character(vars[,n])
+  for (n in c("tex","html"))
+    vars[,n]= if (n %in% names(vars)) as.character(vars[,n]) else vars$name
   .self$.vars <<- vars
   # Set parameters #############################################################
-  checkTbl(tbl=pars, tblName="pars",
-    colNames=c("name","unit","description"), nameCol="name", emptyOK=FALSE)
-  if (is.na(match("tex", names(pars)))) pars$tex= pars$name
-  if (is.na(match("html", names(pars)))) pars$html= pars$name
+  cn= c("name","unit","description")
+  checkTbl(tbl=pars, tblName="pars", colNames=cn, nameCol="name", emptyOK=FALSE)
+  for (n in cn)
+    pars[,n]= as.character(pars[,n])
+  for (n in c("tex","html"))
+    pars[,n]= if (n %in% names(pars)) as.character(pars[,n]) else pars$name
   .self$.pars <<- pars
   # Set functions ##############################################################
-  checkTbl(tbl=funs, tblName="funs",
-    colNames=c("name","unit","description"), nameCol="name", emptyOK=TRUE)
-  if (is.na(match("tex", names(funs)))) funs$tex= funs$name
-  if (is.na(match("html", names(funs)))) funs$html= funs$name
+  cn= c("name","unit","description")
+  checkTbl(tbl=funs, tblName="funs", colNames=cn, nameCol="name", emptyOK=TRUE)
+  for (n in cn)
+    funs[,n]= as.character(funs[,n])
+  for (n in c("tex","html"))
+    funs[,n]= if (n %in% names(funs)) as.character(funs[,n]) else funs$name
   .self$.funs <<- funs
   # Set processes ##############################################################
   # Basic checks
-  checkTbl(tbl=pros, tblName="pros", colNames=c("name","unit","description",
-    "expression"), nameCol="name", emptyOK=FALSE)
+  cn= c("name","unit","description","expression")
+  checkTbl(tbl=pros, tblName="pros", colNames=cn, nameCol="name", emptyOK=FALSE)
+  for (n in cn)
+    pros[,n]= as.character(pros[,n])
   # Check for undeclared items in expressions
   for (i in 1:nrow(pros)) {
     bad= undeclared(pros$expression[i], c(vars$name, pars$name, funs$name,
@@ -67,9 +64,19 @@ rodeo$methods(
   }
   .self$.pros <<- pros
   # Set stoichiometry ##########################################################
+  # Convert matrix to table
+  if (asMatrix) {
+    stoi= data.frame(lapply(stoi, as.character), stringsAsFactors=FALSE)
+    stoi= data.frame(variable=rep(names(stoi)[2:ncol(stoi)], each=nrow(stoi)),
+      process=rep(stoi[,1], (ncol(stoi)-1)),
+      expression= unlist(stoi[ ,2:ncol(stoi)]), stringsAsFactors=FALSE)
+    stoi= subset(stoi, !(is.na(stoi$expression) | (nchar(stoi$expression)==0)))
+  }
   # Basic checks
-  checkTbl(tbl=stoi, tblName="stoi", colNames=c("variable","process",
-    "expression"), nameCol=NULL, emptyOK=FALSE)
+  cn= c("variable","process","expression")
+  checkTbl(tbl=stoi, tblName="stoi", colNames=cn, nameCol=NULL, emptyOK=FALSE)
+  for (n in cn)
+    stoi[,n]= as.character(stoi[,n])
   # Check names of variables
   n= unique(stoi$variable)
   bad= n[!(n %in% vars$name)]
