@@ -2,7 +2,6 @@
 
 export(exportDF)
 export(forcingFunctions)
-export(runModel)
 export(solverInterface)
 exportClasses(rodeo)
 import(deSolve)

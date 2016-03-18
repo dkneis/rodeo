@@ -4,9 +4,12 @@
 \name{rodeo-class}
 \alias{rodeo}
 \alias{rodeo-class}
-\title{A reference class to represent an ODE-based model.}
+\title{\code{rodeo} reference class}
 \description{
-A reference class to represent an ODE-based model.
+This documents the \code{rodeo} reference class to represent an ODE-based
+model. See the \code{\link{rodeo-package}} main page or type
+\code{help(package="rodeo")} for an introduction to the package of
+the same name.
 }
 \section{Fields}{
 
@@ -26,42 +29,64 @@ parameters of the model. The declared names become valid
 identifiers to be used in the expression fields of \code{.pros} or \code{.stoi}.}
 
 \item{\code{.funs}}{A data frame of the same structure as \code{vars} declaring any
-functions referenced in the expression fields of \code{.pros} or \code{.stoi}.}
+  functions referenced in the expression fields of \code{.pros} or \code{.stoi}.}
 }}
 \section{Methods}{
 
 \describe{
-\item{\code{arrangePars(x, sep = ".", warnUnused = TRUE)}}{Build a vector of parameters from list \code{x}. The list elements can
-either be vectors (with length according to the number of spatial levels) or
-scalars. The latter are recycled for all spatial levels. Element names are
-constructed by appending the level index to the original names using the
-specified separator. If there is a single level only, element names are
-identical to the original names (no suffix).}
+\item{\code{arrangePars(x, sep = ".", warnUnused = TRUE)}}{Assign values to parameters. See \code{\link{arrangePars}} for details.}
 
-\item{\code{arrangeVars(x, sep = ".", warnUnused = TRUE)}}{Build a vector of state variables from list \code{x}. The list elements can
-either be vectors (with length according to the number of spatial levels) or
-scalars. The latter are recycled for all spatial levels. Element names are
-constructed by appending the level index to the original names using the
-specified separator. If there is a single level only, element names are
-identical to the original names (no suffix).}
+\item{\code{arrangeVars(x, sep = ".", warnUnused = TRUE)}}{Assign values to state variables. See \code{\link{arrangeVars}} for details.}
 
-\item{\code{generate(lang, name = "derivs")}}{Generates code to compute the variables' derivatives with respect
-to time. \bold{Arguments:} \code{lang}: Specifies the target language.
-Either 'f95' (for Fortran) or 'r'. \code{name}: A string giving the name
-for the generated function/routine.
-\bold{Returns:} The generated code as a string.}
+\item{\code{generate(lang, name = "derivs")}}{Translate the ODE-model specification into a function that computes process
+rates and the state variables derivatives (either in R or Fortran). See
+\code{\link{generate}} for details.}
 
-\item{\code{initialize(vars, pars, funs, pros, stoi, asMatrix = FALSE)}}{Initializes a rodeo object}
+\item{\code{getFuns()}}{Returns the declaration of functions appearing in the ODE's righthand sides
+(as a data frame).}
+
+\item{\code{getPars()}}{Returns the declaration of the model's parameters (as a data frame).}
+
+\item{\code{getPros()}}{Returns the declaration of simulated processes (as a data frame).}
+
+\item{\code{getStoi()}}{Returns the model's stoichiometric factors (as a data frame).}
+
+\item{\code{getVars()}}{Returns the declaration of the model's state variables (as a data frame).}
+
+\item{\code{initialize(vars, pars, funs, pros, stoi, asMatrix = FALSE)}}{Initializes a \code{\link{rodeo-class}} object. See
+\code{\link{initialize}} for details.}
+
+\item{\code{lenFuns()}}{Returns the number of functions appearing in the ODE's righthand sides
+(integer).}
+
+\item{\code{lenPars()}}{Returns the number of parameters appearing in the ODE system (integer).}
+
+\item{\code{lenPros()}}{Returns the number of simulated processes (integer).}
+
+\item{\code{lenVars()}}{Returns the number of state variables appearing in the ODE system (integer).}
+
+\item{\code{namesFuns()}}{Returns the names of functions appearing in the ODE's righthand sides
+(vector of mode character).}
+
+\item{\code{namesPars()}}{Returns the names of the model's parameters (vector of mode character).}
+
+\item{\code{namesPros()}}{Returns the names of simulated processes (vector of mode character).}
+
+\item{\code{namesVars()}}{Returns the names of the model's state variables (vector of mode character).}
 
 \item{\code{plotStoichiometry(values, cex = 1, colPositive = "darkorange",
-  colNegative = "steelblue4", colGrid = "grey")}}{Plots qualitative stoichiometry information based on the values of variables,
-parameters, and time passed as a named vector in \code{values}.}
+  colNegative = "steelblue4", colGrid = "grey")}}{Plots qualitative stoichiometry information. See
+\code{\link{plotStoichiometry}} for details.}
 
-\item{\code{stoichiometry(values = NULL)}}{Returns the stoichiometry information as a matrix of character expressions (if
-\code{values} is \code{NULL}) or numeric data (if values of variables,
-parameters, and time are specified as a named vector in \code{values}).}
+\item{\code{stoichiometry(values = NULL)}}{Returns the stoichiometry matrix, either evaluated (numeric) or not (text).
+See \code{\link{stoichiometry}} for details.}
 }}
 \examples{
 # see vignette
+}
+\seealso{
+See the \code{\link{rodeo-package}} main page or type
+  \code{help(package="rodeo")} to find the documentation of any non-class
+  methods contained in the \code{rodeo} package.
 }
 

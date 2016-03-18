@@ -1,9 +1,42 @@
+#' Code generator
+#'
+#' Translate the ODE-model specification into a function that computes process
+#' rates and the state variables derivatives (either in R or Fortran).
+#'
+#' @name generate
+#'
+#' @param lang Character string to select the language of the generated source
+#'   code. Must be either 'f95' (for Fortran) or 'r' (for R).
+#' @param name Name for the generated function (character string). It should
+#'   start with a letter, optionally followed by letters, numbers, or
+#'   underscores.
+#'
+#' @return The generated source code as a string. Must be written to
+#'   disk, e.g. using \code{\link[base]{write}}, prior to compilation.
+#'
+#' @note Fortran code requires compilation but typically runs much faster than
+#'   the generated R code (typically by a factor between 2 and 100). The
+#'   generation of R code is recommended for simple demo applications and
+#'   testing only where performance is not an issue.
+#'
+#' If generated Fortran code is to be used with the numerical solvers from the
+#'   \code{\link[deSolve]{deSolve-package}} or
+#'   \code{\link[rootSolve]{rootSolve-package}} a wrapper is required. It is
+#'   best created with the non-class method \code{\link{solverInterface}}.
+#'
+#' @author \email{david.kneis@@tu-dresden.de}
+#'
+#' @seealso See other methods of the \code{\link{rodeo-class}} or
+#'   the non-class method \code{\link{solverInterface}} for creating a specific
+#'   wrapper (Fortran only).
+#'
+#' @examples
+#' # see vignette
+
 rodeo$methods( generate = function(lang, name="derivs") {
-  "Generates code to compute the variables' derivatives with respect
-  to time. \\bold{Arguments:} \\code{lang}: Specifies the target language.
-  Either 'f95' (for Fortran) or 'r'. \\code{name}: A string giving the name
-  for the generated function/routine.
-  \\bold{Returns:} The generated code as a string."
+  "Translate the ODE-model specification into a function that computes process
+   rates and the state variables derivatives (either in R or Fortran). See
+   \\code{\\link{generate}} for details."
 
   newline="\n"
 

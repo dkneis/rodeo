@@ -1,4 +1,12 @@
-#' A reference class to represent an ODE-based model.
+#' \code{rodeo} reference class
+#'
+#' This documents the \code{rodeo} reference class to represent an ODE-based
+#' model. See the \code{\link{rodeo-package}} main page or type
+#' \code{help(package="rodeo")} for an introduction to the package of
+#' the same name.
+#'
+#' @name rodeo-class
+#' @name aliases rodeo-class
 #'
 #' @field .pros A data frame with fields 'name', 'unit', 'description', and
 #'   'expression' defining the process rates.
@@ -12,7 +20,11 @@
 #'   identifiers to be used in the expression fields of \code{.pros} or \code{.stoi}.
 #' @field .funs A data frame of the same structure as \code{vars} declaring any
 #'   functions referenced in the expression fields of \code{.pros} or \code{.stoi}.
-
+#'
+#' @seealso See the \code{\link{rodeo-package}} main page or type
+#'   \code{help(package="rodeo")} to find the documentation of any non-class
+#'   methods contained in the \code{rodeo} package.
+#' 
 #' @examples
 #' # see vignette
 #'

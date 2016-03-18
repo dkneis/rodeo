@@ -1,7 +1,35 @@
+#' Return stoichiometry matrix
+#'
+#' Return and optionally evaluate the mathematical expression appearing in the
+#' stoichiometry matrix.
+#'
+#' @name stoichiometry
+#'
+#' @param values A named numeric vector specifying the values of all state
+#'   variables and parameters. For non-autonomous models, there must also be an
+#'   element named 'time'. If \code{values} is set to \code{NULL}, the 
+#'   mathematical expressions are not evaluated but returned as character
+#'   strings.
+#'
+#' @return A matrix of numeric or character type, depending on the contents of
+#'  \code{values}.
+#'
+#' @note If the stoichiometric factors are mathematical expressions involving
+#'   function references, these functions must be defined in R (even if the
+#'   numerical computations are based on generated Fortran code).
+#'
+#' @author \email{david.kneis@@tu-dresden.de}
+#'
+#' @seealso See other methods of the \code{\link{rodeo-class}} or
+#'   \code{\link{plotStoichiometry}} for a graphical representation of the
+#'   stoichiometric factors only.
+#'
+#' @examples
+#' # see vignette
+
 rodeo$methods( stoichiometry = function(values=NULL) {
-  "Returns the stoichiometry information as a matrix of character expressions (if
-   \\code{values} is \\code{NULL}) or numeric data (if values of variables,
-   parameters, and time are specified as a named vector in \\code{values})."
+  "Returns the stoichiometry matrix, either evaluated (numeric) or not (text).
+  See \\code{\\link{stoichiometry}} for details."
 
   # Build the matrix of expressions
   m= matrix("0", ncol=nrow(.self$.vars), nrow=nrow(.self$.pros))

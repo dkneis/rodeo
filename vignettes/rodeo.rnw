@@ -114,39 +114,39 @@ Some specific aspects of the model are as follows:
 Using \software{rodeo}, the model can be described using just tabular text files (Tables~\ref{tab:identifiers} -- \ref{tab:stoichiometry}). These files are shipped with the package and can be loaded with \software{R}'s \verb|data| method.
 
 \begin{table}
-\caption{Declaration of identifiers (data set 'identifiers'). The type column indicates whether an item is a state variable (v), parameter (p), or function (f). \label{tab:identifiers}}
+\caption{Declaration of identifiers (data set 'exampleIdentifiers'). The type column indicates whether an item is a state variable (v), parameter (p), or function (f). \label{tab:identifiers}}
 \begin{shaded}
 \begin{small}
 <<echo=FALSE>>=
 library(rodeo, quietly=TRUE)
-data(identifiers)
-print(format(identifiers, justify="right"), row.names=FALSE)
+data(exampleIdentifiers)
+print(format(exampleIdentifiers, justify="right"), row.names=FALSE)
 @
 \end{small}
 \end{shaded}
 \end{table}
 
 \begin{table}
-\caption{Specification of processes (data set 'processes'). \label{tab:processes}}
+\caption{Specification of processes (data set 'exampleProcesses'). \label{tab:processes}}
 \begin{shaded}
 \begin{small}
 <<echo=FALSE>>=
 library(rodeo, quietly=TRUE)
-data(processes)
-print(format(processes, justify="right"), row.names=FALSE)
+data(exampleProcesses)
+print(format(exampleProcesses, justify="right"), row.names=FALSE)
 @
 \end{small}
 \end{shaded}
 \end{table}
 
 \begin{table}
-\caption{Specification of stoichiometric factors (data set 'stoichiometry'). \label{tab:stoichiometry}}
+\caption{Specification of stoichiometric factors (data set 'exampleStoichiometry'). \label{tab:stoichiometry}}
 \begin{shaded}
 \begin{small}
 <<echo=FALSE>>=
 library(rodeo, quietly=TRUE)
-data(stoichiometry)
-print(format(stoichiometry, justify="right"), row.names=FALSE)
+data(exampleStoichiometry)
+print(format(exampleStoichiometry, justify="right"), row.names=FALSE)
 @
 \end{small}
 \end{shaded}
@@ -168,13 +168,13 @@ We start by creating a new object with \verb|new|. This requires us to supply th
 library(rodeo, quietly=TRUE)
 
 # Load sample data frames (contents shown above)
-data(identifiers, processes, stoichiometry)
+data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
 
 # Instantiate new object
-model= new("rodeo", vars=subset(identifiers,type=="v"),
-  pars=subset(identifiers,type=="p"),
-  funs=subset(identifiers,type=="f"),
-  pros=processes, stoi=stoichiometry)
+model= new("rodeo", vars=subset(exampleIdentifiers,type=="v"),
+  pars=subset(exampleIdentifiers,type=="p"),
+  funs=subset(exampleIdentifiers,type=="f"),
+  pros=exampleProcesses, stoi=exampleStoichiometry)
 @
 
 To inspect the object's contents, we can use the following:
@@ -524,7 +524,7 @@ Thanks to Andrew Dolman for the latter example.
 A graphical representation of the stoichiometry matrix is often a good means to communicate a model. To create such a graphics, one typically wants to replace the stoichiometry factors' numeric values by symbols encoding their sign only.
 
 \paragraph{Option 1: Plain R graphics}
-One can use the class method \verb|plorStoichiometry| to visualize the matrix using standard R graphic facilities as demonstrated below. In practice, one needs to fiddle around a bit with the dimensions of the plot and the font size to get an acceptable scaling of symbols and text. Also, it is hardly possible to nicely display row and column names containing special things like sub- or superscripts.
+One can use the class method \verb|plotStoichiometry| to visualize the matrix using standard R graphic facilities as demonstrated below. In practice, one needs to fiddle around a bit with the dimensions of the plot and the font size to get an acceptable scaling of symbols and text. Also, it is hardly possible to nicely display row and column names containing special things like sub- or superscripts.
 
 <<echo=TRUE, eval=TRUE, fig=TRUE, width=1.7, height=2.2>>=
 <<setDataSingleBox>>

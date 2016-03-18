@@ -1,7 +1,59 @@
+#' Initialize a \code{rodeo} object
+#'
+#' Initializes an object of the \code{\link{rodeo-class}} with data frames
+#' holding the specification of an ODE system.
+#'
+#' @name initialize
+#'
+#' @param vars Declaration of state variables appearing in the ODE system.
+#'   Data frame with mandatory columns 'name', 'unit', 'description'.
+#' @param pars Declaration of parameters (i.e. constants) appearing in the ODE
+#'   system. Data frame with the same mandatory columns as \code{vars}.
+#' @param funs Declaration of functions being referenced in the ODE
+#'   system. Data frame with the same mandatory columns as \code{vars}.
+#' @param pros Declaration of process rates. Data frame with mandatory columns
+#'   'name', 'unit', 'description', 'expression'.
+#' @param stoi Declaration of stoichiomnetric factors. A data frame with
+#'   mandatory columns 'variable', 'process', 'expression', if \code{asMatrix}
+#'   is \code{FALSE}. If \code{asMatrix} is \code{TRUE}, the data frame must
+#'   contain the names of processes in the 1st column (whose name is ignored).
+#'   The remaining columns specify the stoichiometric factors (one column per
+#'   state variable; column name equals variable name) in the form of
+#'   mathematical expressions.
+#' @param asMatrix Logical. Specifies whether stoichiometry information is given
+#'   in matrix or data base format.
+#'
+#' @return The method is called implicitly for its side effects when a
+#'   \code{\link{rodeo}} object is instantiated with \code{\link[methods]{new}}.
+#'   A possible return values is probably not accessible.
+#'
+#' @note The mandatory fields of the input data frames should be of type
+#'   character. Additional fields may be present in these data frames and the
+#'   contents becomes part of the \code{\link{rodeo}} object.
+#'   The 'expression' fields of \code{pros} and \code{stoi} (or the contents of
+#'   the stoichiometry matrix) should be valid mathematical expressions in R and
+#'   Fortran. These can involve the names of declared state variables,
+#'   parameters, and functions as well as numeric constants or basic math
+#'   operators. Branching or loop constructs are not allowed (but these can
+#'   appear inside referenced functions).
+#'   There are currently few reserved words that cannot be used as variable,
+#'   parameter, function, or process names. The reserved words are 'time',
+#'   'left', and 'right'.
+#'
+#' @author \email{david.kneis@@tu-dresden.de}
+#'
+#' @seealso See the package vignette for examples.
+#'
+#' @examples
+#' \dontrun{
+#'   x= new("rodeo", vars, pars, funs, pros, stoi)
+#' }
+
 rodeo$methods(
   initialize = function(vars, pars, funs, pros, stoi, asMatrix=FALSE
 ) {
-  "Initializes a rodeo object"
+  "Initializes a \\code{\\link{rodeo-class}} object. See
+   \\code{\\link{initialize}} for details."
   # Set variables ##############################################################
   cn= c("name","unit","description")
   checkTbl(tbl=vars, tblName="vars", colNames=cn, nameCol="name", emptyOK=FALSE)

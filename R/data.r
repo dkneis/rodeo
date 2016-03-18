@@ -1,12 +1,13 @@
 
 # This provides the roxygen documentation for the package's data sets
 
-#' Declaration table
+#' Declaration of identifiers
 #'
 #' Declaration of items (i.e. identifiers) appearing in the model's
 #' mathematical expressions.
 #'
-#' @name identifiers
+#' @docType data
+#' @name exampleIdentifiers
 #' @format A data frame with the following fields:
 #'   \itemize{
 #'     \item{name : }{Name of the item}
@@ -16,11 +17,12 @@
 #'   }
 NULL
 
-#' Processes
+#' Declaration of processes
 #'
 #' Definition of simulated processes.
 #'
-#' @name processes
+#' @docType data
+#' @name exampleProcesses
 #' @format A data frame with the following fields:
 #'   \itemize{
 #'     \item{name : }{Name of the process}
@@ -30,11 +32,12 @@ NULL
 #'   }
 NULL
 
-#' Stoichiometry
+#' Specification of stoichiometry
 #'
 #' Definition of the links between simulated processes and state variables.
 #'
-#' @name stoichiometry
+#' @docType data
+#' @name exampleStoichiometry
 #' @format A data frame with the following fields:
 #'   \itemize{
 #'     \item{variable : }{Name of the state variable}

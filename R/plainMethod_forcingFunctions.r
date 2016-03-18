@@ -7,7 +7,7 @@
 #'   See below for expected entries. 
 #'
 #' @return A character string holding generated Fortran code. Must be written to
-#'   disk, e.g. using \code{write} prior to compilation.
+#'   disk, e.g. using \code{\link[base]{write}}, prior to compilation.
 #' 
 #' @note 
 #' The fields of the input data frame are interpreted as follows:
