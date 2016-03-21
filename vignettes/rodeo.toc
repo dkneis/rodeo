@@ -1,5 +1,5 @@
 \select@language {american}
-\contentsline {section}{\numberline {1}When to use this package}{1}
+\contentsline {section}{\numberline {1}When to use this package}{2}
 \contentsline {section}{\numberline {2}Example problem}{2}
 \contentsline {section}{\numberline {3}Basic use}{5}
 \contentsline {subsection}{\numberline {3.1}Creating and inspecting a model object}{5}
@@ -29,3 +29,5 @@
 \contentsline {subsubsection}{\numberline {5.2.2}Integers in numeric expressions}{20}
 \contentsline {subsubsection}{\numberline {5.2.3}Continuation lines}{21}
 \contentsline {subsection}{\numberline {5.3}More information on \texttt {Fortran} programming}{21}
+\contentsline {section}{\numberline {6}Practical issues}{21}
+\contentsline {subsection}{\numberline {6.1}Managing tabular input data}{21}
