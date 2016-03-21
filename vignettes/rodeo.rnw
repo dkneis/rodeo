@@ -718,4 +718,21 @@ Missing \verb|&| characters are a frequent cause of compile time errors sometime
 
 The examples in Sect.~\ref{sec:advanced:fortran} may serve as a starting point. The website \url{http://fortranwiki.org/fortran/show/HomePage} is a good source of additional information, providing links to standard documents, books, etc.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Practical issues} \label{sec:practical}
+
+\subsection{Managing tabular input data}
+
+The tabular input data can be held in either plain text files or spreadsheets. The two alternatives have their own pros and cons as described below:
+
+Spreadsheet software is specialized on displaying tabular data in a convenient way. Nevertheless, there are some practical issues. For example, spreadsheet programs allow for cell formatting. Formatting rules and automatisms often lead to unwanted results (e.g. in the case of logical columns). This also depends on the used format (e.g. 'xlsx' or 'odt'). As of now, R does not have native support for spreadsheets in 'odt' format. Conversion between 'odt' and 'xlsx' is possible, but the exact result seems to be unpredictable.
+
+Delimited text files are much simpler in concept. They can be edited with any editor and platform dependence is a minor issue because line endings and character encodings are easy to change. Good programs provide powerful editing commands, e.g. using regular expressions, and they can highlight matching parenthesis. Text files are perfect for use with version control systems. Nevertheless, normal editors are unable to display tabular data in a nice way.
+
+It is a good compromise to store the tabular data in delimited text files (e.g. separated by TAB or semicolon) and to open them either in a spreadsheet program or editor, depending on the actual task. Note that the conventional 'csv' is not recommended since mathematical expressions involving multi-argument functions and text descriptions may contain commas (hence, they need to be quoted). Using TAB-delimited text is probably the best option.
+
 \end{document}
+
