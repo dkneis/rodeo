@@ -61,7 +61,7 @@ rodeo$methods(
     vars[,n]= as.character(vars[,n])
   for (n in c("tex","html"))
     vars[,n]= if (n %in% names(vars)) as.character(vars[,n]) else vars$name
-  .self$.vars <<- vars
+  .self$.vars <<- as.data.frame(vars, stringsAsFactors=FALSE)
   # Set parameters #############################################################
   cn= c("name","unit","description")
   checkTbl(tbl=pars, tblName="pars", colNames=cn, nameCol="name", emptyOK=FALSE)
@@ -69,7 +69,7 @@ rodeo$methods(
     pars[,n]= as.character(pars[,n])
   for (n in c("tex","html"))
     pars[,n]= if (n %in% names(pars)) as.character(pars[,n]) else pars$name
-  .self$.pars <<- pars
+  .self$.pars <<- as.data.frame(pars, stringsAsFactors=FALSE)
   # Set functions ##############################################################
   cn= c("name","unit","description")
   checkTbl(tbl=funs, tblName="funs", colNames=cn, nameCol="name", emptyOK=TRUE)
@@ -77,7 +77,7 @@ rodeo$methods(
     funs[,n]= as.character(funs[,n])
   for (n in c("tex","html"))
     funs[,n]= if (n %in% names(funs)) as.character(funs[,n]) else funs$name
-  .self$.funs <<- funs
+  .self$.funs <<- as.data.frame(funs, stringsAsFactors=FALSE)
   # Check tex/html symbols #####################################################
   all_names= c(vars$name, pars$name, funs$name)
   for (n in c("tex","html")) {
@@ -143,7 +143,7 @@ rodeo$methods(
       setNames(funs$html, funs$name),
       setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)),all=TRUE)
   }
-  .self$.pros <<- pros
+  .self$.pros <<- as.data.frame(pros, stringsAsFactors=FALSE)
   # Set stoichiometry ##########################################################
   # Convert matrix to table
   if (asMatrix) {
@@ -213,6 +213,6 @@ rodeo$methods(
   # Add columns with the variables' symbols
   stoi$variable_tex= vars$tex[match(stoi$variable, vars$name)]
   stoi$variable_html= vars$html[match(stoi$variable, vars$name)]
-  .self$.stoi <<- stoi
+  .self$.stoi <<- as.data.frame(stoi, stringsAsFactors=FALSE)
 })
 
