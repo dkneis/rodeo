@@ -105,6 +105,8 @@ rodeo$methods(
   checkTbl(tbl=pros, tblName="pros", colNames=cn, nameCol="name", emptyOK=FALSE)
   for (n in cn)
     pros[,n]= as.character(pros[,n])
+  # Remove newline characters from expressions
+  pros$expression= gsub(pattern="\n", replacement=" ", x=pros$expression)
   # Check for undeclared items in expressions
   for (i in 1:nrow(pros)) {
     bad= undeclared(pros$expression[i], c(vars$name, pars$name, funs$name,
@@ -178,6 +180,8 @@ rodeo$methods(
   if (length(bad) > 0)
     stop(paste0("missing stoichiometry factor(s) for process(es) '",
       paste(bad,collapse="', '"),"'"))
+  # Remove newline characters from expressions
+  stoi$expression= gsub(pattern="\n", replacement=" ", x=stoi$expression)
   # Check for undeclared items in expressions
   for (i in 1:nrow(stoi)) {
     bad= undeclared(stoi$expression[i], c(vars$name, pars$name, funs$name,
