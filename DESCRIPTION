@@ -1,8 +1,8 @@
 Package: rodeo
 Type: Package
 Title: Handling of ODE-models as R objects
-Version: 0.2
-Date: 2015-03-16
+Version: 0.3
+Date: 2016-04-08
 Author: David Kneis <david.kneis@tu-dresden.de>
 Maintainer: David Kneis <david.kneis@tu-dresden.de>
 Description: The package allows for the representation of ODE-based models in
