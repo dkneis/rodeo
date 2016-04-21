@@ -38,6 +38,10 @@ identifiers to be used in the expression fields of \code{.pros} or \code{.stoi}.
 
 \item{\code{arrangeVars(x, sep = ".", warnUnused = TRUE)}}{Assign values to state variables. See \code{\link{arrangeVars}} for details.}
 
+\item{\code{compile(fileFun, NLVL)}}{Compile Fortran library for use with numerical methods from packages
+ \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}.
+See \code{\link{compile}} for details.}
+
 \item{\code{generate(lang, name = "derivs")}}{Translate the ODE-model specification into a function that computes process
 rates and the state variables derivatives (either in R or Fortran). See
 \code{\link{generate}} for details.}

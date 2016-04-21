@@ -26,9 +26,9 @@
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
-#' @seealso See other methods of the \code{\link{rodeo-class}} or
-#'   the non-class method \code{\link{solverInterface}} for creating a specific
-#'   wrapper (Fortran only).
+#' @seealso See other methods of the \code{\link{rodeo-class}}, especially
+#'   \code{\link{compile}} or the non-class method \code{\link{solverInterface}}
+#'   to further process generated Fortran code.
 #'
 #' @examples
 #' # see vignette

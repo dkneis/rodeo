@@ -4,15 +4,17 @@
 \alias{solverInterface}
 \title{Wrapping generated Fortran for use with solver packages}
 \usage{
-solverInterface(NLVL = 1, funcname = "derivs")
+solverInterface(NLVL = 1, funcname = "derivs", outname = "derivs_wrapped")
 }
 \arguments{
 \item{NLVL}{The desired number of spatial levels (boxes). Defaults to 1.}
 
 \item{funcname}{Name of the function for which a wrapper is to be created
-  (rather than the name for the wrapper). It is assumed that a function with
-  that name was (or will be) created by a call to the \code{\link{generate}}
-  class method.}
+(rather than the name for the wrapper). It is assumed that a function with
+that name was (or will be) created by a call to the \code{\link{generate}}
+class method.}
+
+\item{outname}{Name for the created wrapper function.}
 }
 \value{
 A character string holding generated Fortran code. Must be written to
@@ -23,19 +25,23 @@ A character string holding generated Fortran code. Must be written to
   (from package \code{\link[deSolve]{deSolve-package}}) or
   \code{\link[rootSolve]{steady}} (from package
   \code{\link[rootSolve]{rootSolve-package}}).
-  The second subroutine is to be passed to the \code{func} argument of the
-  \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}
-  methods. The subroutines names is created by appending the suffix
-  '_wrapper' to the value of \code{funcname}. Hence, if \code{funcname} is
-  'derivs' (default), the subroutine name passed to the solver must be
-  'derivs_wrapped'.
+  The second subroutine whose name is given by \code{outname} is to be passed
+  to the \code{func} argument of the \code{\link[deSolve]{deSolve}} or
+  \code{\link[rootSolve]{rootSolve}} methods.
 }
 \description{
 Creates wrapper code to make \code{rodeo}-generated Fortran code compatible
 with the numerical methods from packages \code{\link[deSolve]{deSolve}} and
-\code{\link[rootSolve]{rootSolve}}.
+\code{\link[rootSolve]{rootSolve}}. Consider to use the
+\code{\link{rodeo-class}}class method \code{\link{compile}} instead of this
+low-level function.
 }
 \author{
 David Kneis \email{david.kneis@tu-dresden.de}
+}
+\seealso{
+The \code{\link{rodeo-class}} method \code{\link{compile}} is a
+  convenient high-level function that calls \code{\link{solverInterface}}
+  internally.
 }
 

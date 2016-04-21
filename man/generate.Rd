@@ -37,8 +37,8 @@ If generated Fortran code is to be used with the numerical solvers from the
 \email{david.kneis@tu-dresden.de}
 }
 \seealso{
-See other methods of the \code{\link{rodeo-class}} or
-  the non-class method \code{\link{solverInterface}} for creating a specific
-  wrapper (Fortran only).
+See other methods of the \code{\link{rodeo-class}}, especially
+  \code{\link{compile}} or the non-class method \code{\link{solverInterface}}
+  to further process generated Fortran code.
 }
 
