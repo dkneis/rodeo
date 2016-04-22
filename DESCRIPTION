@@ -13,5 +13,5 @@ Description: Provides a reference class and several utility methods to
     in the deSolve and rootSolve packages.
 License: GPL (>= 2)
 Depends:
-    methods, deSolve, knitr
+    methods, deSolve
 

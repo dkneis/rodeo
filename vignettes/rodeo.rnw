@@ -464,7 +464,7 @@ generates the following \LaTeX{} code holding tabular information on the model's
 @
 \end{shaded}
 
-Alternatively, a \software{markdown} compatible dataframe can be generated and used with the \software{knitr} function \verb|kable|. This will work with html, pdf or even Word (.docx) output. The code section
+Alternatively, a \software{markdown} compatible dataframe can be generated and used with the \software{knitr} function \verb|kable|. This will work with html, pdf or even Word (.docx) output. The following code section would create a table of the model's state variables (output not shown).
 
 <<exportMarkdown, echo=TRUE, eval=FALSE>>=
 to_markdown= function(dat, which_cols){
@@ -481,13 +481,12 @@ kable(to_markdown(ids, which_cols=c("Symbol")),
   caption = "State variables")
 @
 
-generates the following \software{markdown} code:
-
-\begin{shaded}
-<<echo=FALSE, eval=TRUE>>=
-<<exportMarkdown>>
-@
-\end{shaded}
+% Commented out to get rid of the dependence on the knitr package
+%\begin{shaded}
+%<<echo=FALSE, eval=FALSE>>=
+%<<exportMarkdown>>
+%@
+%\end{shaded}
 
 Thanks to Andrew Dolman for the latter example.
 
@@ -564,7 +563,7 @@ To test this, one needs to write the contents of the variable \verb|html| to a t
 
 \paragraph{Option 4: Markdown}
 
-A \software{markdown} compatible version looks like this (contributed by Andrew Dolman):
+A \software{markdown} compatible can be generated with the \software{knitr} function \verb|kable| as shown below (contributed by Andrew Dolman; output not displayed).
 
 <<stoiMarkdown, echo=TRUE, eval=FALSE>>=
 signsymbol= function(x) {
@@ -582,15 +581,14 @@ stoi_mat= cbind(Process=rownames(stoi_mat), stoi_mat)
 kable(stoi_mat, row.names= FALSE, caption= "Stoichiometric matrix")
 @
 
-and the generated \software{markdown} output is:
-
-\begin{shaded}
-\begin{small}
-<<echo=FALSE, eval=TRUE>>=
-<<stoiMarkdown>>
-@
-\end{small}
-\end{shaded}
+% Commented out to get rid of the dependence on the knitr package
+%\begin{shaded}
+%\begin{small}
+%<<echo=FALSE, eval=TRUE>>=
+%<<stoiMarkdown>>
+%@
+%\end{small}
+%\end{shaded}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -482,16 +482,16 @@ This section demonstrates how the 'functions-of-time' approach can be used in \s
 \end{Sinput}
 \begin{Soutput}
    time temp humid
-1     1   17    41
-2     2   19    81
-3     3   21    42
-4     4   18    17
-5     5   22    41
-6     6   21    36
-7     7   20    70
-8     8   19    99
-9     9   24    69
-10   10   21    71
+1     1   21    45
+2     2   18    47
+3     3   14    49
+4     4   19     4
+5     5   23    98
+6     6   20    71
+7     7   20    25
+8     8   22    43
+9     9   19    56
+10   10   15    11
 \end{Soutput}
 \end{Schunk}
 
@@ -598,7 +598,7 @@ generates the following \LaTeX{} code holding tabular information on the model's
 \end{Schunk}
 \end{shaded}
 
-Alternatively, a \software{markdown} compatible dataframe can be generated and used with the \software{knitr} function \verb|kable|. This will work with html, pdf or even Word (.docx) output. The code section
+Alternatively, a \software{markdown} compatible dataframe can be generated and used with the \software{knitr} function \verb|kable|. This will work with html, pdf or even Word (.docx) output. The following code section would create a table of the model's state variables (output not shown).
 
 \begin{Schunk}
 \begin{Sinput}
@@ -616,19 +616,12 @@ Alternatively, a \software{markdown} compatible dataframe can be generated and u
 \end{Sinput}
 \end{Schunk}
 
-generates the following \software{markdown} code:
-
-\begin{shaded}
-\begin{Schunk}
-\begin{Soutput}
-|Symbol   |Unit |Description              |
-|:--------|:----|:------------------------|
-|$c_{DO}$ |mg/l |dissolved O2             |
-|$c_Z$    |mg/l |degradable org. matter Z |
-|$v$      |m3   |water volume in reactor  |
-\end{Soutput}
-\end{Schunk}
-\end{shaded}
+% Commented out to get rid of the dependence on the knitr package
+%\begin{shaded}
+%<<echo=FALSE, eval=FALSE>>=
+%<<exportMarkdown>>
+%@
+%\end{shaded}
 
 Thanks to Andrew Dolman for the latter example.
 
@@ -649,7 +642,7 @@ One can use the class method \verb|plotStoichiometry| to visualize the matrix us
  model$plotStoichiometry(values=c(v, p, time=0), cex=0.3)
 \end{Sinput}
 \end{Schunk}
-\includegraphics{rodeo-027}
+\includegraphics{rodeo-026}
 
 \paragraph{Option 2: TEX}
 The following example generates suitable code for inclusion in \LaTeX{} documents.
@@ -717,7 +710,7 @@ To test this, one needs to write the contents of the variable \verb|html| to a t
 
 \paragraph{Option 4: Markdown}
 
-A \software{markdown} compatible version looks like this (contributed by Andrew Dolman):
+A \software{markdown} compatible can be generated with the \software{knitr} function \verb|kable| as shown below (contributed by Andrew Dolman; output not displayed).
 
 \begin{Schunk}
 \begin{Sinput}
@@ -736,22 +729,14 @@ A \software{markdown} compatible version looks like this (contributed by Andrew 
 \end{Sinput}
 \end{Schunk}
 
-and the generated \software{markdown} output is:
-
-\begin{shaded}
-\begin{small}
-\begin{Schunk}
-\begin{Soutput}
-|Process  |$c_{DO}$             |$c_Z$                |$v$              |
-|:--------|:--------------------|:--------------------|:----------------|
-|flow     |                     |                     |$\blacktriangle$ |
-|flushing |$\blacktriangle$     |$\blacktriangledown$ |                 |
-|decay    |$\blacktriangledown$ |$\blacktriangledown$ |                 |
-|aeration |$\blacktriangle$     |                     |                 |
-\end{Soutput}
-\end{Schunk}
-\end{small}
-\end{shaded}
+% Commented out to get rid of the dependence on the knitr package
+%\begin{shaded}
+%\begin{small}
+%<<echo=FALSE, eval=TRUE>>=
+%<<stoiMarkdown>>
+%@
+%\end{small}
+%\end{shaded}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -38,7 +38,7 @@ identifiers to be used in the expression fields of \code{.pros} or \code{.stoi}.
 
 \item{\code{arrangeVars(x, sep = ".", warnUnused = TRUE)}}{Assign values to state variables. See \code{\link{arrangeVars}} for details.}
 
-\item{\code{compile(fileFun, NLVL)}}{Compile Fortran library for use with numerical methods from packages
+\item{\code{compile(fileFun, NLVL = 1)}}{Compile Fortran library for use with numerical methods from packages
  \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}.
 See \code{\link{compile}} for details.}
 

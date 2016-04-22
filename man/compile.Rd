@@ -5,10 +5,12 @@
 \title{Create Fortran library}
 \arguments{
 \item{fileFuns}{Fortran source file defining a module 'functions' that
-  contains any user-defined functions referenced in process rates or
-  stoichiometric factors. If the Fortran code is split over several dependent
-  files, a vector of character strings can be supplied instead of a single
-  file name.}
+contains any user-defined functions referenced in process rates or
+stoichiometric factors. If the Fortran code is split over several dependent
+files, a vector of character strings can be supplied instead of a single
+file name.}
+
+\item{NLVL}{The desired number of spatial levels (boxes). Defaults to 1.}
 }
 \value{
 A vector of character strings with named elements as follows:
@@ -30,7 +32,7 @@ Create a Fortran library for use with numerical methods from packages
 \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}.
 }
 \examples{
-# to be added
+# see vignette
 }
 \author{
 \email{david.kneis@tu-dresden.de}
