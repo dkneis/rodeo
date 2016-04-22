@@ -6,9 +6,11 @@
 #' @name compile
 #'
 #' @inheritParams solverInterface
-#' @param fileFun Fortran source file defining a module 'functions' that
+#' @param fileFuns Fortran source file defining a module 'functions' that
 #'   contains any user-defined functions referenced in process rates or
-#'   stoichiometric factors.
+#'   stoichiometric factors. If the Fortran code is split over several dependent
+#'   files, a vector of character strings can be supplied instead of a single
+#'   file name.
 #'
 #' @return A vector of character strings with named elements as follows:
 #' \itemize{

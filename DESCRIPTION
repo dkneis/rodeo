@@ -1,13 +1,16 @@
 Package: rodeo
 Type: Package
-Title: Handling of ODE-models as R objects
+Title: A Code Generator for ODE-Based Models
 Version: 0.3
-Date: 2016-04-08
+Date: 2016-04-21
 Author: David Kneis <david.kneis@tu-dresden.de>
 Maintainer: David Kneis <david.kneis@tu-dresden.de>
-Description: The package allows for the representation of ODE-based models in
-    the form of R objects. It includes basic functions to deal with such
-    objects, including code generation.
+Description: Provides a reference class and several utility methods to
+    facilitate the implementation of models based on ordinary
+    differential equations. The heart of the package is a code generator
+    that creates compiled Fortran (or R) code which can be passed to a
+    numerical solver. There is direct support for the solvers contained
+    in the deSolve and rootSolve packages.
 License: GPL (>= 2)
 Depends:
     methods, deSolve, knitr
