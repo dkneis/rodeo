@@ -5,12 +5,12 @@
 #'
 #' @name compile
 #'
-#' @inheritParams solverInterface
 #' @param fileFuns Fortran source file defining a module 'functions' that
 #'   contains any user-defined functions referenced in process rates or
 #'   stoichiometric factors. If the Fortran code is split over several dependent
 #'   files, a vector of character strings can be supplied instead of a single
 #'   file name.
+#' @param NLVL The desired number of spatial levels (boxes). Defaults to 1.
 #'
 #' @return A vector of character strings with named elements as follows:
 #' \itemize{
@@ -32,9 +32,9 @@
 #'   non-class method \code{\link{solverInterface}}.
 #'
 #' @examples
-#' # to be added
+#' # see vignette
 
-rodeo$methods( compile = function(fileFun, NLVL) {
+rodeo$methods( compile = function(fileFun, NLVL=1) {
   "Compile Fortran library for use with numerical methods from packages
    \\code{\\link[deSolve]{deSolve}} or \\code{\\link[rootSolve]{rootSolve}}.
   See \\code{\\link{compile}} for details."
