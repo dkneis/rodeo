@@ -8,10 +8,9 @@ Maintainer: David Kneis <david.kneis@tu-dresden.de>
 Description: Provides a reference class and several utility methods to
     facilitate the implementation of models based on ordinary
     differential equations. The heart of the package is a code generator
-    that creates compiled Fortran (or R) code which can be passed to a
-    numerical solver. There is direct support for the solvers contained
-    in the deSolve and rootSolve packages.
+    that creates compiled 'Fortran' (or 'R') code which can be passed to
+    a numerical solver. There is direct support for solvers contained
+    in packages 'deSolve' and 'rootSolve'.
 License: GPL (>= 2)
-Depends:
+Imports:
     methods, deSolve
-

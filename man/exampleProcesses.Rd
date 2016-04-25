@@ -3,7 +3,7 @@
 \docType{data}
 \name{exampleProcesses}
 \alias{exampleProcesses}
-\title{Declaration of processes}
+\title{Declaration of Processes}
 \format{A data frame with the following fields:
   \itemize{
     \item{name : }{Name of the process}

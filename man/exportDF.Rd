@@ -2,7 +2,7 @@
 % Please edit documentation in R/plainMethod_exportDF.r
 \name{exportDF}
 \alias{exportDF}
-\title{Export data frame as HTML/TEX code}
+\title{Export a Data Frame as HTML/TEX Code}
 \usage{
 exportDF(x, tex = FALSE, colnames = NULL, width = NULL, align = NULL,
   funHead = NULL, funCell = NULL, lines = TRUE, indent = 2)

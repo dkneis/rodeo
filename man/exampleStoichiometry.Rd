@@ -3,7 +3,7 @@
 \docType{data}
 \name{exampleStoichiometry}
 \alias{exampleStoichiometry}
-\title{Specification of stoichiometry}
+\title{Specification of Stoichiometry}
 \format{A data frame with the following fields:
   \itemize{
     \item{variable : }{Name of the state variable}

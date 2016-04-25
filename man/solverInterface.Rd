@@ -2,7 +2,7 @@
 % Please edit documentation in R/plainMethod_solverInterface.r
 \name{solverInterface}
 \alias{solverInterface}
-\title{Wrapping generated Fortran for use with solver packages}
+\title{Wrapping of Generated Fortran for Use with Solver Packages}
 \usage{
 solverInterface(NLVL = 1, funcname = "derivs", outname = "derivs_wrapped")
 }
@@ -33,8 +33,12 @@ A character string holding generated Fortran code. Must be written to
 Creates wrapper code to make \code{rodeo}-generated Fortran code compatible
 with the numerical methods from packages \code{\link[deSolve]{deSolve}} and
 \code{\link[rootSolve]{rootSolve}}. Consider to use the
-\code{\link{rodeo-class}}class method \code{\link{compile}} instead of this
+\code{\link{rodeo-class}} class method \code{\link{compile}} instead of this
 low-level function.
+}
+\examples{
+fortranCode= solverInterface(NLVL=3)
+write(fortranCode, file="")
 }
 \author{
 David Kneis \email{david.kneis@tu-dresden.de}

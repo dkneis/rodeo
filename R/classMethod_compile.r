@@ -1,4 +1,4 @@
-#' Create Fortran library
+#' Create Fortran Library
 #'
 #' Create a Fortran library for use with numerical methods from packages
 #' \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}.
@@ -32,7 +32,18 @@
 #'   non-class method \code{\link{solverInterface}}.
 #'
 #' @examples
-#' # see vignette
+#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+#' model= new("rodeo",
+#'   vars=subset(exampleIdentifiers, type=="v"),
+#'   pars=subset(exampleIdentifiers, type=="p"),
+#'   funs=subset(exampleIdentifiers, type=="f"),
+#'   pros=exampleProcesses, stoi=exampleStoichiometry
+#' )
+#' # This would trigger compilation assuming that 'functionsCode.f95' contains
+#' # a Fortran implementation of all functions; see vignette for full example
+#' \dontrun{
+#' lib= model$compile(fileFun="functionsCode.f95")
+#' }
 
 rodeo$methods( compile = function(fileFun, NLVL=1) {
   "Compile Fortran library for use with numerical methods from packages

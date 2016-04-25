@@ -2,7 +2,7 @@
 % Please edit documentation in R/classMethods_arrange.r
 \name{arrangePars}
 \alias{arrangePars}
-\title{Assign values to parameters}
+\title{Assign Values to Parameters}
 \arguments{
 \item{x}{A list of values to be assigned to the model's parameters.
 The elements of \code{x} are either numeric scalars (for
@@ -37,7 +37,16 @@ Assign values to parameters of a \code{\link{rodeo}}-based model.
 No additional notes so far.
 }
 \examples{
-# see vignette
+data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+model= new("rodeo",
+  vars=subset(exampleIdentifiers, type=="v"),
+  pars=subset(exampleIdentifiers, type=="p"),
+  funs=subset(exampleIdentifiers, type=="f"),
+  pros=exampleProcesses, stoi=exampleStoichiometry
+)
+p= model$arrangePars(list(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
+  temp=20, q_in=1, q_ex=1))
+print(p)
 }
 \author{
 \email{david.kneis@tu-dresden.de}

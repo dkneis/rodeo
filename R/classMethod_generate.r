@@ -1,4 +1,4 @@
-#' Code generator
+#' Code Generator
 #'
 #' Translate the ODE-model specification into a function that computes process
 #' rates and the state variables derivatives (either in R or Fortran).
@@ -31,7 +31,15 @@
 #'   to further process generated Fortran code.
 #'
 #' @examples
-#' # see vignette
+#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+#' model= new("rodeo",
+#'   vars=subset(exampleIdentifiers, type=="v"),
+#'   pars=subset(exampleIdentifiers, type=="p"),
+#'   funs=subset(exampleIdentifiers, type=="f"),
+#'   pros=exampleProcesses, stoi=exampleStoichiometry
+#' )
+#' fortranCode= model$generate(lang="f95")
+#' write(fortranCode, file="")
 
 rodeo$methods( generate = function(lang, name="derivs") {
   "Translate the ODE-model specification into a function that computes process

@@ -2,7 +2,7 @@
 % Please edit documentation in R/classMethod_compile.r
 \name{compile}
 \alias{compile}
-\title{Create Fortran library}
+\title{Create Fortran Library}
 \arguments{
 \item{fileFuns}{Fortran source file defining a module 'functions' that
 contains any user-defined functions referenced in process rates or
@@ -32,7 +32,18 @@ Create a Fortran library for use with numerical methods from packages
 \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}.
 }
 \examples{
-# see vignette
+data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+model= new("rodeo",
+  vars=subset(exampleIdentifiers, type=="v"),
+  pars=subset(exampleIdentifiers, type=="p"),
+  funs=subset(exampleIdentifiers, type=="f"),
+  pros=exampleProcesses, stoi=exampleStoichiometry
+)
+# This would trigger compilation assuming that 'functionsCode.f95' contains
+# a Fortran implementation of all functions; see vignette for full example
+\dontrun{
+lib= model$compile(fileFun="functionsCode.f95")
+}
 }
 \author{
 \email{david.kneis@tu-dresden.de}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/classMethods_arrange.r
 \name{arrangeVars}
 \alias{arrangeVars}
-\title{Assign values to state variables}
+\title{Assign Values to State Variables}
 \arguments{
 \item{x}{A list of values to be assigned to the model's state variables.
 The elements of \code{x} are either numeric scalars (for
@@ -36,7 +36,15 @@ Assign values to state variables of a \code{\link{rodeo}}-based model.
 No additional notes so far.
 }
 \examples{
-# see vignette
+data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+model= new("rodeo",
+  vars=subset(exampleIdentifiers, type=="v"),
+  pars=subset(exampleIdentifiers, type=="p"),
+  funs=subset(exampleIdentifiers, type=="f"),
+  pros=exampleProcesses, stoi=exampleStoichiometry
+)
+v= model$arrangeVars(list(c_z=1, c_do=9.022, v=1.e6))
+print(v)
 }
 \author{
 \email{david.kneis@tu-dresden.de}

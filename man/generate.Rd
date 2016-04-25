@@ -2,7 +2,7 @@
 % Please edit documentation in R/classMethod_generate.r
 \name{generate}
 \alias{generate}
-\title{Code generator}
+\title{Code Generator}
 \arguments{
 \item{lang}{Character string to select the language of the generated source
 code. Must be either 'f95' (for Fortran) or 'r' (for R).}
@@ -31,7 +31,15 @@ If generated Fortran code is to be used with the numerical solvers from the
   best created with the non-class method \code{\link{solverInterface}}.
 }
 \examples{
-# see vignette
+data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+model= new("rodeo",
+  vars=subset(exampleIdentifiers, type=="v"),
+  pars=subset(exampleIdentifiers, type=="p"),
+  funs=subset(exampleIdentifiers, type=="f"),
+  pros=exampleProcesses, stoi=exampleStoichiometry
+)
+fortranCode= model$generate(lang="f95")
+write(fortranCode, file="")
 }
 \author{
 \email{david.kneis@tu-dresden.de}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plainMethod_forcingFunctions.r
 \name{forcingFunctions}
 \alias{forcingFunctions}
-\title{Generation of forcing functions for use with Fortran}
+\title{Generation of Forcing Functions in Fortran}
 \usage{
 forcingFunctions(x)
 }

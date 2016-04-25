@@ -1,4 +1,4 @@
-#' Initialize a \code{rodeo} object
+#' Initialize a \code{rodeo} Object
 #'
 #' Initializes an object of the \code{\link{rodeo-class}} with data frames
 #' holding the specification of an ODE system.
@@ -45,9 +45,14 @@
 #' @seealso See the package vignette for examples.
 #'
 #' @examples
-#' \dontrun{
-#'   x= new("rodeo", vars, pars, funs, pros, stoi)
-#' }
+#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+#' model= new("rodeo",
+#'   vars=subset(exampleIdentifiers, type=="v"),
+#'   pars=subset(exampleIdentifiers, type=="p"),
+#'   funs=subset(exampleIdentifiers, type=="f"),
+#'   pros=exampleProcesses, stoi=exampleStoichiometry
+#' )
+#' model$show()
 
 rodeo$methods(
   initialize = function(vars, pars, funs, pros, stoi, asMatrix=FALSE

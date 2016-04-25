@@ -3,7 +3,7 @@
 \docType{data}
 \name{exampleIdentifiers}
 \alias{exampleIdentifiers}
-\title{Declaration of identifiers}
+\title{Declaration of Identifiers}
 \format{A data frame with the following fields:
   \itemize{
     \item{name : }{Name of the item}

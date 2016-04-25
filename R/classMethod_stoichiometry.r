@@ -1,4 +1,4 @@
-#' Return stoichiometry matrix
+#' Return the Stoichiometry Matrix
 #'
 #' Return and optionally evaluate the mathematical expression appearing in the
 #' stoichiometry matrix.
@@ -25,7 +25,17 @@
 #'   stoichiometric factors only.
 #'
 #' @examples
-#' # see vignette
+#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+#' model= new("rodeo",
+#'   vars=subset(exampleIdentifiers, type=="v"),
+#'   pars=subset(exampleIdentifiers, type=="p"),
+#'   funs=subset(exampleIdentifiers, type=="f"),
+#'   pros=exampleProcesses, stoi=exampleStoichiometry
+#' )
+#' print(model$stoichiometry())
+#' c_z_in= function(time) {0.1}
+#' c_do_in= function(time) {8.0}
+#' print(model$stoichiometry(c(s_do_z=2.76, c_z=1, c_do=9.022, time=0)))
 
 rodeo$methods( stoichiometry = function(values=NULL) {
   "Returns the stoichiometry matrix, either evaluated (numeric) or not (text).

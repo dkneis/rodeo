@@ -1,4 +1,4 @@
-#' Generation of forcing functions for use with Fortran
+#' Generation of Forcing Functions in Fortran
 #'
 #' Generates Fortran code to return the current values of forcing functions
 #' based on interpolation in tabulated time series data.
@@ -66,6 +66,10 @@
 #'   conformal function would be 'IS_IEEE_NAN' which is not yet supported by
 #'   compiler versions normally installed with R (March 2016).
 #'
+#' @author David Kneis \email{david.kneis@@tu-dresden.de}
+#'
+#' @export
+#'
 #' @examples
 #' \dontrun{
 #'   ! Example of a Fortran file to define functions
@@ -92,10 +96,6 @@
 #'     write(*,*) "WARNING: ",trim(adjustl(x))
 #'   end subroutine
 #' }
-
-#' @author David Kneis \email{david.kneis@@tu-dresden.de}
-#'
-#' @export
 
 forcingFunctions= function(x) {
   # check args

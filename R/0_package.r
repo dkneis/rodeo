@@ -1,4 +1,4 @@
-#' Package to facilitate ODE-based modeling
+#' Package to Facilitate ODE-Based Modeling
 #'
 #' This package provides methods to
 #' \itemize{
@@ -15,6 +15,8 @@
 #'   Reichert, P., Borchardt, D., Henze, M., Rauch, W., Shanahan, P.,
 #'   Somlyody, L., and Vanrolleghem, P. A. (2001): River water quality model
 #'   No. 1, IWA publishing, ISBN 9781900222822.
+#'
+#' The current source code repository is \url{https://github.com/dkneis/rodeo}.
 #'
 #' @name rodeo-package
 #' @docType package

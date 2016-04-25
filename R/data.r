@@ -1,7 +1,7 @@
 
 # This provides the roxygen documentation for the package's data sets
 
-#' Declaration of identifiers
+#' Declaration of Identifiers
 #'
 #' Declaration of items (i.e. identifiers) appearing in the model's
 #' mathematical expressions.
@@ -17,7 +17,7 @@
 #'   }
 NULL
 
-#' Declaration of processes
+#' Declaration of Processes
 #'
 #' Definition of simulated processes.
 #'
@@ -32,7 +32,7 @@ NULL
 #'   }
 NULL
 
-#' Specification of stoichiometry
+#' Specification of Stoichiometry
 #'
 #' Definition of the links between simulated processes and state variables.
 #'

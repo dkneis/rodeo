@@ -26,7 +26,7 @@ xapply= function(funs, args) {
   return(unlist(lapply(X=1:length(funs), FUN=function(i){funs[[i]](args[i])})))
 }
 
-#' Export data frame as HTML/TEX code
+#' Export a Data Frame as HTML/TEX Code
 #'
 #' Generates code to include tabular data in a tex document or web site.
 #'

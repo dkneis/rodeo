@@ -1,9 +1,9 @@
-#' Wrapping generated Fortran for use with solver packages
+#' Wrapping of Generated Fortran for Use with Solver Packages
 #'
 #' Creates wrapper code to make \code{rodeo}-generated Fortran code compatible
 #' with the numerical methods from packages \code{\link[deSolve]{deSolve}} and
 #' \code{\link[rootSolve]{rootSolve}}. Consider to use the
-#' \code{\link{rodeo-class}}class method \code{\link{compile}} instead of this
+#' \code{\link{rodeo-class}} class method \code{\link{compile}} instead of this
 #' low-level function. 
 #'
 #' @param NLVL The desired number of spatial levels (boxes). Defaults to 1.
@@ -32,46 +32,53 @@
 #'   internally.
 #'
 #' @export
+#'
+#' @examples
+#' fortranCode= solverInterface(NLVL=3)
+#' write(fortranCode, file="")
 
 solverInterface= function (NLVL=1, funcname="derivs", outname="derivs_wrapped") {
-  paste0(
-  "
-  ! Definition of the number of spatial levels
-  module spatial_dimension
-    implicit none
-    integer, parameter:: NLVL=",NLVL,"
-  end module
+  paste0("
+!#################################################
+!###  THIS IS A GENERATED FILE -- DO NOT EDIT  ###
+!#################################################
 
-  ! Generic routine for parameter initialization
-  subroutine initmod(extfun)
-    use dimensions_and_indices   ! Module is provided by the generated code
-    use spatial_dimension
-    external extfun
-    double precision, dimension(NPAR*NLVL):: par
-    common /params/ par
-    call extfun(NPAR*NLVL, par)
-  end subroutine
+! Definition of the number of spatial levels
+module spatial_dimension
+  implicit none
+  integer, parameter:: NLVL=",NLVL,"
+end module
 
-  ! Generic wrapper around the generated code
-  subroutine ",outname," (neq, t, y, ydot, yout, ip)
-    use dimensions_and_indices   ! Module is provided by the generated code
-    use spatial_dimension
-    implicit none
-    ! Inputs
-    integer, intent(in):: neq
-    double precision, intent(in):: t
-    double precision, dimension(neq), intent(in):: y
-    integer, dimension(*), intent(in)::ip
-    ! Outputs
-    double precision, dimension(neq), intent(out)::ydot
-    double precision, dimension(ip(2)), intent(out)::yout
-    ! Import parameters
-    double precision, dimension(NPAR*NLVL):: par
-    common /params/ par
-    !Call to generated code
-    call ",funcname,"(t, y, par, NLVL, ydot, yout)
-  end subroutine
-  "
-  )
+! Generic routine for parameter initialization
+subroutine initmod(extfun)
+  use dimensions_and_indices   ! Module is provided by the generated code
+  use spatial_dimension
+  external extfun
+  double precision, dimension(NPAR*NLVL):: par
+  common /params/ par
+  call extfun(NPAR*NLVL, par)
+end subroutine
+
+! Generic wrapper around the generated code
+subroutine ",outname," (neq, t, y, ydot, yout, ip)
+  use dimensions_and_indices   ! Module is provided by the generated code
+  use spatial_dimension
+  implicit none
+  ! Inputs
+  integer, intent(in):: neq
+  double precision, intent(in):: t
+  double precision, dimension(neq), intent(in):: y
+  integer, dimension(*), intent(in)::ip
+  ! Outputs
+  double precision, dimension(neq), intent(out)::ydot
+  double precision, dimension(ip(2)), intent(out)::yout
+  ! Import parameters
+  double precision, dimension(NPAR*NLVL):: par
+  common /params/ par
+  !Call to generated code
+  call ",funcname,"(t, y, par, NLVL, ydot, yout)
+end subroutine
+"
+)
 }
 

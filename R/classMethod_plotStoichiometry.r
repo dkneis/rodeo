@@ -1,4 +1,4 @@
-#' Plot qualitative stoichiometry matrix
+#' Plot Qualitative Stoichiometry Matrix
 #'
 #' Visualizes the stoichiometry matrix using standard plot methods. The sign
 #' of stoichiometric factors is displayed as upward and downward pointing
@@ -29,7 +29,16 @@
 #'   in the package vignette.
 #'
 #' @examples
-#' # see vignette
+#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+#' model= new("rodeo",
+#'   vars=subset(exampleIdentifiers, type=="v"),
+#'   pars=subset(exampleIdentifiers, type=="p"),
+#'   funs=subset(exampleIdentifiers, type=="f"),
+#'   pros=exampleProcesses, stoi=exampleStoichiometry
+#' )
+#' c_z_in= function(time) {0.1}
+#' c_do_in= function(time) {8.0}
+#' model$plotStoichiometry(c(s_do_z=2.76, c_z=1, c_do=9.022, time=0))
 
 rodeo$methods( plotStoichiometry = function(values, cex=1,
   colPositive="darkorange", colNegative="steelblue4", colGrid="grey") {

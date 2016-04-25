@@ -4,7 +4,7 @@
 \name{rodeo-class}
 \alias{rodeo}
 \alias{rodeo-class}
-\title{\code{rodeo} reference class}
+\title{\code{rodeo} Reference Class}
 \description{
 This documents the \code{rodeo} reference class to represent an ODE-based
 model. See the \code{\link{rodeo-package}} main page or type
@@ -86,7 +86,14 @@ rates and the state variables derivatives (either in R or Fortran). See
 See \code{\link{stoichiometry}} for details.}
 }}
 \examples{
-# see vignette
+data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+model= new("rodeo",
+  vars=subset(exampleIdentifiers, type=="v"),
+  pars=subset(exampleIdentifiers, type=="p"),
+  funs=subset(exampleIdentifiers, type=="f"),
+  pros=exampleProcesses, stoi=exampleStoichiometry
+)
+model$show()
 }
 \seealso{
 See the \code{\link{rodeo-package}} main page or type

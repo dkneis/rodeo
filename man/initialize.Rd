@@ -2,7 +2,7 @@
 % Please edit documentation in R/classMethod_initialize.r
 \name{initialize}
 \alias{initialize}
-\title{Initialize a \code{rodeo} object}
+\title{Initialize a \code{rodeo} Object}
 \arguments{
 \item{vars}{Declaration of state variables appearing in the ODE system.
 Data frame with mandatory columns 'name', 'unit', 'description'.}
@@ -51,9 +51,14 @@ The mandatory fields of the input data frames should be of type
   'left', and 'right'.
 }
 \examples{
-\dontrun{
-  x= new("rodeo", vars, pars, funs, pros, stoi)
-}
+data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+model= new("rodeo",
+  vars=subset(exampleIdentifiers, type=="v"),
+  pars=subset(exampleIdentifiers, type=="p"),
+  funs=subset(exampleIdentifiers, type=="f"),
+  pros=exampleProcesses, stoi=exampleStoichiometry
+)
+model$show()
 }
 \author{
 \email{david.kneis@tu-dresden.de}
