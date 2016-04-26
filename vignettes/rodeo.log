@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.1.9)  22 APR 2016 14:26
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.1.9)  26 APR 2016 09:58
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1189,26 +1189,20 @@ File: rodeo-018.pdf Graphic file (type pdf)
 Package pdftex.def Info: rodeo-018.pdf used on input line 454.
 (pdftex.def)             Requested size: 276.00105pt x 115.00578pt.
 
-[11 <./rodeo-018.pdf>] [12] [13]
-Overfull \hbox (3.15944pt too wide) in paragraph at lines 586--587
-[]\T1/aer/m/n/10 generates the fol-low-ing L[]T[]X code hold-ing tab-u-lar in-f
-or-ma-tion on the model's
- []
-
-[14]
-Overfull \hbox (13.4005pt too wide) in paragraph at lines 633--634
+[11 <./rodeo-018.pdf>] [12] [13] [14]
+Overfull \hbox (13.4005pt too wide) in paragraph at lines 645--646
  \T1/aer/bx/n/10 Op-tion 1: Plain R graph-ics[] \T1/aer/m/n/10 One can use the 
 class method []\T1/aett/bx/n/10 plotStoichiometry
  []
 
-<rodeo-026.pdf, id=85, 122.4575pt x 158.5925pt>
-File: rodeo-026.pdf Graphic file (type pdf)
- <use rodeo-026.pdf>
-Package pdftex.def Info: rodeo-026.pdf used on input line 645.
+<rodeo-027.pdf, id=86, 122.4575pt x 158.5925pt>
+File: rodeo-027.pdf Graphic file (type pdf)
+ <use rodeo-027.pdf>
+Package pdftex.def Info: rodeo-027.pdf used on input line 657.
 (pdftex.def)             Requested size: 276.00105pt x 357.50009pt.
  [15]
-[16 <./rodeo-026.pdf>] (./stoiGraphics.tex) [17] [18]
-Overfull \hbox (3.9786pt too wide) in paragraph at lines 783--783
+[16 <./rodeo-027.pdf>] (./stoiGraphics.tex) [17] [18]
+Overfull \hbox (3.9786pt too wide) in paragraph at lines 795--795
 []\T1/aett/m/n/9 double precision, parameter:: pi= 3.1415d0, e= 2.7183d0   ! ma
 th constants[] 
  []
@@ -1242,7 +1236,7 @@ xlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/share/texlive/t
 exmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texmf/font
 s/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-su
 per/sfst1000.pfb>
-Output written on rodeo.pdf (21 pages, 303641 bytes).
+Output written on rodeo.pdf (21 pages, 305163 bytes).
 PDF statistics:
  168 PDF objects out of 1000 (max. 8388607)
  118 compressed objects within 2 object streams

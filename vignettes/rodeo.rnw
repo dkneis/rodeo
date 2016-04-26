@@ -456,7 +456,7 @@ tex= exportDF(x=df, tex=TRUE,
 cat(tex)
 @
 
-generates the following \LaTeX{} code holding tabular information on the model's state variables.
+generates the following \LaTeX{} code
 
 \begin{shaded}
 <<echo=FALSE, eval=TRUE>>=
@@ -464,6 +464,16 @@ generates the following \LaTeX{} code holding tabular information on the model's
 @
 \end{shaded}
 
+holding tabular information on the model's state variables. To include the result in a document one needs to write the generated \LaTeX{} code to a file for import with either the \verb|input| or \verb|include| directive. Things are even simpler if the \software{Sweave} pre-processor is used (as in the case of this vignette file). The above \software{R} code can then be embedded in the \LaTeX{} code between the special markers \verb|<<echo=FALSE, results=tex>>=| and \verb|@| resulting in the following output.
+
+\bigskip
+\begin{center}
+<<echo=FALSE, results=tex>>=
+<<exportTex>>
+@
+\end{center}
+
+\bigskip
 Alternatively, a \software{markdown} compatible dataframe can be generated and used with the \software{knitr} function \verb|kable|. This will work with html, pdf or even Word (.docx) output. The following code section would create a table of the model's state variables (output not shown).
 
 <<exportMarkdown, echo=TRUE, eval=FALSE>>=
