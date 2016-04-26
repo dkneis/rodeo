@@ -27,6 +27,14 @@
 
 \definecolor{shadecolor}{gray}{0.9}
 
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true, % make the links colored
+    linkcolor=blue, % color TOC links in blue
+    urlcolor=red, % color URLs in red
+    linktoc=all % 'all' will create links for everything in the TOC
+}
+
 %\VignetteIndexEntry{A code generator for ODE-based models in R}
 
 \begin{document}
@@ -80,7 +88,7 @@ options(continue=" ", prompt=" ")
 
 \section{When to use this package}
 
-The \software{rodeo} package facilitates the implementation of ODE-based models. These are models that describe the dynamics of a set of $n$ state variables by integrating a set of $n$  ordinary differential equations. The package is particularly useful in conjunction with the \software{deSolve} package (\url{http://cran.r-project.org/web/packages/deSolve/index.html}) providing numerical solvers for initial value problems. The advantages from using \software{rodeo} are:
+The \software{rodeo} package facilitates the implementation of ODE-based models. These are models that describe the dynamics of a set of $n$ state variables by integrating a set of $n$  ordinary differential equations. The package is particularly useful in conjunction with the \software{deSolve} package (\url{http://cran.r-project.org/package=deSolve}) providing numerical solvers for initial value problems. The advantages from using \software{rodeo} are:
 
 \begin{itemize}
 \item Models are defined using plain tabular text files or spreadsheets. Thus, the model is formulated independent from source code. This facilitates documentation, portability, and re-use.
