@@ -9,9 +9,16 @@ library("deSolve")
 ################################################################################
 # Adjustable settings
 
-fileTbl <- "def_tables.xlsx"           # workbook with model declaration
-fileFun <- "def_functions.f95"         # functions implemented in Fortran
+# Switch between pure R and Fortran-based code
+compile <- TRUE  # Warning: FALSE leaves the machine busy for several minutes
 
+# Tabular model definition
+fileTbl <- "def_tables.xlsx"
+
+# User functions referenced in process rates or stoichiometic factors
+fileFun <- if (compile) "def_functions.f95" else "def_functions.r"
+
+# System and computational parameters
 u <- 1                                 # advective velocity (m/s)
 d <- 30                                # longit. dispersion coefficient (m2/s)
 wetArea <- 50                          # wet cross-section area (m2)
@@ -51,14 +58,35 @@ p <- model$arrangePars(list(
   u=u, d=d-dNum, dx=dx
 ))
 
-# Generate code, compile into shared library, load library
-lib <- model$compile(fileFun, NLVL=nCells)              
-dyn.load(lib["libFile"])
+if (!compile) { # R-based version
 
-# Integrate
-solNum <- ode(y=v, times=times, func=lib["libFunc"], parms=p,
-  dllname=lib["libName"], initfunc="initmod", hmax=dtMax,
-  nout=model$lenPros()*nCells, jactype="bandint", bandup=1, banddown=1)
+  # Generate code, parse, and load referenced functions
+  code <- model$generate(name="derivs", lang="r")
+  derivs <- eval(parse(text=code))
+  source(fileFun)
+
+  # Integrate
+  solNum <- ode(y=v, times=times, func=derivs, parms=p, NLVL=nCells, hmax=dtMax,
+    jactype="bandint", bandup=1, banddown=1)
+  colnames(solNum) <- c("time",
+    paste(rep(model$namesVars(), each=nCells), rep(1:nCells, model$lenVars()), sep="."),
+    paste(rep(model$namesPros(), each=nCells), rep(1:nCells, model$lenPros()), sep="."))
+
+} else { # Fortran-based version
+
+  # Generate code, compile into shared library, load library
+  lib <- model$compile(fileFun, NLVL=nCells)              
+  dyn.load(lib["libFile"])
+
+  # Integrate
+  solNum <- ode(y=v, times=times, func=lib["libFunc"], parms=p,
+    dllname=lib["libName"], initfunc="initmod", hmax=dtMax,
+    nout=model$lenPros()*nCells, jactype="bandint", bandup=1, banddown=1)
+
+  # Clean-up
+  dyn.unload(lib["libFile"])
+  invisible(file.remove(lib["libFile"]))
+}
 
 # Function providing the analytical solution
 solAna <- function (x,t,m,a,d,u) {
@@ -89,8 +117,4 @@ for (t in times) {
     col=c("steelblue4","red"),legend=c("Numeric", "Exact"),bty="n")
 }
 layout(1)
-
-# Clean-up
-dyn.unload(lib["libFile"])
-invisible(file.remove(lib["libFile"]))
 
