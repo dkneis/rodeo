@@ -10,7 +10,7 @@ library("deSolve")
 # Adjustable settings
 
 # Switch between pure R and Fortran-based code
-compile <- TRUE   
+compile <- FALSE
 
 # Tabular model definition
 fileTbl <- "def_tables.xlsx"

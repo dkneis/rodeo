@@ -2,7 +2,7 @@ Package: rodeo
 Type: Package
 Title: A Code Generator for ODE-Based Models
 Version: 0.4
-Date: 2016-04-26
+Date: 2016-06-14
 Author: David Kneis <david.kneis@tu-dresden.de>
 Maintainer: David Kneis <david.kneis@tu-dresden.de>
 Description: Provides a reference class and several utility methods to
@@ -13,4 +13,6 @@ Description: Provides a reference class and several utility methods to
     in packages 'deSolve' and 'rootSolve'.
 License: GPL (>= 2)
 Imports:
-    methods, deSolve
+    methods,
+    deSolve
+RoxygenNote: 5.0.1
