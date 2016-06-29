@@ -169,6 +169,19 @@ stoiBuildSingle <- function(str, toRight="_forward", toLeft="_backward"
 #' @export
 #'
 #' @examples
+#' # EXAMPLE 1: From https://en.wikipedia.org/wiki/Petersen_matrix (June 2016);
+#' #            Note the bug on the above page (process 'decoES', variable 'E').
+#' #
+#' reactions= c(
+#'   formS=  "A + 2 * B -> S",
+#'   equiES= "E + S <-> ES",
+#'   decoES= "ES -> E + P"
+#' )
+#' stoi <- stoiCreate(reactions, eval=TRUE, toRight="_f", toLeft="_b")
+#' print(stoi)
+#'
+#' # EXAMPLE 2: Decomposition of organic matter (selected equations only)
+#' #
 #' # Eq. 1 and 2 are from Soetaert et al. (1996), Geochimica et Cosmochimica
 #' # Acta, 60 (6), 1019-1040. 'OM' is organic matter. Constants 'nc' and 'pc'
 #' # represent the nitrogen/carbon and phosphorus/carbon ratio, respectively.
@@ -201,8 +214,11 @@ stoiCreate <- function(reactions, eval=FALSE, env=globalenv(),
   for (i in 1:length(x))
     rownames(x[[i]]) <- paste0(names(x)[i], rownames(x[[i]]))
   # initialize stoichiometry matrix
-  specNames <- unique(unname(unlist(sapply(x, colnames))))
-  procNames <- unname(unlist(sapply(x, rownames)))
+  specNames <- unique(as.character(unlist(sapply(x, colnames))))
+  procNames <- as.character(unlist(sapply(x, rownames)))
+  dup <- procNames[duplicated(procNames)]
+  if (length(dup) > 0) # either original duplicates or due to appended suffix
+    stop("duplicates in reaction name(s) '",paste(dup, collapse="', '"),"'")
   stoi <- matrix("0", nrow=length(procNames), ncol=length(specNames),
     dimnames=list(procNames, specNames))
   # fill stoichiometry matrix
