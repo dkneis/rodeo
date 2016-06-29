@@ -3,6 +3,8 @@
 export(exportDF)
 export(forcingFunctions)
 export(solverInterface)
+export(stoiCheck)
+export(stoiCreate)
 exportClasses(rodeo)
 import(deSolve)
 import(methods)
