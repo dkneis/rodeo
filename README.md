@@ -22,23 +22,33 @@ The package currently provides a single reference class named just like the pack
   - import a conceptual model from tabular text files (or spreadsheets).
   - generate source code to be passed to an ODE-solver.
   - visualize and export basic information about a model, e.g. for documentation purposes.
+  - generate a stoichiometry matrix from a set of reaction equations.
+  - validate a stoichiometry matrix (mass balance check).
 
-The [package vignette](https://github.com/dkneis/rodeo/blob/master/vignettes/rodeo.pdf) provides  further details.
+The [package vignette](https://github.com/dkneis/rodeo/blob/master/vignettes/rodeo.pdf) provides further details.
 
 Requirements and installation
 ---------------------------------------------
 
-A current installation of R is required including the tools to build add-on packages from source (Fortran compiler, make utilities, etc.). These tools are typically available by default on Linux systems. Users of other systems should have a look at the [Rtools](https://cran.r-project.org/bin/windows/Rtools/).
+A current installation of R is required. In order to work with ``rodeo`` in high-performance mode, one needs the tools to compile Fortran 2008 code (compiler, make utilities, etc.). These tools are typically available by default on Linux systems. Users of other systems should have a look at the [Rtools](https://cran.r-project.org/bin/windows/Rtools/).
 
-The package can be installed directly from its github repository as follows:
+The release version should be available on CRAN and can be installed as usual:
+```
+# Install and load release version
+install.packages("rodeo")
+library("rodeo")
+```
+
+The development version of the package can be installed directly from the github repository as shown below. For this, the ``devtools`` package is required.
 
 ```
-# install devtools first, if necessary
-if (! "devtools" %in% installed.packages()[,"Package"])
-  install.packages("devtools")
-
-# now install and load rodeo
+# Install and load development version
 library("devtools")
 install_github("dkneis/rodeo")
 library("rodeo")
 ```
+
+Examples
+---------------------------------------------
+
+Basic examples illustrating the functionality can be downloaded from the [developers github page](https://dkneis.github.io).
