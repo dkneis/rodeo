@@ -13,13 +13,12 @@
 #'   system. Data frame with the same mandatory columns as \code{vars}.
 #' @param pros Declaration of process rates. Data frame with mandatory columns
 #'   'name', 'unit', 'description', 'expression'.
-#' @param stoi Declaration of stoichiomnetric factors. A data frame with
+#' @param stoi Declaration of stoichiometric factors. A data frame with
 #'   mandatory columns 'variable', 'process', 'expression', if \code{asMatrix}
-#'   is \code{FALSE}. If \code{asMatrix} is \code{TRUE}, the data frame must
-#'   contain the names of processes in the 1st column (whose name is ignored).
-#'   The remaining columns specify the stoichiometric factors (one column per
-#'   state variable; column name equals variable name) in the form of
-#'   mathematical expressions.
+#'   is \code{FALSE}. The 'expression' colum holds the stoichiometric factors.
+#'   If \code{asMatrix} is \code{TRUE}, this must be a matrix of type character
+#'   with row names (processes) and colum names (variables). Empty or \code{NA}
+#'   matrix elements are interpreted as zero stoichiometry factors.
 #' @param asMatrix Logical. Specifies whether stoichiometry information is given
 #'   in matrix or data base format.
 #'
@@ -154,10 +153,15 @@ rodeo$methods(
   # Set stoichiometry ##########################################################
   # Convert matrix to table
   if (asMatrix) {
-    stoi= data.frame(lapply(stoi, as.character), stringsAsFactors=FALSE)
-    stoi= data.frame(variable=rep(names(stoi)[2:ncol(stoi)], each=nrow(stoi)),
-      process=rep(stoi[,1], (ncol(stoi)-1)),
-      expression= unlist(stoi[ ,2:ncol(stoi)]), stringsAsFactors=FALSE)
+    if (!is.matrix(stoi))
+      stop("stoichiometric factors not in matrix format")
+    if (is.null(colnames(stoi)) || any(colnames(stoi) == ""))
+      stop("missing column name(s) in matrix of stoichiometric factors")
+    if (is.null(rownames(stoi)) || any(rownames(stoi) == ""))
+      stop("missing row name(s) in matrix of stoichiometric factors")
+    stoi= data.frame(variable=rep(colnames(stoi), each=nrow(stoi)),
+      process=rep(rownames(stoi), ncol(stoi)),
+      expression= as.character(stoi), stringsAsFactors=FALSE)
     stoi= subset(stoi, !(is.na(stoi$expression) | (nchar(stoi$expression)==0)))
   }
   # Basic checks

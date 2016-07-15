@@ -16,13 +16,12 @@ system. Data frame with the same mandatory columns as \code{vars}.}
 \item{pros}{Declaration of process rates. Data frame with mandatory columns
 'name', 'unit', 'description', 'expression'.}
 
-\item{stoi}{Declaration of stoichiomnetric factors. A data frame with
+\item{stoi}{Declaration of stoichiometric factors. A data frame with
 mandatory columns 'variable', 'process', 'expression', if \code{asMatrix}
-is \code{FALSE}. If \code{asMatrix} is \code{TRUE}, the data frame must
-contain the names of processes in the 1st column (whose name is ignored).
-The remaining columns specify the stoichiometric factors (one column per
-state variable; column name equals variable name) in the form of
-mathematical expressions.}
+is \code{FALSE}. The 'expression' colum holds the stoichiometric factors.
+If \code{asMatrix} is \code{TRUE}, this must be a matrix of type character
+with row names (processes) and colum names (variables). Empty or \code{NA}
+matrix elements are interpreted as zero stoichiometry factors.}
 
 \item{asMatrix}{Logical. Specifies whether stoichiometry information is given
 in matrix or data base format.}

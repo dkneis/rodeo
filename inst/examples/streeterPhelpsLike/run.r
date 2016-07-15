@@ -29,9 +29,12 @@ times <- seq(from=0, to=10, by=1/24)
 ################################################################################
 
 # Initialize rodeo object
+stoi <- read_excel(fileTbl, "stoi")
+stoi <- matrix(unlist(stoi[,2:ncol(stoi)]), nrow=nrow(stoi),
+  dimnames=list(stoi[,1], names(stoi)[2:ncol(stoi)]))
 model <- new("rodeo", vars=read_excel(fileTbl, "vars"),
   pars=read_excel(fileTbl, "pars"), funs=read_excel(fileTbl, "funs"),
-  pros=read_excel(fileTbl, "pros"), stoi=read_excel(fileTbl, "stoi"),
+  pros=read_excel(fileTbl, "pros"), stoi=stoi,
   asMatrix=TRUE)
 
 # Assign initial values and parameters
