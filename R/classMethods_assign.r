@@ -1,5 +1,5 @@
 
-checkInputMatrix <- function(x, itemNames, sections) {
+checkInputMatrix <- function(x, itemNames, sections, testNumeric=TRUE) {
   if (!is.matrix(x))
     stop("expecting 'x' to be a numeric matrix or single-row vector")
   if (is.null(colnames(x)))
@@ -11,12 +11,12 @@ checkInputMatrix <- function(x, itemNames, sections) {
   if (length(bad) > 0)
     stop(paste0("'x' does not provide data for the following",
       " item(s): '",paste(bad,collapse="', '"),"'"))
-  if (!all(is.numeric(x)))
+  if (testNumeric && !all(is.numeric(x)))
     stop("non-numeric values detected in 'x'")
   return(invisible(NULL))
 }
 
-checkInputTabular <- function(x, itemNames, sections) {
+checkInputTabular <- function(x, itemNames, sections, testNumeric=TRUE) {
   if (!is.data.frame(x))
     stop("expecting 'x' to be a data frame")
   required <- c("name", "section", "value")
@@ -31,7 +31,7 @@ checkInputTabular <- function(x, itemNames, sections) {
   if (length(bad) > 0)
     stop(paste0("'x' contains data for unknown item(s): '",
       paste(bad,collapse="', '"),"'"))
-  if (!all(is.numeric(x$value)))
+  if (testNumeric && !all(is.numeric(x$value)))
     stop("non-numeric data detected in 'value' column of 'x'")
   return(invisible(NULL))
 }
@@ -52,6 +52,7 @@ checkInputTabular <- function(x, itemNames, sections) {
 #' @param check Logical. By default, several checks are carried out on the
 #'   passed \code{x}. This can be turned off by setting \code{check} to
 #'   \code{FALSE}. May be used to avoid unnecessary checks in repeated calls.
+#' @param testNumeric Logical. Test for numeric values when \code{check} is \code{TRUE}?
 #'
 #' @return \code{NULL} (invisible). The assigned numeric data are stored in the
 #'   object and can be accessed by the \code{\link{queryVars}} method.
@@ -85,16 +86,18 @@ checkInputTabular <- function(x, itemNames, sections) {
 #' model$assignVars(x, tabular=TRUE)
 #' print(model$queryVars(asMatrix=TRUE))
 
-rodeo$set("public", "assignVars", function(x, tabular=FALSE, check=TRUE) {
+rodeo$set("public", "assignVars", function(x, tabular=FALSE, check=TRUE, testNumeric=TRUE) {
   if (!tabular) {
     if (is.vector(x))
       x <- matrix(x, nrow=1, dimnames=list(NULL, names(x)))
     if (check)
-      checkInputMatrix(x, itemNames=private$varsTbl$name, sections=private$sections)
+      checkInputMatrix(x, itemNames=private$varsTbl$name,
+        sections=private$sections, testNumeric=testNumeric)
     private$v <- x[,private$varsTbl$name, drop=FALSE]
   } else {
     if (check)
-      checkInputTabular(x, itemNames=private$varsTbl$name, sections=private$sections)
+      checkInputTabular(x, itemNames=private$varsTbl$name,
+        sections=private$sections, testNumeric=testNumeric)
     private$v[(match(x$name, colnames(private$v))-1)*nrow(private$v) + x$section] <- x$value
   }
   return(invisible(NULL))
@@ -114,6 +117,7 @@ rodeo$set("public", "assignVars", function(x, tabular=FALSE, check=TRUE) {
 #'   then \code{x} must be a data frame with 3 columns 'name', 'section', and
 #'   'value'. Use this to assign data to selected items and/or sections only.
 #' @param check Logical. By default, several checks are carried out on the
+#' @param testNumeric Logical. Test for numeric values when \code{check} is \code{TRUE}?
 #'
 #' @return \code{NULL} (invisible). The assigned numeric data are stored in the
 #'   object and can be accessed by the \code{\link{queryPars}} method.
@@ -125,16 +129,18 @@ rodeo$set("public", "assignVars", function(x, tabular=FALSE, check=TRUE) {
 #' @examples
 #' # see the example for method 'assignVars' which behaves in the same way
 
-rodeo$set("public", "assignPars", function(x, tabular=FALSE, check=TRUE) {
+rodeo$set("public", "assignPars", function(x, tabular=FALSE, check=TRUE, testNumeric=TRUE) {
   if (!tabular) {
     if (is.vector(x))
       x <- matrix(x, nrow=1, dimnames=list(NULL, names(x)))
     if (check)
-      checkInputMatrix(x, itemNames=private$parsTbl$name, sections=private$sections)
+      checkInputMatrix(x, itemNames=private$parsTbl$name,
+        sections=private$sections, testNumeric=testNumeric)
     private$p <- x[,private$parsTbl$name, drop=FALSE]
   } else {
     if (check)
-      checkInputTabular(x, itemNames=private$parsTbl$name, sections=private$sections)
+      checkInputTabular(x, itemNames=private$parsTbl$name,
+        sections=private$sections, testNumeric=testNumeric)
     private$p[(match(x$name, colnames(private$p))-1)*nrow(private$p) + x$section] <- x$value
   }
   return(invisible(NULL))

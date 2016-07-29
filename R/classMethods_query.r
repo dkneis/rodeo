@@ -31,8 +31,6 @@
 #' print(model$queryVars(asMatrix=TRUE))
 
 rodeo$set("public", "queryVars", function(asMatrix=FALSE) {
-  if (any(is.na(private$v)))
-    warning("NA values are present in the state variables' values.")
   if (asMatrix)
     private$v
   else
@@ -64,8 +62,6 @@ rodeo$set("public", "queryVars", function(asMatrix=FALSE) {
 rodeo$set("public", "queryPars", function(asMatrix=FALSE) {
   "Returns the numeric values of parameters. See \\code{\\link{queryPars}}
  for details."
-  if (any(is.na(private$p)))
-    warning("NA values are present in the parameters' values.")
   if (asMatrix)
     private$p
   else

@@ -14,6 +14,8 @@ then \code{x} must be a data frame with 3 columns 'name', 'section', and
 'value'. Use this to assign data to selected items and/or sections only.}
 
 \item{check}{Logical. By default, several checks are carried out on the}
+
+\item{testNumeric}{Logical. Test for numeric values when \code{check} is \code{TRUE}?}
 }
 \value{
 \code{NULL} (invisible). The assigned numeric data are stored in the

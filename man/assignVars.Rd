@@ -16,6 +16,8 @@ then \code{x} must be a data frame with 3 columns 'name', 'section', and
 \item{check}{Logical. By default, several checks are carried out on the
 passed \code{x}. This can be turned off by setting \code{check} to
 \code{FALSE}. May be used to avoid unnecessary checks in repeated calls.}
+
+\item{testNumeric}{Logical. Test for numeric values when \code{check} is \code{TRUE}?}
 }
 \value{
 \code{NULL} (invisible). The assigned numeric data are stored in the
