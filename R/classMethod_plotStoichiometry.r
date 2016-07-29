@@ -6,10 +6,10 @@
 #'
 #' @name plotStoichiometry
 #'
-#' @param level A positive integer representing a spatial section. The values of
+#' @param section A positive integer representing a spatial section. The values of
 #'   state variables and parameters must have been set using the
 #'   \code{\link{assignVars}} and \code{\link{assignPars}} methods.
-#' @param Time. The value is ignored in the case of autonomous models.
+#' @param time Time. The value is ignored in the case of autonomous models.
 #' @param cex Character expansion factor.
 #' @param colPositive Color for positive stoichiometric factors.
 #' @param colNegative Color for negative stoichiometric factors.
