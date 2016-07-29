@@ -38,7 +38,7 @@ rodeo$set("public", "queryVars", function(asMatrix=FALSE) {
   else
     setNames(as.vector(private$v),
       paste(rep(colnames(private$v), each=private$sections),
-      rep(1:private$sections, nrow(private$v)) , sep="."))
+      rep(1:private$sections, ncol(private$v)) , sep="."))
 })
 
 #' Query Values of Parameters
@@ -71,6 +71,6 @@ rodeo$set("public", "queryPars", function(asMatrix=FALSE) {
   else
     setNames(as.vector(private$p),
       paste(rep(colnames(private$p), each=private$sections),
-      rep(1:private$sections, nrow(private$p)) , sep="."))
+      rep(1:private$sections, ncol(private$p)) , sep="."))
 })
 
