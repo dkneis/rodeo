@@ -1,4 +1,4 @@
-\documentclass[times,onecolumn]{article}
+\documentclass[onecolumn]{article}
 
 \usepackage{graphicx}
 \usepackage{amssymb}
@@ -25,7 +25,9 @@
 \usepackage{caption}
 \DeclareCaptionType[fileext=loc]{listing}
 
-\definecolor{shadecolor}{gray}{0.9}
+\definecolor{shadecolor}{rgb}{0.95, 0.95 0.81}
+\definecolor{rinput}{rgb}{0.5, 0.38, 0.28}
+\definecolor{routput}{rgb}{0, 0, 0}
 
 \usepackage{hyperref}
 \hypersetup{
@@ -38,6 +40,9 @@
 %\VignetteIndexEntry{A code generator for ODE-based models in R}
 
 \begin{document}
+
+\DefineVerbatimEnvironment{Sinput}{Verbatim}{fontshape=sl,formatcom=\color{rinput}} 
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{formatcom=\color{routput}} 
 
 % Turn prompts off in R code
 <<echo=FALSE>>=
@@ -95,7 +100,7 @@ The \software{rodeo} package facilitates the implementation of ODE-based models.
 \item You are forced to provide the model in stoichiometry matrix notation (see \url{http://en.wikipedia.org/wiki/Petersen_matrix}). Although this is a restriction, it is a very useful one and benefit is almost guaranteed.
 \item Owing to the matrix notation, redundant terms are eliminated from the differential equations. This contributes to comprehensibility and increases computational efficiency. The stoichiometry matrix can also be visualized to better communicate the model to users or non-modelers.
 \item \software{rodeo} provides a code generator which supports \software{R} and \software{Fortran} as target languages. Using compiled \software{Fortran} can speed up numerical integration by 1 or 2 orders of magnitude (compared to plain \software{R}).
-\item The generated source code is applicable to an arbitrary number of boxes (control volumes). This allows even partial differential equations (e.~g. reactive transport problems) to be tackled by means of semi-discretization  (see \url{http://en.wikipedia.org/wiki/Method_of_lines}).
+\item Code can be generated for an arbitrary number of sections (e.g. control volumes in a spatially discretized model). This allows even partial differential equations (e.~g. reactive transport problems) to be tackled by means of semi-discretization  (see \url{http://en.wikipedia.org/wiki/Method_of_lines}).
 \end{itemize}
 
 \section{Example problem}
@@ -125,7 +130,7 @@ Using \software{rodeo}, the model can be described using just tabular text files
 \caption{Declaration of identifiers (data set 'exampleIdentifiers'). The type column indicates whether an item is a state variable (v), parameter (p), or function (f). \label{tab:identifiers}}
 \begin{shaded}
 \begin{small}
-<<echo=FALSE>>=
+<<showTableIdentifiers, echo=FALSE>>=
 library(rodeo, quietly=TRUE)
 data(exampleIdentifiers)
 print(format(exampleIdentifiers, justify="right"), row.names=FALSE)
@@ -138,7 +143,7 @@ print(format(exampleIdentifiers, justify="right"), row.names=FALSE)
 \caption{Specification of processes (data set 'exampleProcesses'). \label{tab:processes}}
 \begin{shaded}
 \begin{small}
-<<echo=FALSE>>=
+<<showTableProcesses, echo=FALSE>>=
 library(rodeo, quietly=TRUE)
 data(exampleProcesses)
 print(format(exampleProcesses, justify="right"), row.names=FALSE)
@@ -151,7 +156,7 @@ print(format(exampleProcesses, justify="right"), row.names=FALSE)
 \caption{Specification of stoichiometric factors (data set 'exampleStoichiometry'). \label{tab:stoichiometry}}
 \begin{shaded}
 \begin{small}
-<<echo=FALSE>>=
+<<showTableStoichiometry, echo=FALSE>>=
 library(rodeo, quietly=TRUE)
 data(exampleStoichiometry)
 print(format(exampleStoichiometry, justify="right"), row.names=FALSE)
@@ -170,24 +175,30 @@ print(format(exampleStoichiometry, justify="right"), row.names=FALSE)
 
 \subsection{Creating and inspecting a model object}
 
-We start by creating a new object with \verb|new|. This requires us to supply the name of the class as well as a set of data frames for initialization.
+We start by loading the package and the example data.
 
-<<echo=TRUE>>=
+<<loadExampleData, echo=TRUE>>=
 library(rodeo, quietly=TRUE)
 
 # Load sample data frames (contents shown above)
 data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+@
 
+Then, a new object is created with \verb|new|. This requires us to supply the name of the class, data frames for initialization, as well as the number of sections. Here, we create a zero-dimensional model (single section). 
+
+<<initSingleSection, echo=TRUE>>=
 # Instantiate new object
-model= new("rodeo", vars=subset(exampleIdentifiers,type=="v"),
+model <- new("rodeo", vars=subset(exampleIdentifiers,type=="v"),
   pars=subset(exampleIdentifiers,type=="p"),
   funs=subset(exampleIdentifiers,type=="f"),
-  pros=exampleProcesses, stoi=exampleStoichiometry)
+  pros=exampleProcesses,
+  stoi=exampleStoichiometry,
+  sections=1)
 @
 
 To inspect the object's contents, we can use the following:
 
-<<echo=TRUE, eval=FALSE>>=
+<<inspectObject, echo=TRUE, eval=FALSE>>=
 # Built-in method
 model$show()
 
@@ -199,45 +210,43 @@ print(model$stoichiometry())
 
 In order to work with the object, we need to define functions that are referenced in the model's mathematical expressions. This includes the forcings which are functions of a special argument with the reserved name 'time'. See Sect.~\ref{sec:advanced:forcings} for details.
 
-<<echo=TRUE, eval=TRUE>>=
+<<defNormalFunctions, echo=TRUE, eval=TRUE>>=
 # 'normal' functions
-O2sat= function(t) {
+O2sat <- function(t) {
   14.652 - 0.41022*t + 0.007991*t^2 - 0.000077774*t^3
 }
-ka= function(u, d) {
+ka <- function(u, d) {
   (0.728*sqrt(u) - 0.317*u + 0.0372*u^2) / d / 86400
 }
-monod= function(s,h) {
+monod <- function(s,h) {
   s / (s + h)
 }
 @
 
-<<echo=TRUE, eval=TRUE>>=
+<<defForcingFunctions, echo=TRUE, eval=TRUE>>=
 # forcings are functions of special variable 'time'
-c_z_in= function(seconds) {
+c_z_in <- function(seconds) {
   0.1 * seconds/(7*86400 + seconds)
 }
-c_do_in= function(seconds) {
+c_do_in <- function(seconds) {
   10.  # taken as constant
 }
 @
 
-We also need to set the values of parameters and state variables (initial values). We first define both parameters and initial values as lists. These lists are then coerced into named vectors using the dedicated methods \verb|arrangePars| and \verb|arrangeVars|. Use of these methods guarantees that the vector elements appear in proper order. Proper order is essential when the vector elements are accessed \emph{by position} rather than \emph{by name}.
+We also need to set the values of parameters and state variables (initial values) using the dedicated methods \verb|assignPars| and \verb|assignVars|..
 
-<<setDataSingleBox, echo=TRUE, eval=TRUE>>=
-pars= list(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
- temp=20, q_in=1, q_ex=1)
-vars= list(c_z=1, c_do=9.022, v=1.e6)
-p= model$arrangePars(pars)
-v= model$arrangeVars(vars)
+<<dataSingleSection, echo=TRUE, eval=TRUE>>=
+model$assignPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76,
+ wind=1, depth=2, temp=20, q_in=1, q_ex=1))
+model$assignVars(c(c_z=1, c_do=9.022, v=1.e6))
 @
 
 \subsection{Computing the stoichiometry matrix}
 
 Having defined all functions and having set the values of variables and parameters, one can compute the stoichiometric factors. In general, explicitly computing these factors is not necessary, it may be helpful in debugging however. To do so, the \verb|stoichiometry| method needs to be supplied with values of all state variables, parameters, as well as a time value (in the case of non-autonomous models).
 
-<<echo=TRUE, eval=TRUE>>=
-m= model$stoichiometry(c(v, p, time=0))
+<<showNumericStoi, echo=TRUE, eval=TRUE>>=
+m <- model$stoichiometry(section=1, time=0)
 print(signif(m, 3))
 @
 
@@ -247,27 +256,28 @@ The stoichiometry matrix is also a good means to communicate a model because it 
 
 In order to use the model for simulation, we need to transfer it into source code. This is also known as \emph{code generation}. Specifically, we want the code generator to create a function that returns the derivatives of the state variables with respect to time. In addition to the derivatives, the generated function also returns the values of all process rates (as diagnostic variables).
 
-After generating the code, we need to make it executable. In \software{R}, we can use a combination of \verb|eval| and \verb|parse|. Alternatively, the generated code could be for loaded with \verb|source| after exporting it to a file (e.g. using \verb|write|). The latter method is needed if one wants to inspect the generated code (or even modify it, which rarely makes sense).
+After generating the code, we need to make it executable. In \software{R}, we can use a combination of \verb|eval| and \verb|parse|. Alternatively, the generated code could be loaded with \verb|source| after exporting it to a file (e.g. using \verb|write|). The latter method is needed if one wants to inspect the generated code (or even modify it, which rarely makes sense).
 
-<<echo=TRUE, eval=TRUE>>==
-code= model$generate(name="derivs",lang="r")
-derivs= eval(parse(text=code))
+<<generateSingleSectionR, echo=TRUE, eval=TRUE>>==
+code <- model$generate(name="derivs",lang="r")
+derivs <- eval(parse(text=code))
 @
 
 \subsection{Solving the ODE system} \label{sec:solve-R}
 
-We are now ready to compute the evolution of the state variables over time by means of numerical integration. At this point, the proper order of the elements in the vectors \verb|v| and \verb|p| is essential since the generated function code uses \emph{by-index} access! Therefore, \verb|v| and \verb|p| should always be set by calls to the \verb|arrangeVars| and \verb|arrangePars| method, respectively.
+We are now ready to compute the evolution of the state variables over time by means of numerical integration. Note that the initial values (argument \verb|y| of \verb|deSolve::ode|) and parameters (argument \verb|p|) are set to the output of the model object's dedicated query methods. This is to make sure that the order of values in the two arrays is consistent with the generated code.
 
-In addition to the dynamics of the state variables, we also get the dynamics of the process rates.
-
-<<echo=TRUE, eval=TRUE, fig=TRUE>>=
+<<solveSingleSectionR, echo=TRUE, eval=TRUE, fig=TRUE>>=
 library(deSolve)
-t= seq(0, 30*86400, 3600)
-out= ode(y=v, times=t, func=derivs, parms=p, NLVL=1)
+t <- seq(0, 30*86400, 3600)
+out <- ode(y=model$queryVars(), times=t, func=derivs,
+  parms=model$queryPars())
 layout(matrix(1:9, ncol=3, byrow=TRUE))
 plot(out, mfrow=NULL)
 layout(1)
 @
+
+In addition to the dynamics of the state variables, the numerical solver also outputs the dynamics of the process rates. This is valuable information in general and it also facilitates debugging.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -279,28 +289,40 @@ layout(1)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Spatially distributed systems (multi-box models)} \label{sec:advanced:multibox}
+\subsection{Spatially distributed systems (multi-section models)} \label{sec:advanced:multiSect}
 
-A zero-dimensional case (single reactor) has been considered so far. We will now extend the model for multiple spatial levels, i.~e. for a collection of (isolated) reactors.
+A zero-dimensional case (single reactor) has been considered so far. We will now extend the model for multiple spatial sections, i.~e. for a collection of (isolated) reactors. First, we need to create a model object with the desired dimension. Second, the code needs to be re-generated to reflect the altered dimension. Third, initial values and parameters need to be specified as matrices where each row represents a spatial section. In the example, we initialize every modeled reactor with a different concentration of organic matter.
 
-First, we need to provide vectors (instead of scalars) for one variable and one parameter, at least. Variables and parameters with scalar values will be replicated to vectors of the required length. In the example, we initialize every modeled reactor with a different concentration of organic matter.
-
-Second, we need to pass the actual number of reactors to the derivatives function in the \verb!NLVL! argument.
-
-<<setDataMultiBox, echo=FALSE, eval=FALSE>>=
-nbox= 3
-pars= list(kd=rep(5.78e-7, nbox), h_do=0.5, s_do_z=2.76, wind=1,
-  depth=2, temp=20, q_in=1, q_ex=1)
-vars= list(c_z=seq(from=0, to=50, length.out=nbox), c_do=9.022,
-  v=1.e6)
-p= model$arrangePars(pars)
-v= model$arrangeVars(vars)
+<<initMultiSections, echo=TRUE, eval=TRUE>>=
+# Instantiate new object
+model <- new("rodeo", vars=subset(exampleIdentifiers,type=="v"),
+  pars=subset(exampleIdentifiers,type=="p"),
+  funs=subset(exampleIdentifiers,type=="f"),
+  pros=exampleProcesses,
+  stoi=exampleStoichiometry,
+  sections=3)
 @
-<<echo=TRUE, eval=TRUE, fig=TRUE, width=6, height=2.5>>=
-<<setDataMultiBox>>
-out= ode(y=v, times=t, func=derivs, parms=p, NLVL=nbox)
-layout(matrix(1:nbox, nrow=1))
-plot(out, which=paste("c_do",1:nbox,sep="."), mfrow=NULL)
+<<generateMultiSectionsR, echo=TRUE, eval=TRUE>>==
+code <- model$generate(name="derivs",lang="r")
+derivs <- eval(parse(text=code))
+@
+<<dataMultiSections, echo=TRUE, eval=TRUE>>=
+vars <- cbind(
+  c_z=seq(from=0, to=50, length.out=model$sections()),
+  c_do=rep(9.022, model$sections()),
+  v=rep(1.e6, model$sections()))
+pars <- c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1,
+  depth=2, temp=20, q_in=1, q_ex=1)
+pars <- matrix(rep(pars, model$sections()), nrow=model$sections(),
+  byrow=TRUE, dimnames=list(NULL, names(pars)))  
+model$assignPars(pars)
+model$assignVars(vars)
+@
+<<solveMultiSectionsR, echo=TRUE, eval=TRUE, fig=TRUE, width=6, height=2.5>>=
+out <- ode(y=model$queryVars(), times=t, func=derivs,
+  parms=model$queryPars())
+layout(matrix(1:model$sections(), nrow=1))
+plot(out, which=paste("c_do",1:model$sections(),sep="."), mfrow=NULL)
 @
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -313,7 +335,7 @@ Real-world models usually consist of many and lengthy mathematical expressions. 
 To generate code to compute the state variables' derivatives in \software{Fortran}, one would use:
 
 <<echo=TRUE, eval=TRUE>>=
-code= model$generate(name="derivs",lang="f95")
+code <- model$generate(name="derivs",lang="f95")
 # Optionally display generated code
 #cat(code)
 @
@@ -341,10 +363,10 @@ In order to make the use of \software{Fortran} as simple as possible, the \softw
 \item clean-up of any intermediate files from compilation.
 \end{enumerate}
 
-The \verb|compile| method takes two arguments. First comes the name of a file holding the \software{Fortran} implementation of functions being referenced in the particular model's mathematical expressions (consult Sect.~\ref{sec:fortranFunctions} for guidelines). This can actually be a vector of file names if the source code is split. The second argument \verb|NLVL| is an integer, specifying the desired number of spatial levels (see Sect.~\ref{sec:advanced:multibox}; default is \verb|NLVL=1|).
+The \verb|compile| method takes as argument the name of a file holding the \software{Fortran} implementation of functions being referenced in the particular model's mathematical expressions (consult Sect.~\ref{sec:fortranFunctions} for guidelines). This can actually be a vector of file names if the source code is split.
 
 <<echo=TRUE, eval=TRUE>>=
-lib= model$compile(fileFun="functionsCode.f95", NLVL=nbox)
+lib <- model$compile(fileFun="functionsCode.f95")
 @
 
 The return value of \verb|compile| is a vector of character strings holding the name of the generated library (in element \verb|libName|), the full file path of the library (in element \verb|libFile|) as well as the name of the callable subroutine within that library (in element \verb|libFunc|).
@@ -353,25 +375,24 @@ A suitable \software{Fortran} implementation of the functions used in the exampl
 
 \begin{shaded}
 <<echo=FALSE, eval=TRUE>>=
-file_ffuns= "functionsCode.f95"
-text= readLines(file_ffuns, n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
-text= paste(text,"\n")
+file_ffuns <- "functionsCode.f95"
+text <- readLines(file_ffuns, n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
+text <- paste(text,"\n")
 cat(text)
 @
 \end{shaded}
 
 We are now prepared to load the shared library and run the simulation based on the \software{Fortran} code. Note the additional arguments \verb|dllname|, \verb|initfunc|, and \verb|nout| being passed to the numerical solver (open the help page for \verb|lsoda| to see the documentation for them). Setting a wrong value for \verb|nout| easily makes \software{R} crash.
 
-Also note that, in contrast to the R-based version (see Sect.~\ref{sec:solve-R}), the number of reactors (boxes) is not passed to the solver as an additional parameter \verb|NLVL|. In the case of \software{Fortran}, this number is rather supplied to the \verb|compile| method (see above) and it is thus hard-coded in the compiled code.
-
 <<echo=TRUE, eval=TRUE, fig=TRUE, width=6, height=2.5>>=
-<<setDataMultiBox>>
+<<setDataMultiSect>>
 dyn.load(lib["libFile"])
-out= ode(y=v, times=t, func=lib["libFunc"], parms=p,
-  dllname=lib["libName"], initfunc="initmod", nout=model$lenPros()*nbox)
-layout(matrix(1:nbox, nrow=1))
+out <- ode(y=model$queryVars(), times=t, func=lib["libFunc"],
+  parms=model$queryPars(), dllname=lib["libName"],
+  initfunc="initmod", nout=model$lenPros()*model$sections())
+layout(matrix(1:model$sections(), nrow=1))
 dyn.unload(lib["libFile"])
-plot(out, which=paste("c_do",1:nbox,sep="."), mfrow=NULL)
+plot(out, which=paste("c_do",1:model$sections(),sep="."), mfrow=NULL)
 @
 
 <<echo=FALSE, eval=TRUE>>=
@@ -387,7 +408,7 @@ invisible(file.remove(lib["libFile"]))
 \subsubsection{Two alternative options}
 In general, there are two options for dealing with time-variable forcings:
 
-\paragraph{functions-of-time:} In this approach one needs to define the forcings as functions of a single argument representing time. In \software{rodeo} this argument must have the reserved name \verb|time|. Use of this approach is most convenient if the forcings are easily described as parametric functions of time (e.g. seasonal change of solar radiation). It can also be used with tabulated time series data, but this requires some extra coding. In any case, it is essential for rescrict the integration step size of the solver (e.g. using the \verb|hmax| argument of \verb|deSolve::lsoda|) so that short-term variations in the forcings cannot be 'missed'.
+\paragraph{functions-of-time:} In this approach one needs to define the forcings as functions of a single argument representing time. In \software{rodeo} this argument must have the reserved name \verb|time|. Use of this approach is most convenient if the forcings are easily described as parametric functions of time (e.g. seasonal change of solar radiation). It can also be used with tabulated time series data, but this requires some extra coding. In any case, it is essential for restrict the integration step size of the solver (e.g. using the \verb|hmax| argument of \verb|deSolve::lsoda|) so that short-term variations in the forcings cannot be 'missed'.
  
 \paragraph{stop-and-go:} In this approach forcings are implemented as normal parameters. To allow for their variation in time, the ODE solver is interrupted every time when the forcing data change. The solver is then re-started with the updated parameters (i.e. forcing data) using the states computed in the previous call as initial values. Hence, the calls to the ODE solver must be embedded within a time-loop. With this approach, setting a limit on the solver's integration step size (through argument \verb|hmax|) is not required since the solver is interrupted at the 'critical times' anyway.
 
@@ -398,7 +419,7 @@ In real-world applications, the 'stop-and-go' approach is often simpler to use a
 This section demonstrates how the 'functions-of-time' approach can be used in \software{Fortran}-based models assuming that information on forcings is stored in delimited text files. Such files can be created, for example, with any spreadsheet software, data base system, or \software{R}. Assume that we have time series of two meteorological variables exported to a text file 'meteo.txt':
 
 <<echo=TRUE, eval=TRUE>>=
-dat= data.frame(time=1:10, temp=round(rnorm(n=10, mean=20, sd=3)),
+dat <- data.frame(time=1:10, temp=round(rnorm(n=10, mean=20, sd=3)),
   humid=round(runif(10)*100))
 write.table(x=dat, file="meteo.txt", col.names=TRUE,
   row.names=FALSE, sep="\t", quote=FALSE)
@@ -408,9 +429,9 @@ print(dat)
 We can now call \verb|forcingFunctions| to generate the  appropriate forcing function in \software{Fortran}. In this example, we request linear interpolation via the method's \verb|mode| argument.
 
 <<echo=TRUE, eval=TRUE>>=
-dat= data.frame(name=c("temp","humid"),
+dat <- data.frame(name=c("temp","humid"),
   column=c("temp","humid"), file="meteo.txt", mode=-1, default=FALSE)
-code= forcingFunctions(dat)
+code <- forcingFunctions(dat)
 write(x=code, file="forc.f95")
 # Optionally inspect generated code
 # cat(code)
@@ -434,8 +455,8 @@ Note that the subroutines \verb|rwarn| and \verb|rexit| are available automatica
 
 \begin{shaded}
 <<eval=TRUE, echo=FALSE>>=
-text= readLines("fortranForcingsTest.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
-text= paste(text,"\n")
+text <- readLines("fortranForcingsTest.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
+text <- paste(text,"\n")
 cat(text)
 @
 \end{shaded}
@@ -451,12 +472,12 @@ One can use e.g. \verb|exportDF| to export the object's basic information in a f
 
 <<exportTex, echo=TRUE, eval=FALSE>>=
 # Select columns to export
-df= model$getVars()[,c("tex","unit","description")]
+df <- model$getVarsTable()[,c("tex","unit","description")]
 # Define formatting functions
-bold= function(x){paste0("\\textbf{",x,"}")}
-mathmode= function(x) {paste0("$",x,"$")}
+bold <- function(x){paste0("\\textbf{",x,"}")}
+mathmode <- function(x) {paste0("$",x,"$")}
 # Export
-tex= exportDF(x=df, tex=TRUE,
+tex <- exportDF(x=df, tex=TRUE,
   colnames=c(tex="symbol"),
   funHead=setNames(replicate(ncol(df),bold),names(df)),
   funCell=list(tex=mathmode)
@@ -485,18 +506,18 @@ holding tabular information on the model's state variables. To include the resul
 Alternatively, a \software{markdown} compatible dataframe can be generated and used with the \software{knitr} function \verb|kable|. This will work with html, pdf or even Word (.docx) output. The following code section would create a table of the model's state variables (output not shown).
 
 <<exportMarkdown, echo=TRUE, eval=FALSE>>=
-to_markdown= function(dat, which_cols){
-  cols= which(names(dat) %in% which_cols)
+to_markdown <- function(dat, which_cols){
+  cols <- which(names(dat) %in% which_cols)
   for(i in cols){
-    dat[, i]= ifelse(dat[, i] != "", paste0("$", dat[, i], "$"), "")
+    dat[, i] <- ifelse(dat[, i] != "", paste0("$", dat[, i], "$"), "")
     }
   return(dat)
 } 
 
-ids= model$getVars()[,c("tex", "unit", "description")]
-names(ids)= c("Symbol", "Unit", "Description")
+ids <- model$getVarsTable()[,c("tex", "unit", "description")]
+names(ids) <- c("Symbol", "Unit", "Description")
 kable(to_markdown(ids, which_cols=c("Symbol")),
-  caption = "State variables")
+  caption= "State variables")
 @
 
 % Commented out to get rid of the dependence on the knitr package
@@ -516,33 +537,33 @@ A graphical representation of the stoichiometry matrix is often a good means to 
 One can use the class method \verb|plotStoichiometry| to visualize the matrix using standard R graphic facilities as demonstrated below. In practice, one needs to fiddle around a bit with the dimensions of the plot and the font size to get an acceptable scaling of symbols and text. Also, it is hardly possible to nicely display row and column names containing special things like sub- or superscripts.
 
 <<echo=TRUE, eval=TRUE, fig=TRUE, width=1.7, height=2.2>>=
-<<setDataSingleBox>>
-model$plotStoichiometry(values=c(v, p, time=0), cex=0.3)
+<<setDataSingleSect>>
+model$plotStoichiometry(section=1, time=0, cex=0.3)
 @
 
 \paragraph{Option 2: TEX}
 The following example generates suitable code for inclusion in \LaTeX{} documents.
 
 <<echo=TRUE, eval=TRUE>>=
-<<setDataSingleBox>>
-signsymbol= function(x) {
+<<setDataSingleSect>>
+signsymbol <- function(x) {
   if (as.numeric(x) > 0) return("\\textcolor{orange}{$\\blacktriangle$}")
   if (as.numeric(x) < 0) return("\\textcolor{cyan}{$\\blacktriangledown$}")
   return("")
 }
-rot90= function(x) { paste0("\\rotatebox{90}
+rot90 <- function(x) { paste0("\\rotatebox{90}
   {$",gsub(pattern="*", replacement="\\cdot ", x=x, fixed=TRUE),"$}") }
-m= model$stoichiometry(c(v, p, time=0))
-tbl= cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE),
+m <- model$stoichiometry(section=1, time=0)
+tbl <- cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE),
   as.data.frame(m))
-tex= exportDF(x=tbl, tex=TRUE,
-  colnames= setNames(c("",model$getVars()$tex[match(colnames(m),
-    model$getVars()$name)]), names(tbl)),
+tex <- exportDF(x=tbl, tex=TRUE,
+  colnames= setNames(c("",model$getVarsTable()$tex[match(colnames(m),
+    model$getVarsTable()$name)]), names(tbl)),
   funHead= setNames(replicate(ncol(m),rot90), colnames(m)),
   funCell= setNames(replicate(ncol(m),signsymbol), colnames(m)),
   lines=TRUE
 )
-tex= paste0("%\n% THIS IS A GENERATED FILE\n%\n", tex)
+tex <- paste0("%\n% THIS IS A GENERATED FILE\n%\n", tex)
 # write(tex, file="/home/dkneis/temp/stoichiometry.tex")
 @
 
@@ -560,20 +581,20 @@ write(tex, file="./stoiGraphics.tex")
 The following example generates suitable code for inclusion in HTML documents.
 
 <<echo=TRUE, eval=TRUE>>=
-signsymbol= function(x) {
+signsymbol <- function(x) {
   if (as.numeric(x) > 0) return("&#9651;")
   if (as.numeric(x) < 0) return("&#9661;")
   return("")
 }
-m= model$stoichiometry(c(v, p, time=0))
-tbl= cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE),
+m <- model$stoichiometry(section=1, time=0)
+tbl <- cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE),
   as.data.frame(m))
-html= exportDF(x=tbl, tex=FALSE,
-  colnames= setNames(c("Process",model$getVars()$html[match(colnames(m),
-    model$getVars()$name)]), names(tbl)),
+html <- exportDF(x=tbl, tex=FALSE,
+  colnames= setNames(c("Process",model$getVarsTable()$html[match(colnames(m),
+    model$getVarsTable()$name)]), names(tbl)),
   funCell= setNames(replicate(ncol(m),signsymbol), colnames(m))
 )
-html= paste("<html>", html, "</html>", sep="\n")
+html <- paste("<html>", html, "</html>", sep="\n")
 # write(html, file="/home/dkneis/temp/stoichiometry.html")
 @
 
@@ -584,17 +605,17 @@ To test this, one needs to write the contents of the variable \verb|html| to a t
 A \software{markdown} compatible can be generated with the \software{knitr} function \verb|kable| as shown below (contributed by Andrew Dolman; output not displayed).
 
 <<stoiMarkdown, echo=TRUE, eval=FALSE>>=
-signsymbol= function(x) {
+signsymbol <- function(x) {
   if (as.numeric(x) > 0) return("$\\blacktriangle$")
   if (as.numeric(x) < 0) return("$\\blacktriangledown$")
   return("")
 }
-stoi_mat= model$stoichiometry(c(v, p, time=0))
-stoi_mat= data.frame(apply(stoi_mat, MARGIN = c(1, 2), signsymbol))
-stoi_mat= setNames(stoi_mat, paste0("$",     
-  model$getVars()$tex[match(colnames(stoi_mat),
-  model$getVars()$name)], "$"))
-stoi_mat= cbind(Process=rownames(stoi_mat), stoi_mat)
+stoi_mat <- model$stoichiometry(section=1, time=0)
+stoi_mat <- data.frame(apply(stoi_mat, MARGIN = c(1, 2), signsymbol))
+stoi_mat <- setNames(stoi_mat, paste0("$",     
+  model$getVarsTable()$tex[match(colnames(stoi_mat),
+  model$getVarsTable()$name)], "$"))
+stoi_mat <- cbind(Process=rownames(stoi_mat), stoi_mat)
 
 kable(stoi_mat, row.names= FALSE, caption= "Stoichiometric matrix")
 @

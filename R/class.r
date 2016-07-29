@@ -20,6 +20,11 @@
 #'   identifiers to be used in the expression fields of \code{.pros} or \code{.stoi}.
 #' @field .funs A data frame of the same structure as \code{vars} declaring any
 #'   functions referenced in the expression fields of \code{.pros} or \code{.stoi}.
+#' @field .sections Number of spatial sections (integer).
+#' @field .v Numeric matrix, holding values of variables (columns) in the
+#'   model's spatial compartments (rows).
+#' @field .p Numeric matrix, holding values of parameters (columns) in the
+#'   model's spatial compartments (rows).
 #'
 #' @seealso See the \code{\link{rodeo-package}} main page or type
 #'   \code{help(package="rodeo")} to find the documentation of any non-class
@@ -39,11 +44,15 @@
 
 rodeo= setRefClass(
   Class = "rodeo",
-  fields = c(
+  fields = list(
     .vars="data.frame",
     .pars="data.frame",
     .funs="data.frame",
     .pros="data.frame",
-    .stoi="data.frame")
+    .stoi="data.frame",
+    .sections="integer",
+    .v="matrix",
+    .p="matrix"
+  )
 )
 

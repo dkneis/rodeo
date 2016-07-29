@@ -6,9 +6,10 @@
 #'
 #' @name plotStoichiometry
 #'
-#' @param values Named numeric vector specifying the values of all state
-#'   variables and parameters. For non-autonomous models, there must also be
-#'   an element named 'time'.
+#' @param level A positive integer representing a spatial section. The values of
+#'   state variables and parameters must have been set using the
+#'   \code{\link{assignVars}} and \code{\link{assignPars}} methods.
+#' @param Time. The value is ignored in the case of autonomous models.
 #' @param cex Character expansion factor.
 #' @param colPositive Color for positive stoichiometric factors.
 #' @param colNegative Color for negative stoichiometric factors.
@@ -38,14 +39,17 @@
 #' )
 #' c_z_in= function(time) {0.1}
 #' c_do_in= function(time) {8.0}
-#' model$plotStoichiometry(c(s_do_z=2.76, c_z=1, c_do=9.022, time=0))
+#' model$assignVars(c(c_z=1, c_do=9.022, v=1.e6))
+#' model$assignPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
+#'   temp=20, q_in=1, q_ex=1))
+#' model$plotStoichiometry(section=1, time=0)
 
-rodeo$methods( plotStoichiometry = function(values, cex=1,
+rodeo$methods( plotStoichiometry = function(section=1, time=0, cex=1,
   colPositive="darkorange", colNegative="steelblue4", colGrid="grey") {
   "Plots qualitative stoichiometry information. See
   \\code{\\link{plotStoichiometry}} for details."
 
-  m= .self$stoichiometry(values=values)
+  m= .self$stoichiometry(section=section, time=time)
   dx=0.2
   dy=sqrt((dx**2)/2)
   mar= 0.5

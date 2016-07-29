@@ -30,20 +30,25 @@ rodeo$methods( lenPros= function() {
   nrow(.self$.pros) })
 
 # Methods to return entire tables
-rodeo$methods( getVars= function() {
+rodeo$methods( getVarsTable= function() {
   "Returns the declaration of the model's state variables (as a data frame)."
   .self$.vars })
-rodeo$methods( getPars= function() {
+rodeo$methods( getParsTable= function() {
   "Returns the declaration of the model's parameters (as a data frame)."
   .self$.pars })
-rodeo$methods( getFuns= function() {
+rodeo$methods( getFunsTable= function() {
   "Returns the declaration of functions appearing in the ODE's righthand sides
   (as a data frame)."
   .self$.funs })
-rodeo$methods( getPros= function() {
+rodeo$methods( getProsTable= function() {
   "Returns the declaration of simulated processes (as a data frame)."
   .self$.pros })
-rodeo$methods( getStoi= function() {
+rodeo$methods( getStoiTable= function() {
   "Returns the model's stoichiometric factors (as a data frame)."
   .self$.stoi })
+
+# Method to return the number of spatial sections
+rodeo$methods( sections= function() {
+  "Returns the number spatial sections (integer)."
+  .self$.sections })
 

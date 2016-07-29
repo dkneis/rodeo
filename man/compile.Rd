@@ -9,8 +9,6 @@ contains any user-defined functions referenced in process rates or
 stoichiometric factors. If the Fortran code is split over several dependent
 files, a vector of character strings can be supplied instead of a single
 file name.}
-
-\item{NLVL}{The desired number of spatial levels (boxes). Defaults to 1.}
 }
 \value{
 A vector of character strings with named elements as follows:
@@ -18,7 +16,7 @@ A vector of character strings with named elements as follows:
   \item{\code{libFile}} File path of the generated library. Needs to be
     passed to, e.g., \code{\link[base]{dyn.load}}.
   \item{\code{libName}} The pure library name, which is the base name of
-    \code{libFile} with the platform specific extension stripper. This name
+    \code{libFile} with the platform specific extension stripped. This name
     has to be supplied as the \code{dllname} argument of the solver methods
     in \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}.
   \item{\code{libFunc}} Name of the method contained in the built library

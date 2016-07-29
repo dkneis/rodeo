@@ -5,14 +5,17 @@
 #'
 #' @name stoichiometry
 #'
-#' @param values A named numeric vector specifying the values of all state
-#'   variables and parameters. For non-autonomous models, there must also be an
-#'   element named 'time'. If \code{values} is set to \code{NULL}, the 
-#'   mathematical expressions are not evaluated but returned as character
-#'   strings.
+#' @param section Either \code{NULL} or a positive integer representing a spatial
+#'   section. If \code{NULL}, the mathematical expressions appearing in the
+#'   stoichiometry matrix are not evaluated, hence, they are returned as
+#'   character strings. If a spatial section is specified, a numeric matrix is
+#'   returned. In the latter case, the values of state variables and parameters
+#'   must have been set using the \code{\link{assignVars}} and
+#'   \code{\link{assignPars}} methods.
+#' @param time Time. The value is ignored in the case of autonomous models.
 #'
-#' @return A matrix of numeric or character type, depending on the contents of
-#'  \code{values}.
+#' @return A matrix of numeric or character type, depending on the value of
+#'  \code{section}.
 #'
 #' @note If the stoichiometric factors are mathematical expressions involving
 #'   function references, these functions must be defined in R (even if the
@@ -32,12 +35,15 @@
 #'   funs=subset(exampleIdentifiers, type=="f"),
 #'   pros=exampleProcesses, stoi=exampleStoichiometry
 #' )
-#' print(model$stoichiometry())
 #' c_z_in= function(time) {0.1}
 #' c_do_in= function(time) {8.0}
-#' print(model$stoichiometry(c(s_do_z=2.76, c_z=1, c_do=9.022, time=0)))
+#' model$assignVars(c(c_z=1, c_do=9.022, v=1.e6))
+#' model$assignPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
+#'   temp=20, q_in=1, q_ex=1))
+#' print(model$stoichiometry(section=NULL))
+#' print(model$stoichiometry(section=1))
 
-rodeo$methods( stoichiometry = function(values=NULL) {
+rodeo$methods( stoichiometry = function(section=NULL, time=0) {
   "Returns the stoichiometry matrix, either evaluated (numeric) or not (text).
   See \\code{\\link{stoichiometry}} for details."
 
@@ -49,23 +55,18 @@ rodeo$methods( stoichiometry = function(values=NULL) {
     m[.self$.stoi$process[i], .self$.stoi$variable[i]]= .self$.stoi$expression[i]
   }
 
-  # Return the matrix of expressions if no values are supplied ...
-  if (is.null(values)) {
+  # Return the matrix of expressions unevaluated
+  if (is.null(section)) {
     return(m)
   # ... or return the numeric matrix otherwise
   } else {
-    # Check supplied values
-    if (is.null(names(values)) || any(names(values) == ""))
-      stop("missing element name(s) in vector 'values'")
-    if (any(duplicated(names(values))))
-      stop("duplicated element name(s) in vector 'values'")
-    if (!all(is.numeric(values)))
-      stop("non-numeric element(s) in 'values'")
-    if (!all(is.finite(values)))
-      stop("non-finite element(s) in 'values'")
+    if ((section > .self$.sections) || (section < 1))
+      stop("'section' must be in range [1, ",.self$.sections,"] for this object")
     # Create environment holding all data -> required for evaluating expressions
     env= new.env()
     f=tempfile()
+    values= setNames(c(.self$.v[section,], .self$.p[section,], time),
+      c(colnames(.self$.v), colnames(.self$.p), "time"))
     write.table(file=f, x=data.frame(names(values),values,stringsAsFactors=FALSE),
       sep="=", col.names=FALSE, row.names=FALSE, quote=FALSE)
     sys.source(file=f,envir=env)

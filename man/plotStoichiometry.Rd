@@ -4,9 +4,11 @@
 \alias{plotStoichiometry}
 \title{Plot Qualitative Stoichiometry Matrix}
 \arguments{
-\item{values}{Named numeric vector specifying the values of all state
-variables and parameters. For non-autonomous models, there must also be
-an element named 'time'.}
+\item{level}{A positive integer representing a spatial section. The values of
+state variables and parameters must have been set using the
+\code{\link{assignVars}} and \code{\link{assignPars}} methods.}
+
+\item{Time.}{The value is ignored in the case of autonomous models.}
 
 \item{cex}{Character expansion factor.}
 
@@ -36,7 +38,10 @@ model= new("rodeo",
 )
 c_z_in= function(time) {0.1}
 c_do_in= function(time) {8.0}
-model$plotStoichiometry(c(s_do_z=2.76, c_z=1, c_do=9.022, time=0))
+model$assignVars(c(c_z=1, c_do=9.022, v=1.e6))
+model$assignPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
+  temp=20, q_in=1, q_ex=1))
+model$plotStoichiometry(section=1, time=0)
 }
 \author{
 \email{david.kneis@tu-dresden.de}

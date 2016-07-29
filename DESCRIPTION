@@ -1,8 +1,8 @@
 Package: rodeo
 Type: Package
 Title: A Code Generator for ODE-Based Models
-Version: 0.4
-Date: 2016-06-14
+Version: 0.5
+Date: 2016-07-28
 Author: David Kneis <david.kneis@tu-dresden.de>
 Maintainer: David Kneis <david.kneis@tu-dresden.de>
 Description: Provides a reference class and several utility methods to

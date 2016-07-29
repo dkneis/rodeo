@@ -10,14 +10,13 @@
 #'   stoichiometric factors. If the Fortran code is split over several dependent
 #'   files, a vector of character strings can be supplied instead of a single
 #'   file name.
-#' @param NLVL The desired number of spatial levels (boxes). Defaults to 1.
 #'
 #' @return A vector of character strings with named elements as follows:
 #' \itemize{
 #'   \item{\code{libFile}} File path of the generated library. Needs to be
 #'     passed to, e.g., \code{\link[base]{dyn.load}}.
 #'   \item{\code{libName}} The pure library name, which is the base name of
-#'     \code{libFile} with the platform specific extension stripper. This name
+#'     \code{libFile} with the platform specific extension stripped. This name
 #'     has to be supplied as the \code{dllname} argument of the solver methods
 #'     in \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}.
 #'   \item{\code{libFunc}} Name of the method contained in the built library
@@ -45,7 +44,7 @@
 #' lib= model$compile(fileFun="functionsCode.f95")
 #' }
 
-rodeo$methods( compile = function(fileFun, NLVL=1) {
+rodeo$methods( compile = function(fileFun) {
   "Compile Fortran library for use with numerical methods from packages
    \\code{\\link[deSolve]{deSolve}} or \\code{\\link[rootSolve]{rootSolve}}.
   See \\code{\\link{compile}} for details."
@@ -55,7 +54,7 @@ rodeo$methods( compile = function(fileFun, NLVL=1) {
   srcFiles <- gsub("\\", "/", srcFiles, fixed=TRUE)
   write(.self$generate(name="derivs", lang="f95"), file=srcFiles["derivs"])
   libFunc= "derivs_wrapped"
-  write(solverInterface(NLVL, "derivs", libFunc), file=srcFiles["wrapper"])
+  write(solverInterface(.self$.sections, "derivs", libFunc), file=srcFiles["wrapper"])
   libFile <- tempfile()
   libName <- basename(libFile)
   libFile <- gsub("\\", "/", paste0(libFile,.Platform$dynlib.ext), fixed=TRUE)

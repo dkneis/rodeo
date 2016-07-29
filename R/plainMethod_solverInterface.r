@@ -6,7 +6,7 @@
 #' \code{\link{rodeo-class}} class method \code{\link{compile}} instead of this
 #' low-level function. 
 #'
-#' @param NLVL The desired number of spatial levels (boxes). Defaults to 1.
+#' @param sections The number of spatial sections. Defaults to 1.
 #' @param funcname Name of the function for which a wrapper is to be created
 #'   (rather than the name for the wrapper). It is assumed that a function with
 #'   that name was (or will be) created by a call to the \code{\link{generate}}
@@ -34,19 +34,19 @@
 #' @export
 #'
 #' @examples
-#' fortranCode= solverInterface(NLVL=3)
+#' fortranCode= solverInterface(sections=3)
 #' write(fortranCode, file="")
 
-solverInterface= function (NLVL=1, funcname="derivs", outname="derivs_wrapped") {
+solverInterface= function (sections=1, funcname="derivs", outname="derivs_wrapped") {
   paste0("
 !#################################################
 !###  THIS IS A GENERATED FILE -- DO NOT EDIT  ###
 !#################################################
 
-! Definition of the number of spatial levels
+! Definition of the number of spatial sections
 module spatial_dimension
   implicit none
-  integer, parameter:: NLVL=",NLVL,"
+  integer, parameter:: ",rodeoConst$genIdent$len["secs"],"=",sections,"
 end module
 
 ! Generic routine for parameter initialization
@@ -54,9 +54,9 @@ subroutine initmod(extfun)
   use dimensions_and_indices   ! Module is provided by the generated code
   use spatial_dimension
   external extfun
-  double precision, dimension(NPAR*NLVL):: par
+  double precision, dimension(",rodeoConst$genIdent$len['pars'],"*",rodeoConst$genIdent$len["secs"],"):: par
   common /params/ par
-  call extfun(NPAR*NLVL, par)
+  call extfun(",rodeoConst$genIdent$len['pars'],"*",rodeoConst$genIdent$len["secs"],", par)
 end subroutine
 
 ! Generic wrapper around the generated code
@@ -73,10 +73,10 @@ subroutine ",outname," (neq, t, y, ydot, yout, ip)
   double precision, dimension(neq), intent(out)::ydot
   double precision, dimension(ip(2)), intent(out)::yout
   ! Import parameters
-  double precision, dimension(NPAR*NLVL):: par
+  double precision, dimension(",rodeoConst$genIdent$len['pars'],"*",rodeoConst$genIdent$len["secs"],"):: par
   common /params/ par
   !Call to generated code
-  call ",funcname,"(t, y, par, NLVL, ydot, yout)
+  call ",funcname,"(t, y, par, ",rodeoConst$genIdent$len["secs"],", ydot, yout)
 end subroutine
 "
 )

@@ -4,15 +4,19 @@
 \alias{stoichiometry}
 \title{Return the Stoichiometry Matrix}
 \arguments{
-\item{values}{A named numeric vector specifying the values of all state
-variables and parameters. For non-autonomous models, there must also be an
-element named 'time'. If \code{values} is set to \code{NULL}, the 
-mathematical expressions are not evaluated but returned as character
-strings.}
+\item{section}{Either \code{NULL} or a positive integer representing a spatial
+section. If \code{NULL}, the mathematical expressions appearing in the
+stoichiometry matrix are not evaluated, hence, they are returned as
+character strings. If a spatial section is specified, a numeric matrix is
+returned. In the latter case, the values of state variables and parameters
+must have been set using the \code{\link{assignVars}} and
+\code{\link{assignPars}} methods.}
+
+\item{time}{Time. The value is ignored in the case of autonomous models.}
 }
 \value{
-A matrix of numeric or character type, depending on the contents of
- \code{values}.
+A matrix of numeric or character type, depending on the value of
+ \code{section}.
 }
 \description{
 Return and optionally evaluate the mathematical expression appearing in the
@@ -31,10 +35,13 @@ model= new("rodeo",
   funs=subset(exampleIdentifiers, type=="f"),
   pros=exampleProcesses, stoi=exampleStoichiometry
 )
-print(model$stoichiometry())
 c_z_in= function(time) {0.1}
 c_do_in= function(time) {8.0}
-print(model$stoichiometry(c(s_do_z=2.76, c_z=1, c_do=9.022, time=0)))
+model$assignVars(c(c_z=1, c_do=9.022, v=1.e6))
+model$assignPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
+  temp=20, q_in=1, q_ex=1))
+print(model$stoichiometry(section=NULL))
+print(model$stoichiometry(section=1))
 }
 \author{
 \email{david.kneis@tu-dresden.de}

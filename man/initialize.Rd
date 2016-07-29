@@ -25,11 +25,14 @@ matrix elements are interpreted as zero stoichiometry factors.}
 
 \item{asMatrix}{Logical. Specifies whether stoichiometry information is given
 in matrix or data base format.}
+
+\item{sections}{Number of spatial sections. The default of 1 assumes
+a zero-dimensional model.}
 }
 \value{
 The method is called implicitly for its side effects when a
   \code{\link{rodeo}} object is instantiated with \code{\link[methods]{new}}.
-  A possible return values is probably not accessible.
+  It has no accessible return value.
 }
 \description{
 Initializes an object of the \code{\link{rodeo-class}} with data frames
@@ -48,6 +51,10 @@ The mandatory fields of the input data frames should be of type
   There are currently few reserved words that cannot be used as variable,
   parameter, function, or process names. The reserved words are 'time',
   'left', and 'right'.
+
+Initialization does not assign numeric values to state variables or
+  parameters. Use the decicated methods \code{\link{assignVars}} and 
+  \code{\link{assignPars}} for that purpose.
 }
 \examples{
 data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)

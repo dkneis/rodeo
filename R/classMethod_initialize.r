@@ -21,10 +21,12 @@
 #'   matrix elements are interpreted as zero stoichiometry factors.
 #' @param asMatrix Logical. Specifies whether stoichiometry information is given
 #'   in matrix or data base format.
+#' @param sections Number of spatial sections. The default of 1 assumes
+#'   a zero-dimensional model.
 #'
 #' @return The method is called implicitly for its side effects when a
 #'   \code{\link{rodeo}} object is instantiated with \code{\link[methods]{new}}.
-#'   A possible return values is probably not accessible.
+#'   It has no accessible return value.
 #'
 #' @note The mandatory fields of the input data frames should be of type
 #'   character. Additional fields may be present in these data frames and the
@@ -38,6 +40,10 @@
 #'   There are currently few reserved words that cannot be used as variable,
 #'   parameter, function, or process names. The reserved words are 'time',
 #'   'left', and 'right'.
+#'
+#' Initialization does not assign numeric values to state variables or
+#'   parameters. Use the decicated methods \code{\link{assignVars}} and 
+#'   \code{\link{assignPars}} for that purpose.
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
@@ -54,7 +60,7 @@
 #' model$show()
 
 rodeo$methods(
-  initialize = function(vars, pars, funs, pros, stoi, asMatrix=FALSE
+  initialize = function(vars, pars, funs, pros, stoi, asMatrix=FALSE, sections=1
 ) {
   "Initializes a \\code{\\link{rodeo-class}} object. See
    \\code{\\link{initialize}} for details."
@@ -227,5 +233,12 @@ rodeo$methods(
   stoi$variable_tex= vars$tex[match(stoi$variable, vars$name)]
   stoi$variable_html= vars$html[match(stoi$variable, vars$name)]
   .self$.stoi <<- as.data.frame(stoi, stringsAsFactors=FALSE)
+  # Initialize number of spatial sections ########################################
+  if (as.integer(sections) <= 0)
+    stop("number of spatial sections must be a positive integer")
+  .sections <<- as.integer(sections)
+  # Initialize numeric data ####################################################
+  .v <<- matrix(NA, nrow=1, ncol=nrow(vars), dimnames=list(NULL, vars$name))
+  .p <<- matrix(NA, nrow=1, ncol=nrow(pars), dimnames=list(NULL, pars$name))
 })
 

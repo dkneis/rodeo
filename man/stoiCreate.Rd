@@ -69,8 +69,7 @@ The syntax rules for reaction equations are as follows (see examples):
 }
 }
 \examples{
-# EXAMPLE 1: From https://en.wikipedia.org/wiki/Petersen_matrix (June 2016);
-#            Note the bug on the above page (process 'decoES', variable 'E').
+# EXAMPLE 1: From https://en.wikipedia.org/wiki/Petersen_matrix (July 2016)
 #
 reactions= c(
   formS=  "A + 2 * B -> S",

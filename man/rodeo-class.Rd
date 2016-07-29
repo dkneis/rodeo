@@ -30,15 +30,23 @@ identifiers to be used in the expression fields of \code{.pros} or \code{.stoi}.
 
 \item{\code{.funs}}{A data frame of the same structure as \code{vars} declaring any
 functions referenced in the expression fields of \code{.pros} or \code{.stoi}.}
+
+\item{\code{.sections}}{Number of spatial sections (integer).}
+
+\item{\code{.v}}{Numeric matrix, holding values of variables (columns) in the
+model's spatial compartments (rows).}
+
+\item{\code{.p}}{Numeric matrix, holding values of parameters (columns) in the
+model's spatial compartments (rows).}
 }}
 \section{Methods}{
 
 \describe{
-\item{\code{arrangePars(x, sep = ".", warnUnused = TRUE)}}{Assign values to parameters. See \code{\link{arrangePars}} for details.}
+\item{\code{assignPars(x, tabular = FALSE, check = TRUE)}}{Assign values to parameters. See \code{\link{assignPars}} for details.}
 
-\item{\code{arrangeVars(x, sep = ".", warnUnused = TRUE)}}{Assign values to state variables. See \code{\link{arrangeVars}} for details.}
+\item{\code{assignVars(x, tabular = FALSE, check = TRUE)}}{Assign values to state variables. See \code{\link{assignVars}} for details.}
 
-\item{\code{compile(fileFun, NLVL = 1)}}{Compile Fortran library for use with numerical methods from packages
+\item{\code{compile(fileFun)}}{Compile Fortran library for use with numerical methods from packages
  \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}.
 See \code{\link{compile}} for details.}
 
@@ -46,18 +54,18 @@ See \code{\link{compile}} for details.}
 rates and the state variables derivatives (either in R or Fortran). See
 \code{\link{generate}} for details.}
 
-\item{\code{getFuns()}}{Returns the declaration of functions appearing in the ODE's righthand sides
+\item{\code{getFunsTable()}}{Returns the declaration of functions appearing in the ODE's righthand sides
 (as a data frame).}
 
-\item{\code{getPars()}}{Returns the declaration of the model's parameters (as a data frame).}
+\item{\code{getParsTable()}}{Returns the declaration of the model's parameters (as a data frame).}
 
-\item{\code{getPros()}}{Returns the declaration of simulated processes (as a data frame).}
+\item{\code{getProsTable()}}{Returns the declaration of simulated processes (as a data frame).}
 
-\item{\code{getStoi()}}{Returns the model's stoichiometric factors (as a data frame).}
+\item{\code{getStoiTable()}}{Returns the model's stoichiometric factors (as a data frame).}
 
-\item{\code{getVars()}}{Returns the declaration of the model's state variables (as a data frame).}
+\item{\code{getVarsTable()}}{Returns the declaration of the model's state variables (as a data frame).}
 
-\item{\code{initialize(vars, pars, funs, pros, stoi, asMatrix = FALSE)}}{Initializes a \code{\link{rodeo-class}} object. See
+\item{\code{initialize(vars, pars, funs, pros, stoi, asMatrix = FALSE, sections = 1)}}{Initializes a \code{\link{rodeo-class}} object. See
 \code{\link{initialize}} for details.}
 
 \item{\code{lenFuns()}}{Returns the number of functions appearing in the ODE's righthand sides
@@ -78,11 +86,20 @@ rates and the state variables derivatives (either in R or Fortran). See
 
 \item{\code{namesVars()}}{Returns the names of the model's state variables (vector of mode character).}
 
-\item{\code{plotStoichiometry(values, cex = 1, colPositive = "darkorange",
-  colNegative = "steelblue4", colGrid = "grey")}}{Plots qualitative stoichiometry information. See
+\item{\code{plotStoichiometry(section = 1, time = 0, cex = 1,
+  colPositive = "darkorange", colNegative = "steelblue4",
+  colGrid = "grey")}}{Plots qualitative stoichiometry information. See
 \code{\link{plotStoichiometry}} for details.}
 
-\item{\code{stoichiometry(values = NULL)}}{Returns the stoichiometry matrix, either evaluated (numeric) or not (text).
+\item{\code{queryPars(asMatrix = FALSE)}}{Returns the numeric values of parameters. See \code{\link{queryPars}}
+for details.}
+
+\item{\code{queryVars(asMatrix = FALSE)}}{Returns the numeric values of state variables. See \code{\link{queryVars}}
+for details.}
+
+\item{\code{sections()}}{Returns the number spatial sections (integer).}
+
+\item{\code{stoichiometry(section = NULL, time = 0)}}{Returns the stoichiometry matrix, either evaluated (numeric) or not (text).
 See \code{\link{stoichiometry}} for details.}
 }}
 \examples{
