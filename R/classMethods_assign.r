@@ -106,7 +106,14 @@ rodeo$set("public", "assignVars", function(x, tabular=FALSE, check=TRUE) {
 #'
 #' @name assignPars
 #'
-#' @inheritParams assignVars
+#' @param x A matrix, vector, or data frame holding the data to be assigned.
+#'   The appropriate type of input depends on the value of \code{tabular}. See
+#'   details below.
+#' @param tabular If set to \code{FALSE}, then \code{x} must be a numeric matrix
+#'   (or vector) holding data for \emph{all} items and sections. If \code{TRUE},
+#'   then \code{x} must be a data frame with 3 columns 'name', 'section', and
+#'   'value'. Use this to assign data to selected items and/or sections only.
+#' @param check Logical. By default, several checks are carried out on the
 #'
 #' @return \code{NULL} (invisible). The assigned numeric data are stored in the
 #'   object and can be accessed by the \code{\link{queryPars}} method.

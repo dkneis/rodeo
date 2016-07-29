@@ -3,6 +3,18 @@
 \name{assignPars}
 \alias{assignPars}
 \title{Assign Values to Parameters}
+\arguments{
+\item{x}{A matrix, vector, or data frame holding the data to be assigned.
+The appropriate type of input depends on the value of \code{tabular}. See
+details below.}
+
+\item{tabular}{If set to \code{FALSE}, then \code{x} must be a numeric matrix
+(or vector) holding data for \emph{all} items and sections. If \code{TRUE},
+then \code{x} must be a data frame with 3 columns 'name', 'section', and
+'value'. Use this to assign data to selected items and/or sections only.}
+
+\item{check}{Logical. By default, several checks are carried out on the}
+}
 \value{
 \code{NULL} (invisible). The assigned numeric data are stored in the
   object and can be accessed by the \code{\link{queryPars}} method.
