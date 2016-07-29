@@ -51,49 +51,47 @@
 #'
 #' @examples
 #' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-#' model= new("rodeo",
+#' model <- rodeo$new(
 #'   vars=subset(exampleIdentifiers, type=="v"),
 #'   pars=subset(exampleIdentifiers, type=="p"),
 #'   funs=subset(exampleIdentifiers, type=="f"),
 #'   pros=exampleProcesses, stoi=exampleStoichiometry
 #' )
-#' model$show()
+#' print(model)
 
-rodeo$methods(
-  initialize = function(vars, pars, funs, pros, stoi, asMatrix=FALSE, sections=1
+rodeo$set("public", "initialize",
+  function(vars, pars, funs, pros, stoi, asMatrix=FALSE, sections=1
 ) {
-  "Initializes a \\code{\\link{rodeo-class}} object. See
-   \\code{\\link{initialize}} for details."
   # Set variables ##############################################################
-  cn= c("name","unit","description")
+  cn <- c("name","unit","description")
   checkTbl(tbl=vars, tblName="vars", colNames=cn, nameCol="name", emptyOK=FALSE)
   for (n in cn)
-    vars[,n]= as.character(vars[,n])
+    vars[,n] <- as.character(vars[,n])
   for (n in c("tex","html"))
-    vars[,n]= if (n %in% names(vars)) as.character(vars[,n]) else vars$name
-  .self$.vars <<- as.data.frame(vars, stringsAsFactors=FALSE)
+    vars[,n] <- if (n %in% names(vars)) as.character(vars[,n]) else vars$name
+  private$varsTbl <- as.data.frame(vars, stringsAsFactors=FALSE)
   # Set parameters #############################################################
-  cn= c("name","unit","description")
+  cn <- c("name","unit","description")
   checkTbl(tbl=pars, tblName="pars", colNames=cn, nameCol="name", emptyOK=FALSE)
   for (n in cn)
-    pars[,n]= as.character(pars[,n])
+    pars[,n] <- as.character(pars[,n])
   for (n in c("tex","html"))
-    pars[,n]= if (n %in% names(pars)) as.character(pars[,n]) else pars$name
-  .self$.pars <<- as.data.frame(pars, stringsAsFactors=FALSE)
+    pars[,n] <- if (n %in% names(pars)) as.character(pars[,n]) else pars$name
+  private$parsTbl <- as.data.frame(pars, stringsAsFactors=FALSE)
   # Set functions ##############################################################
-  cn= c("name","unit","description")
+  cn <- c("name","unit","description")
   checkTbl(tbl=funs, tblName="funs", colNames=cn, nameCol="name", emptyOK=TRUE)
   for (n in cn)
-    funs[,n]= as.character(funs[,n])
+    funs[,n] <- as.character(funs[,n])
   for (n in c("tex","html"))
-    funs[,n]= if (n %in% names(funs)) as.character(funs[,n]) else funs$name
-  .self$.funs <<- as.data.frame(funs, stringsAsFactors=FALSE)
+    funs[,n] <- if (n %in% names(funs)) as.character(funs[,n]) else funs$name
+  private$funsTbl <- as.data.frame(funs, stringsAsFactors=FALSE)
   # Check tex/html symbols #####################################################
-  all_names= c(vars$name, pars$name, funs$name)
+  all_names <- c(vars$name, pars$name, funs$name)
   for (n in c("tex","html")) {
-    all_symb= c(vars[,n], pars[,n], funs[,n])
+    all_symb <- c(vars[,n], pars[,n], funs[,n])
     # (a) check for duplicates
-    bad= unique(all_symb[which(duplicated(all_symb))])
+    bad <- unique(all_symb[which(duplicated(all_symb))])
     if (length(bad) > 0)
       stop(n," symbols of variables, parameters, and functions",
         " must be unique; the following ",
@@ -101,7 +99,7 @@ rodeo$methods(
         " used more than once: '",paste(bad,collapse="', '"),"'")
     # (b) check for conflicts with item names (avoids errors when names in
     #     math expressions are replaced by symbols)
-    bad= all_symb[which((all_symb %in% all_names) & (all_symb != all_names))]
+    bad <- all_symb[which((all_symb %in% all_names) & (all_symb != all_names))]
     if (length(bad) > 0) {
       stop("the following ",n,ifelse(length(bad)>1," symbols are",
         "symbol is")," cannot be assiged to the respective item (",
@@ -111,15 +109,15 @@ rodeo$methods(
   }
   # Set processes ##############################################################
   # Basic checks
-  cn= c("name","unit","description","expression")
+  cn <- c("name","unit","description","expression")
   checkTbl(tbl=pros, tblName="pros", colNames=cn, nameCol="name", emptyOK=FALSE)
   for (n in cn)
-    pros[,n]= as.character(pros[,n])
+    pros[,n] <- as.character(pros[,n])
   # Remove newline characters from expressions
-  pros$expression= gsub(pattern="\n", replacement=" ", x=pros$expression)
+  pros$expression <- gsub(pattern="\n", replacement=" ", x=pros$expression)
   # Check for undeclared items in expressions
   for (i in 1:nrow(pros)) {
-    bad= undeclared(pros$expression[i], c(vars$name, pars$name, funs$name,
+    bad <- undeclared(pros$expression[i], c(vars$name, pars$name, funs$name,
       rodeoConst$reservedNames))
     if (length(bad) > 0)
       stop(paste0("expression for process '",pros$name[i],
@@ -135,27 +133,27 @@ rodeo$methods(
     })
   }
   # Duplicate name checks over multiple tables
-  n= c(vars$name, pars$name, funs$name, pros$name)
-  bad= unique(n[which(duplicated(n))])
+  n <- c(vars$name, pars$name, funs$name, pros$name)
+  bad <- unique(n[which(duplicated(n))])
   if (length(bad) > 0)
     stop(paste0("names of variables, parameters, functions, and processes",
       " must be unique; the following ",
       ifelse(length(bad)>1,"names were","name was"),
       " declared more than once: '",paste(bad,collapse="', '"),"'"))
   # Append columns with expressions translated to tex/html
-  pros$expression_tex= pros$expression
-  pros$expression_html= pros$expression
+  pros$expression_tex <- pros$expression
+  pros$expression_html <- pros$expression
   for (i in 1:nrow(pros)) {
-    pros$expression_tex[i]= substituteIdentifiers(expr=pros$expression_tex[i],
+    pros$expression_tex[i] <- substituteIdentifiers(expr=pros$expression_tex[i],
       sub=c(setNames(vars$tex, vars$name), setNames(pars$tex, pars$name),
       setNames(funs$tex, funs$name),
       setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)),all=TRUE)
-    pros$expression_html[i]= substituteIdentifiers(expr=pros$expression_html[i],
+    pros$expression_html[i] <- substituteIdentifiers(expr=pros$expression_html[i],
       sub=c(setNames(vars$html, vars$name), setNames(pars$html, pars$name),
       setNames(funs$html, funs$name),
       setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)),all=TRUE)
   }
-  .self$.pros <<- as.data.frame(pros, stringsAsFactors=FALSE)
+  private$prosTbl <- as.data.frame(pros, stringsAsFactors=FALSE)
   # Set stoichiometry ##########################################################
   # Convert matrix to table
   if (asMatrix) {
@@ -165,41 +163,41 @@ rodeo$methods(
       stop("missing column name(s) in matrix of stoichiometric factors")
     if (is.null(rownames(stoi)) || any(rownames(stoi) == ""))
       stop("missing row name(s) in matrix of stoichiometric factors")
-    stoi= data.frame(variable=rep(colnames(stoi), each=nrow(stoi)),
+    stoi <- data.frame(variable=rep(colnames(stoi), each=nrow(stoi)),
       process=rep(rownames(stoi), ncol(stoi)),
       expression= as.character(stoi), stringsAsFactors=FALSE)
-    stoi= subset(stoi, !(is.na(stoi$expression) | (nchar(stoi$expression)==0)))
+    stoi <- subset(stoi, !(is.na(stoi$expression) | (nchar(stoi$expression)==0)))
   }
   # Basic checks
-  cn= c("variable","process","expression")
+  cn <- c("variable","process","expression")
   checkTbl(tbl=stoi, tblName="stoi", colNames=cn, nameCol=NULL, emptyOK=FALSE)
   for (n in cn)
-    stoi[,n]= as.character(stoi[,n])
+    stoi[,n] <- as.character(stoi[,n])
   # Check names of variables
-  n= unique(stoi$variable)
-  bad= n[!(n %in% vars$name)]
+  n <- unique(stoi$variable)
+  bad <- n[!(n %in% vars$name)]
   if (length(bad) > 0)
     stop(paste0("stoichiometry factor(s) specified for undeclared variable(s) '",
       paste(bad,collapse="', '"),"'"))
-  bad= vars$name[!(vars$name %in% n)]
+  bad <- vars$name[!(vars$name %in% n)]
   if (length(bad) > 0)
     stop(paste0("missing stoichiometry factor(s) for variable(s) '",
       paste(bad,collapse="', '"),"'"))
   # Check names of processes
-  n= unique(stoi$process)
-  bad= n[!(n %in% pros$name)]
+  n <- unique(stoi$process)
+  bad <- n[!(n %in% pros$name)]
   if (length(bad) > 0)
     stop(paste0("stoichiometry factor(s) specified for undeclared process(es) '",
       paste(bad,collapse="', '"),"'"))
-  bad= pros$name[!(pros$name %in% n)]
+  bad <- pros$name[!(pros$name %in% n)]
   if (length(bad) > 0)
     stop(paste0("missing stoichiometry factor(s) for process(es) '",
       paste(bad,collapse="', '"),"'"))
   # Remove newline characters from expressions
-  stoi$expression= gsub(pattern="\n", replacement=" ", x=stoi$expression)
+  stoi$expression <- gsub(pattern="\n", replacement=" ", x=stoi$expression)
   # Check for undeclared items in expressions
   for (i in 1:nrow(stoi)) {
-    bad= undeclared(stoi$expression[i], c(vars$name, pars$name, funs$name,
+    bad <- undeclared(stoi$expression[i], c(vars$name, pars$name, funs$name,
       rodeoConst$reservedNames))
     if (length(bad) > 0)
       stop(paste0("stoichiometry factor for variable '",
@@ -217,28 +215,28 @@ rodeo$methods(
     })
   }
   # Append columns with expressions translated to tex/html
-  stoi$expression_tex= stoi$expression
-  stoi$expression_html= stoi$expression
+  stoi$expression_tex <- stoi$expression
+  stoi$expression_html <- stoi$expression
   for (i in 1:nrow(stoi)) {
-    stoi$expression_tex[i]= substituteIdentifiers(expr=stoi$expression_tex[i],
+    stoi$expression_tex[i] <- substituteIdentifiers(expr=stoi$expression_tex[i],
       sub=c(setNames(vars$tex, vars$name), setNames(pars$tex, pars$name),
       setNames(funs$tex, funs$name),
       setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)),all=TRUE)
-    stoi$expression_html[i]= substituteIdentifiers(expr=stoi$expression_html[i],
+    stoi$expression_html[i] <- substituteIdentifiers(expr=stoi$expression_html[i],
       sub=c(setNames(vars$html, vars$name), setNames(pars$html, pars$name),
       setNames(funs$html, funs$name),
       setNames(rodeoConst$reservedNames,rodeoConst$reservedNames)),all=TRUE)
   }
   # Add columns with the variables' symbols
-  stoi$variable_tex= vars$tex[match(stoi$variable, vars$name)]
-  stoi$variable_html= vars$html[match(stoi$variable, vars$name)]
-  .self$.stoi <<- as.data.frame(stoi, stringsAsFactors=FALSE)
+  stoi$variable_tex <- vars$tex[match(stoi$variable, vars$name)]
+  stoi$variable_html <- vars$html[match(stoi$variable, vars$name)]
+  private$stoiTbl <- as.data.frame(stoi, stringsAsFactors=FALSE)
   # Initialize number of spatial sections ########################################
   if (as.integer(sections) <= 0)
     stop("number of spatial sections must be a positive integer")
-  .sections <<- as.integer(sections)
+  private$sections <- as.integer(sections)
   # Initialize numeric data ####################################################
-  .v <<- matrix(NA, nrow=1, ncol=nrow(vars), dimnames=list(NULL, vars$name))
-  .p <<- matrix(NA, nrow=1, ncol=nrow(pars), dimnames=list(NULL, pars$name))
+  private$v <- matrix(NA, nrow=1, ncol=nrow(vars), dimnames=list(NULL, vars$name))
+  private$p <- matrix(NA, nrow=1, ncol=nrow(pars), dimnames=list(NULL, pars$name))
 })
 

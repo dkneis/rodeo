@@ -32,7 +32,7 @@
 #'
 #' @examples
 #' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-#' model= new("rodeo",
+#' model <- rodeo$new(
 #'   vars=subset(exampleIdentifiers, type=="v"),
 #'   pars=subset(exampleIdentifiers, type=="p"),
 #'   funs=subset(exampleIdentifiers, type=="f"),
@@ -41,24 +41,20 @@
 #' # This would trigger compilation assuming that 'functionsCode.f95' contains
 #' # a Fortran implementation of all functions; see vignette for full example
 #' \dontrun{
-#' lib= model$compile(fileFun="functionsCode.f95")
+#' lib <- model$compile(fileFun="functionsCode.f95")
 #' }
 
-rodeo$methods( compile = function(fileFun) {
-  "Compile Fortran library for use with numerical methods from packages
-   \\code{\\link[deSolve]{deSolve}} or \\code{\\link[rootSolve]{rootSolve}}.
-  See \\code{\\link{compile}} for details."
-
+rodeo$set("public", "compile", function(fileFun) {
   srcFiles <- c(funcs=normalizePath(fileFun), derivs= paste0(tempfile(),".f95"),
     wrapper= paste0(tempfile(),".f95"))
   srcFiles <- gsub("\\", "/", srcFiles, fixed=TRUE)
-  write(.self$generate(name="derivs", lang="f95"), file=srcFiles["derivs"])
-  libFunc= "derivs_wrapped"
-  write(solverInterface(.self$.sections, "derivs", libFunc), file=srcFiles["wrapper"])
+  write(self$generate(name="derivs", lang="f95"), file=srcFiles["derivs"])
+  libFunc <- "derivs_wrapped"
+  write(solverInterface(private$sections, "derivs", libFunc), file=srcFiles["wrapper"])
   libFile <- tempfile()
   libName <- basename(libFile)
   libFile <- gsub("\\", "/", paste0(libFile,.Platform$dynlib.ext), fixed=TRUE)
-  wd= getwd()
+  wd <- getwd()
   setwd(tempdir())
   command <- paste0("R CMD SHLIB ",paste(srcFiles, collapse=" "),
     " --preclean --clean -o ",libFile)

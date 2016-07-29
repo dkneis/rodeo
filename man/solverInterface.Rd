@@ -38,7 +38,7 @@ with the numerical methods from packages \code{\link[deSolve]{deSolve}} and
 low-level function.
 }
 \examples{
-fortranCode= solverInterface(sections=3)
+fortranCode <- solverInterface(sections=3)
 write(fortranCode, file="")
 }
 \author{

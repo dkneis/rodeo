@@ -32,13 +32,13 @@ If generated Fortran code is to be used with the numerical solvers from the
 }
 \examples{
 data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model= new("rodeo",
+model <- rodeo$new(
   vars=subset(exampleIdentifiers, type=="v"),
   pars=subset(exampleIdentifiers, type=="p"),
   funs=subset(exampleIdentifiers, type=="f"),
   pros=exampleProcesses, stoi=exampleStoichiometry
 )
-fortranCode= model$generate(lang="f95")
+fortranCode <- model$generate(lang="f95")
 write(fortranCode, file="")
 }
 \author{

@@ -29,14 +29,14 @@ If the stoichiometric factors are mathematical expressions involving
 }
 \examples{
 data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model= new("rodeo",
+model <- rodeo$new(
   vars=subset(exampleIdentifiers, type=="v"),
   pars=subset(exampleIdentifiers, type=="p"),
   funs=subset(exampleIdentifiers, type=="f"),
   pros=exampleProcesses, stoi=exampleStoichiometry
 )
-c_z_in= function(time) {0.1}
-c_do_in= function(time) {8.0}
+c_z_in <- function(time) {0.1}
+c_do_in <- function(time) {8.0}
 model$assignVars(c(c_z=1, c_do=9.022, v=1.e6))
 model$assignPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
   temp=20, q_in=1, q_ex=1))

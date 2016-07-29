@@ -18,7 +18,7 @@ Query values of state variables of a \code{\link{rodeo}}-based model.
 }
 \examples{
 data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model= new("rodeo",
+model <- rodeo$new(
   vars=subset(exampleIdentifiers, type=="v"),
   pars=subset(exampleIdentifiers, type=="p"),
   funs=subset(exampleIdentifiers, type=="f"),

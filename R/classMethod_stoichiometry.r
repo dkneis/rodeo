@@ -29,30 +29,28 @@
 #'
 #' @examples
 #' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-#' model= new("rodeo",
+#' model <- rodeo$new(
 #'   vars=subset(exampleIdentifiers, type=="v"),
 #'   pars=subset(exampleIdentifiers, type=="p"),
 #'   funs=subset(exampleIdentifiers, type=="f"),
 #'   pros=exampleProcesses, stoi=exampleStoichiometry
 #' )
-#' c_z_in= function(time) {0.1}
-#' c_do_in= function(time) {8.0}
+#' c_z_in <- function(time) {0.1}
+#' c_do_in <- function(time) {8.0}
 #' model$assignVars(c(c_z=1, c_do=9.022, v=1.e6))
 #' model$assignPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
 #'   temp=20, q_in=1, q_ex=1))
 #' print(model$stoichiometry(section=NULL))
 #' print(model$stoichiometry(section=1))
 
-rodeo$methods( stoichiometry = function(section=NULL, time=0) {
-  "Returns the stoichiometry matrix, either evaluated (numeric) or not (text).
-  See \\code{\\link{stoichiometry}} for details."
+rodeo$set("public", "stoichiometry", function(section=NULL, time=0) {
 
   # Build the matrix of expressions
-  m= matrix("0", ncol=nrow(.self$.vars), nrow=nrow(.self$.pros))
-  colnames(m)= .self$.vars$name
-  rownames(m)= .self$.pros$name
-  for (i in 1:nrow(.self$.stoi)) {
-    m[.self$.stoi$process[i], .self$.stoi$variable[i]]= .self$.stoi$expression[i]
+  m <- matrix("0", ncol=nrow(private$varsTbl), nrow=nrow(private$prosTbl))
+  colnames(m) <- private$varsTbl$name
+  rownames(m) <- private$prosTbl$name
+  for (i in 1:nrow(private$stoiTbl)) {
+    m[private$stoiTbl$process[i], private$stoiTbl$variable[i]] <- private$stoiTbl$expression[i]
   }
 
   # Return the matrix of expressions unevaluated
@@ -60,24 +58,24 @@ rodeo$methods( stoichiometry = function(section=NULL, time=0) {
     return(m)
   # ... or return the numeric matrix otherwise
   } else {
-    if ((section > .self$.sections) || (section < 1))
-      stop("'section' must be in range [1, ",.self$.sections,"] for this object")
+    if ((section > private$sections) || (section < 1))
+      stop("'section' must be in range [1, ",private$sections,"] for this object")
     # Create environment holding all data -> required for evaluating expressions
-    env= new.env()
-    f=tempfile()
-    values= setNames(c(.self$.v[section,], .self$.p[section,], time),
-      c(colnames(.self$.v), colnames(.self$.p), "time"))
+    env <- new.env()
+    f <- tempfile()
+    values <- setNames(c(private$v[section,], private$p[section,], time),
+      c(colnames(private$v), colnames(private$p), "time"))
     write.table(file=f, x=data.frame(names(values),values,stringsAsFactors=FALSE),
       sep="=", col.names=FALSE, row.names=FALSE, quote=FALSE)
     sys.source(file=f,envir=env)
     # Create numeric matrix
-    mnum= matrix(0, ncol=ncol(m), nrow=nrow(m))
-    colnames(mnum)= colnames(m)
-    rownames(mnum)= rownames(m)
+    mnum <- matrix(0, ncol=ncol(m), nrow=nrow(m))
+    colnames(mnum) <- colnames(m)
+    rownames(mnum) <- rownames(m)
     for (ic in 1:ncol(m)) {
       for (ir in 1:nrow(m)) {
         tryCatch({
-          mnum[ir,ic]= eval(parse(text=m[ir,ic]), envir=env)  # evaluated in created env
+          mnum[ir,ic] <- eval(parse(text=m[ir,ic]), envir=env)  # evaluated in created env
         }, error= function(e) {
           stop(paste0("failed to compute stoichiometry factor for variable '",
             colnames(m)[ic],"' and process '",rownames(m)[ir],"'; details: ",e))

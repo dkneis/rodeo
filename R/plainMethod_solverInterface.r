@@ -34,10 +34,10 @@
 #' @export
 #'
 #' @examples
-#' fortranCode= solverInterface(sections=3)
+#' fortranCode <- solverInterface(sections=3)
 #' write(fortranCode, file="")
 
-solverInterface= function (sections=1, funcname="derivs", outname="derivs_wrapped") {
+solverInterface <- function (sections=1, funcname="derivs", outname="derivs_wrapped") {
   paste0("
 !#################################################
 !###  THIS IS A GENERATED FILE -- DO NOT EDIT  ###

@@ -33,7 +33,7 @@ If \code{tabular} is \code{FALSE}, the matrix passed as \code{x} must
 }
 \examples{
 data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model= new("rodeo",
+model <- rodeo$new(
   vars=subset(exampleIdentifiers, type=="v"),
   pars=subset(exampleIdentifiers, type=="p"),
   funs=subset(exampleIdentifiers, type=="f"),
@@ -41,11 +41,11 @@ model= new("rodeo",
   sections=2
 )
 # Set all values at a time by passing a matrix
-x= cbind(c_z=c(1,1), c_do=c(9,9), v=c(1e6,1e6))
+x <- cbind(c_z=c(1,1), c_do=c(9,9), v=c(1e6,1e6))
 model$assignVars(x)
 print(model$queryVars(asMatrix=TRUE))
 # Set selected values by passing a data frame
-x= data.frame(name=c("c_z","c_do"), section=c(1,2), value=c(2,11),
+x <- data.frame(name=c("c_z","c_do"), section=c(1,2), value=c(2,11),
   stringsAsFactors=FALSE)
 model$assignVars(x, tabular=TRUE)
 print(model$queryVars(asMatrix=TRUE))

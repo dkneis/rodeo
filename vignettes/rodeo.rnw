@@ -188,7 +188,7 @@ Then, a new object is created with \verb|new|. This requires us to supply the na
 
 <<initSingleSection, echo=TRUE>>=
 # Instantiate new object
-model <- new("rodeo", vars=subset(exampleIdentifiers,type=="v"),
+model <- rodeo$new(vars=subset(exampleIdentifiers,type=="v"),
   pars=subset(exampleIdentifiers,type=="p"),
   funs=subset(exampleIdentifiers,type=="f"),
   pros=exampleProcesses,
@@ -199,8 +199,8 @@ model <- new("rodeo", vars=subset(exampleIdentifiers,type=="v"),
 To inspect the object's contents, we can use the following:
 
 <<inspectObject, echo=TRUE, eval=FALSE>>=
-# Built-in method
-model$show()
+# Automatic print method
+print(model)
 
 # Show stoichiometry information as a matrix
 print(model$stoichiometry())
@@ -295,7 +295,7 @@ A zero-dimensional case (single reactor) has been considered so far. We will now
 
 <<initMultiSections, echo=TRUE, eval=TRUE>>=
 # Instantiate new object
-model <- new("rodeo", vars=subset(exampleIdentifiers,type=="v"),
+model <- rodeo$new(vars=subset(exampleIdentifiers,type=="v"),
   pars=subset(exampleIdentifiers,type=="p"),
   funs=subset(exampleIdentifiers,type=="f"),
   pros=exampleProcesses,
@@ -308,12 +308,12 @@ derivs <- eval(parse(text=code))
 @
 <<dataMultiSections, echo=TRUE, eval=TRUE>>=
 vars <- cbind(
-  c_z=seq(from=0, to=50, length.out=model$sections()),
-  c_do=rep(9.022, model$sections()),
-  v=rep(1.e6, model$sections()))
+  c_z=seq(from=0, to=50, length.out=model$size()),
+  c_do=rep(9.022, model$size()),
+  v=rep(1.e6, model$size()))
 pars <- c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1,
   depth=2, temp=20, q_in=1, q_ex=1)
-pars <- matrix(rep(pars, model$sections()), nrow=model$sections(),
+pars <- matrix(rep(pars, model$size()), nrow=model$size(),
   byrow=TRUE, dimnames=list(NULL, names(pars)))  
 model$assignPars(pars)
 model$assignVars(vars)
@@ -321,8 +321,8 @@ model$assignVars(vars)
 <<solveMultiSectionsR, echo=TRUE, eval=TRUE, fig=TRUE, width=6, height=2.5>>=
 out <- ode(y=model$queryVars(), times=t, func=derivs,
   parms=model$queryPars())
-layout(matrix(1:model$sections(), nrow=1))
-plot(out, which=paste("c_do",1:model$sections(),sep="."), mfrow=NULL)
+layout(matrix(1:model$size(), nrow=1))
+plot(out, which=paste("c_do",1:model$size(),sep="."), mfrow=NULL)
 @
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -389,10 +389,10 @@ We are now prepared to load the shared library and run the simulation based on t
 dyn.load(lib["libFile"])
 out <- ode(y=model$queryVars(), times=t, func=lib["libFunc"],
   parms=model$queryPars(), dllname=lib["libName"],
-  initfunc="initmod", nout=model$lenPros()*model$sections())
-layout(matrix(1:model$sections(), nrow=1))
+  initfunc="initmod", nout=model$lenPros()*model$size())
+layout(matrix(1:model$size(), nrow=1))
 dyn.unload(lib["libFile"])
-plot(out, which=paste("c_do",1:model$sections(),sep="."), mfrow=NULL)
+plot(out, which=paste("c_do",1:model$size(),sep="."), mfrow=NULL)
 @
 
 <<echo=FALSE, eval=TRUE>>=

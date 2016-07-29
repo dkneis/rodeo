@@ -7,7 +7,7 @@ checkInputMatrix <- function(x, itemNames, sections) {
   if (nrow(x) != sections)
     stop("number of rows in 'x' (",nrow(x),") does not match the object's",
       " number of spatial sections (",sections,")")
-  bad= itemNames[!(itemNames %in% colnames(x))]
+  bad <- itemNames[!(itemNames %in% colnames(x))]
   if (length(bad) > 0)
     stop(paste0("'x' does not provide data for the following",
       " item(s): '",paste(bad,collapse="', '"),"'"))
@@ -19,15 +19,15 @@ checkInputMatrix <- function(x, itemNames, sections) {
 checkInputTabular <- function(x, itemNames, sections) {
   if (!is.data.frame(x))
     stop("expecting 'x' to be a data frame")
-  required= c("name", "section", "value")
+  required <- c("name", "section", "value")
   if (!all(required %in% names(x)))
     stop("'x' must have columns '",paste(required, collapse="', '"),"'")
-  x$section= as.integer(x$section)
+  x$section <- as.integer(x$section)
   if (any((x$section < 1) || (x$section > sections)))
     stop("section indices in 'x' are in range [",min(x$section),",",max(x$section),
       "] but they should fall into [1,",sections,"]")
-  x$name= as.character(x$name)
-  bad= x$name[!(x$name %in% itemNames)]
+  x$name <- as.character(x$name)
+  bad <- x$name[!(x$name %in% itemNames)]
   if (length(bad) > 0)
     stop(paste0("'x' contains data for unknown item(s): '",
       paste(bad,collapse="', '"),"'"))
@@ -68,7 +68,7 @@ checkInputTabular <- function(x, itemNames, sections) {
 #'
 #' @examples
 #' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-#' model= new("rodeo",
+#' model <- rodeo$new(
 #'   vars=subset(exampleIdentifiers, type=="v"),
 #'   pars=subset(exampleIdentifiers, type=="p"),
 #'   funs=subset(exampleIdentifiers, type=="f"),
@@ -76,27 +76,26 @@ checkInputTabular <- function(x, itemNames, sections) {
 #'   sections=2
 #' )
 #' # Set all values at a time by passing a matrix
-#' x= cbind(c_z=c(1,1), c_do=c(9,9), v=c(1e6,1e6))
+#' x <- cbind(c_z=c(1,1), c_do=c(9,9), v=c(1e6,1e6))
 #' model$assignVars(x)
 #' print(model$queryVars(asMatrix=TRUE))
 #' # Set selected values by passing a data frame
-#' x= data.frame(name=c("c_z","c_do"), section=c(1,2), value=c(2,11),
+#' x <- data.frame(name=c("c_z","c_do"), section=c(1,2), value=c(2,11),
 #'   stringsAsFactors=FALSE)
 #' model$assignVars(x, tabular=TRUE)
 #' print(model$queryVars(asMatrix=TRUE))
 
-rodeo$methods( assignVars= function(x, tabular=FALSE, check=TRUE) {
-  "Assign values to state variables. See \\code{\\link{assignVars}} for details."
+rodeo$set("public", "assignVars", function(x, tabular=FALSE, check=TRUE) {
   if (!tabular) {
     if (is.vector(x))
       x <- matrix(x, nrow=1, dimnames=list(NULL, names(x)))
     if (check)
-      checkInputMatrix(x, itemNames=.self$.vars$name, sections=.self$.sections)
-    .v <<- x[,.self$.vars$name, drop=FALSE]
+      checkInputMatrix(x, itemNames=private$varsTbl$name, sections=private$sections)
+    private$v <- x[,private$varsTbl$name, drop=FALSE]
   } else {
     if (check)
-      checkInputTabular(x, itemNames=.self$.vars$name, sections=.self$.sections)
-    .v[(match(x$name, colnames(.v))-1)*nrow(.v) + x$section] <<- x$value
+      checkInputTabular(x, itemNames=private$varsTbl$name, sections=private$sections)
+    private$v[(match(x$name, colnames(private$v))-1)*nrow(private$v) + x$section] <- x$value
   }
   return(invisible(NULL))
 })
@@ -119,18 +118,17 @@ rodeo$methods( assignVars= function(x, tabular=FALSE, check=TRUE) {
 #' @examples
 #' # see the example for method 'assignVars' which behaves in the same way
 
-rodeo$methods( assignPars= function(x, tabular=FALSE, check=TRUE) {
-  "Assign values to parameters. See \\code{\\link{assignPars}} for details."
+rodeo$set("public", "assignPars", function(x, tabular=FALSE, check=TRUE) {
   if (!tabular) {
     if (is.vector(x))
       x <- matrix(x, nrow=1, dimnames=list(NULL, names(x)))
     if (check)
-      checkInputMatrix(x, itemNames=.self$.pars$name, sections=.self$.sections)
-    .p <<- x[,.self$.pars$name, drop=FALSE]
+      checkInputMatrix(x, itemNames=private$parsTbl$name, sections=private$sections)
+    private$p <- x[,private$parsTbl$name, drop=FALSE]
   } else {
     if (check)
-      checkInputTabular(x, itemNames=.self$.pars$name, sections=.self$.sections)
-    .p[(match(x$name, colnames(.p))-1)*nrow(.p) + x$section] <<- x$value
+      checkInputTabular(x, itemNames=private$parsTbl$name, sections=private$sections)
+    private$p[(match(x$name, colnames(private$p))-1)*nrow(private$p) + x$section] <- x$value
   }
   return(invisible(NULL))
 })

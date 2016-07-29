@@ -71,7 +71,7 @@ The syntax rules for reaction equations are as follows (see examples):
 \examples{
 # EXAMPLE 1: From https://en.wikipedia.org/wiki/Petersen_matrix (July 2016)
 #
-reactions= c(
+reactions <- c(
   formS=  "A + 2 * B -> S",
   equiES= "E + S <-> ES",
   decoES= "ES -> E + P"
@@ -84,7 +84,7 @@ print(stoi)
 # Eq. 1 and 2 are from Soetaert et al. (1996), Geochimica et Cosmochimica
 # Acta, 60 (6), 1019-1040. 'OM' is organic matter. Constants 'nc' and 'pc'
 # represent the nitrogen/carbon and phosphorus/carbon ratio, respectively.
-reactions= c(
+reactions <- c(
   oxicDegrad= "OM + O2 -> CO2 + nc * NH3 + pc * H3PO4 + H2O",
   denitrific= "OM + 0.8*HNO3 -> CO2 + nc*NH3 + 0.4*N2 + pc*H3PO4 + 1.4*H2O",
   dissPhosp1= "H3PO4 <-> H + H2PO4",

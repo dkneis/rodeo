@@ -1,5 +1,5 @@
 
-rodeoConst= list(
+rodeoConst <- list(
 
   # Regular expressions to detect valid identifiers
   identifierPatterns= list(

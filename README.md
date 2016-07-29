@@ -17,7 +17,7 @@ Basic facts
 Package contents
 ---------------------------------------------
 
-The package currently provides a single reference class named just like the package (``rodeo``). It contains several class- and non-class methods to
+The package currently provides a single R6 class named just like the package (``rodeo``). It contains several class- and non-class methods to
   
   - import a conceptual model from tabular text files (or spreadsheets).
   - generate source code to be passed to an ODE-solver.

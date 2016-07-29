@@ -31,7 +31,7 @@ Create a Fortran library for use with numerical methods from packages
 }
 \examples{
 data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model= new("rodeo",
+model <- rodeo$new(
   vars=subset(exampleIdentifiers, type=="v"),
   pars=subset(exampleIdentifiers, type=="p"),
   funs=subset(exampleIdentifiers, type=="f"),
@@ -40,7 +40,7 @@ model= new("rodeo",
 # This would trigger compilation assuming that 'functionsCode.f95' contains
 # a Fortran implementation of all functions; see vignette for full example
 \dontrun{
-lib= model$compile(fileFun="functionsCode.f95")
+lib <- model$compile(fileFun="functionsCode.f95")
 }
 }
 \author{

@@ -10,7 +10,7 @@ splitEquation <- function(str) {
   fWard <- TRUE
   bWard <- TRUE
   x <- character(0)
-  arrows=c(reversible= "<->", forward= "->", backward= "<-") # order matters !
+  arrows <- c(reversible= "<->", forward= "->", backward= "<-") # order matters !
   for (i in 1:length(arrows)) {
     if (grepl(pattern=arrows[i], x=str, fixed=TRUE)) {
       x <- unname(unlist(strsplit(x=str, split=arrows[i], fixed=TRUE)))
@@ -171,7 +171,7 @@ stoiBuildSingle <- function(str, toRight="_forward", toLeft="_backward"
 #' @examples
 #' # EXAMPLE 1: From https://en.wikipedia.org/wiki/Petersen_matrix (July 2016)
 #' #
-#' reactions= c(
+#' reactions <- c(
 #'   formS=  "A + 2 * B -> S",
 #'   equiES= "E + S <-> ES",
 #'   decoES= "ES -> E + P"
@@ -184,7 +184,7 @@ stoiBuildSingle <- function(str, toRight="_forward", toLeft="_backward"
 #' # Eq. 1 and 2 are from Soetaert et al. (1996), Geochimica et Cosmochimica
 #' # Acta, 60 (6), 1019-1040. 'OM' is organic matter. Constants 'nc' and 'pc'
 #' # represent the nitrogen/carbon and phosphorus/carbon ratio, respectively.
-#' reactions= c(
+#' reactions <- c(
 #'   oxicDegrad= "OM + O2 -> CO2 + nc * NH3 + pc * H3PO4 + H2O",
 #'   denitrific= "OM + 0.8*HNO3 -> CO2 + nc*NH3 + 0.4*N2 + pc*H3PO4 + 1.4*H2O",
 #'   dissPhosp1= "H3PO4 <-> H + H2PO4",
@@ -285,7 +285,7 @@ stoiCreate <- function(reactions, eval=FALSE, env=globalenv(),
 #' # Eq. 1 and 2 are from Soetaert et al. (1996), Geochimica et Cosmochimica
 #' # Acta, 60 (6), 1019-1040. 'OM' is organic matter. Constants 'nc' and 'pc'
 #' # represent the nitrogen/carbon and phosphorus/carbon ratio, respectively.
-#' reactions= c(
+#' reactions <- c(
 #'   oxicDegrad= "OM + O2 -> CO2 + nc * NH3 + pc * H3PO4 + H2O",
 #'   denitrific= "OM + 0.8*HNO3 -> CO2 + nc*NH3 + 0.4*N2 + pc*H3PO4 + 1.4*H2O",
 #'   dissPhosp1= "H3PO4 <-> H + H2PO4",
@@ -346,7 +346,7 @@ stoiCheck <- function(stoi, comp, env=globalenv(), zero=.Machine$double.eps*2) {
     bal[,i] <- apply(stoi * matrix(rep(comp[i,colnames(stoi)], nrow(stoi)),
       ncol=ncol(stoi), byrow=TRUE), 1, sum)
   }
-  bal[abs(bal)<= zero] <- 0
+  bal[abs(bal) <= zero] <- 0
   return(bal)
 }
 

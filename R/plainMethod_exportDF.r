@@ -1,15 +1,15 @@
 
 # Helper function used in exportDF
-setOpt= function(x, defaults, colnames) {
-  res= defaults
+setOpt <- function(x, defaults, colnames) {
+  res <- defaults
   if (!is.null(x)) {
     if (is.null(names(x)) || any(names(x) == ""))
       stop("all elements in 'x' must be named")
     if (!all(names(x) %in% colnames))
       stop(paste0("element name(s) of 'x' not in 'colnames';",
         " must be one of '",paste(colnames,collapse="', '"),"'"))
-    i= match(colnames, names(x))
-    res= ifelse(is.na(i), res, x[i])
+    i <- match(colnames, names(x))
+    res <- ifelse(is.na(i), res, x[i])
   }
   return(res)
 }
@@ -18,7 +18,7 @@ setOpt= function(x, defaults, colnames) {
 # same lenght
 # funs: list of functions
 # args: vector of arguments, each of which is passed to the corresp. element of funs
-xapply= function(funs, args) {
+xapply <- function(funs, args) {
   if (!all(sapply(funs, is.function)))
     stop("'funs' must be a list of functions")
   if (length(funs) != length(args))
@@ -80,11 +80,11 @@ xapply= function(funs, args) {
 #'
 #' @examples
 #' # Create example table
-#' df= data.frame(stringsAsFactors=FALSE, name= c("growth", "dead"),
+#' df <- data.frame(stringsAsFactors=FALSE, name= c("growth", "dead"),
 #'   unit= c("1/d","1/d"), expression= c("r * N * (1 - N/K)"," d * N"))
 #'
 #' # Export as TEX: header in bold, 1st colum in italics, last column as math
-#' tex= exportDF(df, tex=TRUE,
+#' tex <- exportDF(df, tex=TRUE,
 #'   colnames=c(expression="process rate expression"),
 #'   width=c(expression=0.5),
 #'   align=c(expression="p"),
@@ -96,7 +96,7 @@ xapply= function(funs, args) {
 #' cat(tex,"\n")
 #'
 #' # Export as HTML: non-standard colors are used for all columns
-#' tf= tempfile(fileext=".html")
+#' tf <- tempfile(fileext=".html")
 #' write(x= exportDF(df, tex=FALSE,
 #'   funHead=setNames(replicate(ncol(df),
 #'     function(x){paste0("<font color='red'>",x,"</font>")}),names(df)),
@@ -108,7 +108,7 @@ xapply= function(funs, args) {
 #'   file.remove(tf)
 #' }
 
-exportDF= function(x,
+exportDF <- function(x,
   tex=FALSE,
   colnames=NULL,
   width= NULL,
@@ -118,58 +118,58 @@ exportDF= function(x,
   lines=TRUE,
   indent=2
 ) {
-  indent= ifelse(indent <= 0, "", paste0(rep(" ",indent),collapse=""))
+  indent <- ifelse(indent <= 0, "", paste0(rep(" ",indent),collapse=""))
   # Check input
   if (is.matrix(x))
-    x= as.data.frame(x, stringsAsFactors=FALSE)
+    x <- as.data.frame(x, stringsAsFactors=FALSE)
   if (!is.data.frame(x))
     stop("'x' must be  data frame")
   # Set options
-  left= ifelse(tex, "l", "left")
-  right= ifelse(tex, "r", "right")
-  none= function(x) {x}
-  w= ifelse(tex, 1/ncol(x), floor(100/ncol(x)))
-  colnames= setOpt(colnames, names(x), names(x))
-  width=    setOpt(width, rep(w, ncol(x)), names(x))
-  align=    setOpt(align, ifelse(unlist(lapply(x, FUN=is.numeric)),right,left), names(x))
-  funHead=  setOpt(funHead, replicate(n=ncol(x), none), names(x))
-  funCell=  setOpt(funCell, replicate(n=ncol(x), none), names(x))
+  left <- ifelse(tex, "l", "left")
+  right <- ifelse(tex, "r", "right")
+  none <- function(x) {x}
+  w <- ifelse(tex, 1/ncol(x), floor(100/ncol(x)))
+  colnames <- setOpt(colnames, names(x), names(x))
+  width <-    setOpt(width, rep(w, ncol(x)), names(x))
+  align <-    setOpt(align, ifelse(unlist(lapply(x, FUN=is.numeric)),right,left), names(x))
+  funHead <-  setOpt(funHead, replicate(n=ncol(x), none), names(x))
+  funCell <-  setOpt(funCell, replicate(n=ncol(x), none), names(x))
   # Assemble code
-  out=''
+  out <- ''
 
   # tex
   if (tex) {
-    i= which(align == "p")
+    i <- which(align == "p")
     if (length(i) > 0) {
-      align[i]= paste0(align[i],"{",width[i],"\\textwidth}")
+      align[i] <- paste0(align[i],"{",width[i],"\\textwidth}")
     }
-    out= paste0(out,indent,'\\begin{tabular}{',paste(align,collapse=""),
+    out <- paste0(out,indent,'\\begin{tabular}{',paste(align,collapse=""),
       '}',ifelse(lines, '\\hline', ''),'\n')
-    out= paste0(out,indent,'  ',
+    out <- paste0(out,indent,'  ',
       paste0(paste0('',xapply(funHead,colnames),''),collapse=' & '),' \\\\',
       ifelse(lines, ' \\hline', ''),'\n')
     for (i in 1:nrow(x)) {
-      out= paste0(out,indent,'  ',
+      out <- paste0(out,indent,'  ',
         paste0(paste0('',xapply(funCell,unlist(x[i,])),''),collapse=' & '),' \\\\',
         ifelse(lines && (i == nrow(x)), ' \\hline', ''),'\n')
     }
-    out= paste0(out,indent,'\\end{tabular}\n')
+    out <- paste0(out,indent,'\\end{tabular}\n')
 
   # html
   } else {
-    out= paste0(out,indent,'<table border=',ifelse(lines,1,0),'>\n')
+    out <- paste0(out,indent,'<table border=',ifelse(lines,1,0),'>\n')
     for (i in 1:length(width)) {
-      out= paste0(out,indent,'  <col width="',width[i],'%">\n')
+      out <- paste0(out,indent,'  <col width="',width[i],'%">\n')
     }
-    out= paste0(out,indent,'  <tr>',
+    out <- paste0(out,indent,'  <tr>',
       paste0(paste0('<th style="text-align:',align,'"> ',xapply(funHead,
       colnames),' </th>'),collapse=''),' </tr>\n')
     for (i in 1:nrow(x)) {
-      out= paste0(out,indent,'  <tr>',
+      out <- paste0(out,indent,'  <tr>',
         paste0(paste0('<td style="text-align:',align,'"> ',xapply(funCell,
         unlist(x[i,])),' </td>'),collapse=''),' </tr>\n')
     }
-    out= paste0(out,indent,'</table>\n')
+    out <- paste0(out,indent,'</table>\n')
   }
 
   return(out)

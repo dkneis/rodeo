@@ -58,13 +58,13 @@ Initialization does not assign numeric values to state variables or
 }
 \examples{
 data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model= new("rodeo",
+model <- rodeo$new(
   vars=subset(exampleIdentifiers, type=="v"),
   pars=subset(exampleIdentifiers, type=="p"),
   funs=subset(exampleIdentifiers, type=="f"),
   pros=exampleProcesses, stoi=exampleStoichiometry
 )
-model$show()
+print(model)
 }
 \author{
 \email{david.kneis@tu-dresden.de}

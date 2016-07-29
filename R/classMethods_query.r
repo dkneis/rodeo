@@ -19,7 +19,7 @@
 #'
 #' @examples
 #' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-#' model= new("rodeo",
+#' model <- rodeo$new(
 #'   vars=subset(exampleIdentifiers, type=="v"),
 #'   pars=subset(exampleIdentifiers, type=="p"),
 #'   funs=subset(exampleIdentifiers, type=="f"),
@@ -30,17 +30,15 @@
 #' print(model$queryVars())
 #' print(model$queryVars(asMatrix=TRUE))
 
-rodeo$methods( queryVars= function(asMatrix=FALSE) {
-  "Returns the numeric values of state variables. See \\code{\\link{queryVars}}
- for details."
-  if (any(is.na(.self$.v)))
+rodeo$set("public", "queryVars", function(asMatrix=FALSE) {
+  if (any(is.na(private$v)))
     warning("NA values are present in the state variables' values.")
   if (asMatrix)
-    .self$.v
+    private$v
   else
-    setNames(as.vector(.self$.v),
-      paste(rep(colnames(.self$.v), each=.self$.sections),
-      rep(1:.self$.sections, nrow(.self$.v)) , sep="."))
+    setNames(as.vector(private$v),
+      paste(rep(colnames(private$v), each=private$sections),
+      rep(1:private$sections, nrow(private$v)) , sep="."))
 })
 
 #' Query Values of Parameters
@@ -63,16 +61,16 @@ rodeo$methods( queryVars= function(asMatrix=FALSE) {
 #'
 #' @examples
 #' # see example for method 'queryVars'
-rodeo$methods( queryPars= function(asMatrix=FALSE) {
+rodeo$set("public", "queryPars", function(asMatrix=FALSE) {
   "Returns the numeric values of parameters. See \\code{\\link{queryPars}}
  for details."
-  if (any(is.na(.self$.p)))
+  if (any(is.na(private$p)))
     warning("NA values are present in the parameters' values.")
   if (asMatrix)
-    .self$.p
+    private$p
   else
-    setNames(as.vector(.self$.p),
-      paste(rep(colnames(.self$.p), each=.self$.sections),
-      rep(1:.self$.sections, nrow(.self$.p)) , sep="."))
+    setNames(as.vector(private$p),
+      paste(rep(colnames(private$p), each=private$sections),
+      rep(1:private$sections, nrow(private$p)) , sep="."))
 })
 

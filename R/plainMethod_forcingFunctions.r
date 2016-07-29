@@ -97,56 +97,56 @@
 #'   end subroutine
 #' }
 
-forcingFunctions= function(x) {
+forcingFunctions <- function(x) {
   # check args
   if (!is.data.frame(x))
     stop("expecting a data frame as input")
-  cols= c("name","column","mode","file","default")
+  cols <- c("name","column","mode","file","default")
   if (!all(cols %in% names(x)))
     stop("provided data must have columns '",paste(cols, collapse="', '"),"'")
   if (any(duplicated(x$name)))
     stop("duplicate names of forcing functions")
   # process
-  code="! THIS IS A GENERATED FILE \n"
-  code=paste0(code, "\n")
-  code= paste0(code,"include '",
+  code <- "! THIS IS A GENERATED FILE \n"
+  code <- paste0(code, "\n")
+  code <- paste0(code,"include '",
     system.file('fortran/forcingsGenericMethods.f95',package='rodeo'),"'")
-  code=paste0(code, "\n", "module forcings")
-  code=paste0(code, "\n", "use forcings_generic")
-  code=paste0(code, "\n", "implicit none")
-  code=paste0(code, "\n", "private TSeries, readTS, interpol")
-  code=paste0(code, "\n", "contains")
-  code=paste0(code, "\n")
+  code <- paste0(code, "\n", "module forcings")
+  code <- paste0(code, "\n", "use forcings_generic")
+  code <- paste0(code, "\n", "implicit none")
+  code <- paste0(code, "\n", "private TSeries, readTS, interpol")
+  code <- paste0(code, "\n", "contains")
+  code <- paste0(code, "\n")
   for (i in 1:nrow(x)) {
     if (x$default[i]) {
-      code= paste0(code,"\n","function ",x$name[i]," (time, dflt) result (res)")
-      code= paste0(code,"\n","  double precision, intent(in):: time, dflt")
+      code <- paste0(code,"\n","function ",x$name[i]," (time, dflt) result (res)")
+      code <- paste0(code,"\n","  double precision, intent(in):: time, dflt")
     } else {
-      code= paste0(code,"\n","  function ",x$name[i]," (time) result (res)")
-      code= paste0(code,"\n","  double precision, intent(in):: time")
+      code <- paste0(code,"\n","  function ",x$name[i]," (time) result (res)")
+      code <- paste0(code,"\n","  double precision, intent(in):: time")
     }
-    code= paste0(code,"\n","  character(len=256), parameter:: file='",x$file[i],"'")
-    code= paste0(code,"\n","  character(len=256), parameter:: col='",x$column[i],"'")
-    code= paste0(code,"\n","  integer, parameter:: lweight= ",x$mode[i])
-    code= paste0(code,"\n","  logical, save:: firstCall= .TRUE.")
-    code= paste0(code,"\n","  integer, save:: latest= 1")
-    code= paste0(code,"\n","  type(TSeries), save:: x")
-    code= paste0(code,"\n","  double precision, parameter:: NA= huge(0d0)")
-    code= paste0(code,"\n","  character(len=512):: errmsg")
-    code= paste0(code,"\n","  double precision:: res")
+    code <- paste0(code,"\n","  character(len=256), parameter:: file='",x$file[i],"'")
+    code <- paste0(code,"\n","  character(len=256), parameter:: col='",x$column[i],"'")
+    code <- paste0(code,"\n","  integer, parameter:: lweight= ",x$mode[i])
+    code <- paste0(code,"\n","  logical, save:: firstCall= .TRUE.")
+    code <- paste0(code,"\n","  integer, save:: latest= 1")
+    code <- paste0(code,"\n","  type(TSeries), save:: x")
+    code <- paste0(code,"\n","  double precision, parameter:: NA= huge(0d0)")
+    code <- paste0(code,"\n","  character(len=512):: errmsg")
+    code <- paste0(code,"\n","  double precision:: res")
     if (x$default[i]) {
-      code= paste0(code,"\n","  if (isnan(dflt)) then")
+      code <-  paste0(code,"\n","  if (isnan(dflt)) then")
     }
-    code= paste0(code,"\n","  include '",
+    code <- paste0(code,"\n","  include '",
       system.file('fortran/forcingsInclude.f95',package='rodeo'),"'")
     if (x$default[i]) {
-      code= paste0(code,"\n","  else")
-      code= paste0(code,"\n","    res= dflt")
-      code= paste0(code,"\n","  end if")
+      code <- paste0(code,"\n","  else")
+      code <- paste0(code,"\n","    res= dflt")
+      code <- paste0(code,"\n","  end if")
     }
-    code= paste0(code,"\n","end function")
+    code <- paste0(code,"\n","end function")
   }
-  code=paste0(code, "\n", "end module")
+  code <- paste0(code, "\n", "end module")
 }
 
 

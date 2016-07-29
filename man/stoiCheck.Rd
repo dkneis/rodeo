@@ -52,7 +52,7 @@ Validates the stoichiometry matrix by checking for conservation of mass
 # Eq. 1 and 2 are from Soetaert et al. (1996), Geochimica et Cosmochimica
 # Acta, 60 (6), 1019-1040. 'OM' is organic matter. Constants 'nc' and 'pc'
 # represent the nitrogen/carbon and phosphorus/carbon ratio, respectively.
-reactions= c(
+reactions <- c(
   oxicDegrad= "OM + O2 -> CO2 + nc * NH3 + pc * H3PO4 + H2O",
   denitrific= "OM + 0.8*HNO3 -> CO2 + nc*NH3 + 0.4*N2 + pc*H3PO4 + 1.4*H2O",
   dissPhosp1= "H3PO4 <-> H + H2PO4",
