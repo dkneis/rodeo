@@ -4,11 +4,10 @@
 \alias{solverInterface}
 \title{Wrapping of Generated Fortran for Use with Solver Packages}
 \usage{
-solverInterface(sections = 1, funcname = "derivs",
-  outname = "derivs_wrapped")
+solverInterface(size = 1, funcname = "derivs", outname = "derivs_wrapped")
 }
 \arguments{
-\item{sections}{The number of spatial sections. Defaults to 1.}
+\item{size}{The number of spatial sections. Defaults to 1.}
 
 \item{funcname}{Name of the function for which a wrapper is to be created
 (rather than the name for the wrapper). It is assumed that a function with
@@ -38,7 +37,7 @@ with the numerical methods from packages \code{\link[deSolve]{deSolve}} and
 low-level function.
 }
 \examples{
-fortranCode <- solverInterface(sections=3)
+fortranCode <- solverInterface(size=3)
 write(fortranCode, file="")
 }
 \author{

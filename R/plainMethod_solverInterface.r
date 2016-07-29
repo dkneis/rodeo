@@ -6,7 +6,7 @@
 #' \code{\link{rodeo-class}} class method \code{\link{compile}} instead of this
 #' low-level function. 
 #'
-#' @param sections The number of spatial sections. Defaults to 1.
+#' @param size The number of spatial sections. Defaults to 1.
 #' @param funcname Name of the function for which a wrapper is to be created
 #'   (rather than the name for the wrapper). It is assumed that a function with
 #'   that name was (or will be) created by a call to the \code{\link{generate}}
@@ -34,10 +34,10 @@
 #' @export
 #'
 #' @examples
-#' fortranCode <- solverInterface(sections=3)
+#' fortranCode <- solverInterface(size=3)
 #' write(fortranCode, file="")
 
-solverInterface <- function (sections=1, funcname="derivs", outname="derivs_wrapped") {
+solverInterface <- function (size=1, funcname="derivs", outname="derivs_wrapped") {
   paste0("
 !#################################################
 !###  THIS IS A GENERATED FILE -- DO NOT EDIT  ###
@@ -46,7 +46,7 @@ solverInterface <- function (sections=1, funcname="derivs", outname="derivs_wrap
 ! Definition of the number of spatial sections
 module spatial_dimension
   implicit none
-  integer, parameter:: ",rodeoConst$genIdent$len["secs"],"=",sections,"
+  integer, parameter:: ",rodeoConst$genIdent$len["secs"],"=",size,"
 end module
 
 ! Generic routine for parameter initialization
