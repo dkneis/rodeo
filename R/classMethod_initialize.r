@@ -21,7 +21,7 @@
 #'   matrix elements are interpreted as zero stoichiometry factors.
 #' @param asMatrix Logical. Specifies whether stoichiometry information is given
 #'   in matrix or data base format.
-#' @param sections Number of spatial sections. The default of 1 assumes
+#' @param size Number of spatial sections. The default of 1 assumes
 #'   a zero-dimensional model.
 #'
 #' @return The method is called implicitly for its side effects when a
@@ -60,7 +60,7 @@
 #' print(model)
 
 rodeo$set("public", "initialize",
-  function(vars, pars, funs, pros, stoi, asMatrix=FALSE, sections=1
+  function(vars, pars, funs, pros, stoi, asMatrix=FALSE, size=1
 ) {
   # Set variables ##############################################################
   cn <- c("name","unit","description")
@@ -232,9 +232,9 @@ rodeo$set("public", "initialize",
   stoi$variable_html <- vars$html[match(stoi$variable, vars$name)]
   private$stoiTbl <- as.data.frame(stoi, stringsAsFactors=FALSE)
   # Initialize number of spatial sections ########################################
-  if (as.integer(sections) <= 0)
+  if (as.integer(size) <= 0)
     stop("number of spatial sections must be a positive integer")
-  private$sections <- as.integer(sections)
+  private$sections <- as.integer(size)
   # Initialize numeric data ####################################################
   private$v <- matrix(NA, nrow=1, ncol=nrow(vars), dimnames=list(NULL, vars$name))
   private$p <- matrix(NA, nrow=1, ncol=nrow(pars), dimnames=list(NULL, pars$name))

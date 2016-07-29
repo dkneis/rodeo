@@ -26,7 +26,7 @@ matrix elements are interpreted as zero stoichiometry factors.}
 \item{asMatrix}{Logical. Specifies whether stoichiometry information is given
 in matrix or data base format.}
 
-\item{sections}{Number of spatial sections. The default of 1 assumes
+\item{size}{Number of spatial sections. The default of 1 assumes
 a zero-dimensional model.}
 }
 \value{

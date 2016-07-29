@@ -193,7 +193,7 @@ model <- rodeo$new(vars=subset(exampleIdentifiers,type=="v"),
   funs=subset(exampleIdentifiers,type=="f"),
   pros=exampleProcesses,
   stoi=exampleStoichiometry,
-  sections=1)
+  size=1)
 @
 
 To inspect the object's contents, we can use the following:
@@ -300,7 +300,7 @@ model <- rodeo$new(vars=subset(exampleIdentifiers,type=="v"),
   funs=subset(exampleIdentifiers,type=="f"),
   pros=exampleProcesses,
   stoi=exampleStoichiometry,
-  sections=3)
+  size=3)
 @
 <<generateMultiSectionsR, echo=TRUE, eval=TRUE>>==
 code <- model$generate(name="derivs",lang="r")

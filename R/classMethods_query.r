@@ -24,7 +24,7 @@
 #'   pars=subset(exampleIdentifiers, type=="p"),
 #'   funs=subset(exampleIdentifiers, type=="f"),
 #'   pros=exampleProcesses, stoi=exampleStoichiometry,
-#'   sections=2
+#'   size=2
 #' )
 #' model$assignVars(cbind(c_z=c(1,1), c_do=c(9,9), v=c(1e6, 1e6)))
 #' print(model$queryVars())
