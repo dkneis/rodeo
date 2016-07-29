@@ -236,7 +236,9 @@ rodeo$set("public", "initialize",
     stop("number of spatial sections must be a positive integer")
   private$sections <- as.integer(size)
   # Initialize numeric data ####################################################
-  private$v <- matrix(NA, nrow=1, ncol=nrow(vars), dimnames=list(NULL, vars$name))
-  private$p <- matrix(NA, nrow=1, ncol=nrow(pars), dimnames=list(NULL, pars$name))
+  private$v <- matrix(NA, nrow=private$sections, ncol=nrow(vars),
+    dimnames=list(NULL, vars$name))
+  private$p <- matrix(NA, nrow=private$sections, ncol=nrow(pars),
+    dimnames=list(NULL, pars$name))
 })
 
