@@ -150,7 +150,7 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
   # Generate interface in Fortran
   ##############################################################################
   if (lang == rodeoConst$lang["fortran"]) {
-    code <- paste0(code,"! GENERATED CODE -- YOU PROBABLY DO NOT WANT TO EDIT THIS",newline)
+    code <- paste0("! GENERATED CODE -- YOU PROBABLY DO NOT WANT TO EDIT THIS",newline)
     code <- paste0(code,newline)
     code <- paste0(code,"module dimensions_and_indices",newline)
     code <- paste0(code,"  implicit none",newline)
@@ -317,7 +317,7 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
   # Generate interface in R
   ##############################################################################
   } else if (lang == rodeoConst$lang["r"]) {
-    code <- paste0(code,"# GENERATED CODE -- YOU PROBABLY DO NOT WANT TO EDIT THIS",newline)
+    code <- paste0("# GENERATED CODE -- YOU PROBABLY DO NOT WANT TO EDIT THIS",newline)
     code <- paste0(code,newline)
     code <- paste0(code,name," = function (",rodeoConst$reservedNames["time"],", ",rodeoConst$genIdent$vec["vars"],
       ", ",rodeoConst$genIdent$vec["pars"],", check=TRUE) {",newline)
