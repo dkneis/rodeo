@@ -2,9 +2,11 @@
 rm(list=ls())
 
 # Load packages
-library("rodeo")
 library("readxl")
 library("deSolve")
+
+library('devtools')
+install_github('dkneis/rodeo')
 
 ################################################################################
 # Adjustable settings
@@ -38,27 +40,24 @@ times <- sort(unique(c(0, times)))
 stoi <- read_excel(fileTbl, "stoi")
 stoi <- matrix(unlist(stoi[,2:ncol(stoi)]), nrow=nrow(stoi),
   dimnames=list(stoi[,1], names(stoi)[2:ncol(stoi)]))
-model <- new("rodeo", vars=read_excel(fileTbl, "vars"),
+model <- rodeo$new(vars=read_excel(fileTbl, "vars"),
   pars=read_excel(fileTbl, "pars"), funs=read_excel(fileTbl, "funs"),
   pros=read_excel(fileTbl, "pros"), stoi=stoi,
-  asMatrix=TRUE)
+  asMatrix=TRUE, size=nCells)
 
 # Numerical dispersion for backward finite-difference approx. of advection term
 dNum <- u*dx/2
 
-# Maximum integration time step according to Courant and Neumann criteria
-# Note: In practice, a less strict constaint often works well and saves time.
-dtMax_Courant <- dx/u
-dtMax_Neumann <- dx^2/2/d
-dtMax <- 0.5 * min(dtMax_Courant, dtMax_Neumann)
-
 # Assign initial values and parameters
-v <- model$arrangeVars(list(
+model$assignVars(cbind(
   c=ifelse((1:nCells)==inputCell, inputMass/wetArea/dx, 0)
 ))
-p <- model$arrangePars(list(
-  leftmost= c(1, rep(0, nCells-1)), rightmost= c(rep(0, nCells-1), 1),
-  u=u, d=d-dNum, dx=dx
+model$assignPars(cbind(
+  leftmost= c(1, rep(0, nCells-1)),
+  rightmost= c(rep(0, nCells-1), 1),
+  u=u,
+  d=d-dNum,
+  dx=dx
 ))
 
 if (!compile) { # R-based version
@@ -69,22 +68,24 @@ if (!compile) { # R-based version
   source(fileFun)
 
   # Integrate
-  solNum <- ode(y=v, times=times, func=derivs, parms=p, NLVL=nCells, hmax=dtMax,
-    jactype="bandint", bandup=1, banddown=1)
+  solNum <- ode(y=model$queryVars(), times=times, func=derivs,
+    parms=model$queryPars(), jactype="bandint", bandup=1, banddown=1)
   colnames(solNum) <- c("time",
-    paste(rep(model$namesVars(), each=nCells), rep(1:nCells, model$lenVars()), sep="."),
-    paste(rep(model$namesPros(), each=nCells), rep(1:nCells, model$lenPros()), sep="."))
+    paste(rep(model$namesVars(), each=nCells),
+      rep(1:model$size(), model$lenVars()), sep="."),
+    paste(rep(model$namesPros(), each=nCells),
+      rep(1:model$size(), model$lenPros()), sep="."))
 
 } else { # Fortran-based version
 
   # Generate code, compile into shared library, load library
-  lib <- model$compile(fileFun, NLVL=nCells)              
+  lib <- model$compile(fileFun)              
   dyn.load(lib["libFile"])
 
   # Integrate
-  solNum <- ode(y=v, times=times, func=lib["libFunc"], parms=p,
-    dllname=lib["libName"], initfunc="initmod", hmax=dtMax,
-    nout=model$lenPros()*nCells, jactype="bandint", bandup=1, banddown=1)
+  solNum <- ode(y=model$queryVars(), times=times, func=lib["libFunc"],
+    parms=model$queryPars(), dllname=lib["libName"], initfunc="initmod",
+    nout=model$lenPros()*model$size(), jactype="bandint", bandup=1, banddown=1)
 
   # Clean-up
   dyn.unload(lib["libFile"])

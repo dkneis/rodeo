@@ -2,9 +2,11 @@
 rm(list=ls())
 
 # Load required packages
-library("rodeo")
 library("readxl")
 library("deSolve")
+
+library('devtools')
+install_github('dkneis/rodeo')
 
 ################################################################################
 # Adjustable settings
@@ -19,8 +21,8 @@ fileTbl <- "def_tables.xlsx"
 fileFun <- if (compile) "def_functions.f95" else "def_functions.r"
 
 # Parameters and initial values
-pars <- list(kd=1, ka=0.5, s=2.76, temp=20)
-vars <- list(OM=1, DO=9.02)
+pars <- c(kd=1, ka=0.5, s=2.76, temp=20)
+vars <- c(OM=1, DO=9.02)
 
 # Times of interest
 times <- seq(from=0, to=10, by=1/24)
@@ -32,14 +34,14 @@ times <- seq(from=0, to=10, by=1/24)
 stoi <- read_excel(fileTbl, "stoi")
 stoi <- matrix(unlist(stoi[,2:ncol(stoi)]), nrow=nrow(stoi),
   dimnames=list(stoi[,1], names(stoi)[2:ncol(stoi)]))
-model <- new("rodeo", vars=read_excel(fileTbl, "vars"),
+model <- rodeo$new(vars=read_excel(fileTbl, "vars"),
   pars=read_excel(fileTbl, "pars"), funs=read_excel(fileTbl, "funs"),
   pros=read_excel(fileTbl, "pros"), stoi=stoi,
-  asMatrix=TRUE)
+  asMatrix=TRUE, size=1)
 
 # Assign initial values and parameters
-v <- model$arrangeVars(vars)
-p <- model$arrangePars(pars)
+model$assignVars(vars)
+model$assignPars(pars)
 
 if (!compile) { # R-based version
 
@@ -49,19 +51,20 @@ if (!compile) { # R-based version
   source(fileFun)
 
   # Integrate
-  out <- ode(y=v, times=times, func=derivs, parms=p, NLVL=1)
+  out <- ode(y=model$queryVars(), times=times, func=derivs,
+    parms=model$queryPars())
   colnames(out) <- c("time", model$namesVars(), model$namesPros())
 
 } else { # Fortran-based version
 
   # Generate code, compile into shared library, load library
-  lib <- model$compile(fileFun, NLVL=1)              
+  lib <- model$compile(fileFun)              
   dyn.load(lib["libFile"])
 
   # Integrate
-  out <- ode(y=v, times=times, func=lib["libFunc"], parms=p,
-    dllname=lib["libName"], initfunc="initmod", nout=model$lenPros(),
-    outnames=model$namesPros())
+  out <- ode(y=model$queryVars(), times=times, func=lib["libFunc"],
+    parms=model$queryPars(), dllname=lib["libName"], initfunc="initmod",
+    nout=model$lenPros(), outnames=model$namesPros())
 
   # Clean-up
   dyn.unload(lib["libFile"])
