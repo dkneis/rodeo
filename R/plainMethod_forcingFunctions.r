@@ -107,7 +107,7 @@ forcingFunctions <- function(x) {
   if (any(duplicated(x$name)))
     stop("duplicate names of forcing functions")
   # process
-  code <- "! THIS IS A GENERATED FILE \n"
+  code <- "! GENERATED CODE -- YOU PROBABLY DO NOT WANT TO EDIT THIS\n"
   code <- paste0(code, "\n")
   code <- paste0(code,"include '",
     system.file('fortran/forcingsGenericMethods.f95',package='rodeo'),"'")

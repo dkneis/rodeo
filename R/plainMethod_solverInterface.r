@@ -39,9 +39,7 @@
 
 solverInterface <- function (size=1, funcname="derivs", outname="derivs_wrapped") {
   paste0("
-!#################################################
-!###  THIS IS A GENERATED FILE -- DO NOT EDIT  ###
-!#################################################
+! GENERATED CODE -- YOU PROBABLY DO NOT WANT TO EDIT THIS
 
 ! Definition of the number of spatial sections
 module spatial_dimension
