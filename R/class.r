@@ -86,7 +86,8 @@ rodeo <- R6Class("rodeo",
     stoiTbl=NA,
     sections=NA,
     v=NA,
-    p=NA
+    p=NA,
+    steppers=list()
   )
 )
 
