@@ -132,10 +132,11 @@ codeElem <- function(lang) {
 
 # Break long Fortran lines
 fortran.breakLine <- function(text, conti, newline) {
-  minlen <- 60
+  minlen <- 55
   buf <- ""
   from <- 1
   k <- 0
+  text <- gsub(pattern="[ ]+$", replacement="", x=text)
   for (i in 1:nchar(text)) {
     k <- k+1
     if (substr(text,i,i) %in% c("+","-","*","/",",") && (k >= minlen)) {
