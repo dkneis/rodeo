@@ -4,6 +4,7 @@
 #' holding the specification of an ODE system.
 #'
 #' @name initialize
+#' @aliases new
 #'
 #' @param vars Declaration of state variables appearing in the ODE system.
 #'   Data frame with mandatory columns 'name', 'unit', 'description'.

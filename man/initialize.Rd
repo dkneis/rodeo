@@ -2,6 +2,7 @@
 % Please edit documentation in R/classMethod_initialize.r
 \name{initialize}
 \alias{initialize}
+\alias{new}
 \title{Initialize a \code{rodeo} Object}
 \arguments{
 \item{vars}{Declaration of state variables appearing in the ODE system.

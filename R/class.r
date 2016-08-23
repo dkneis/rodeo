@@ -6,7 +6,6 @@
 #' the same name.
 #'
 #' @name rodeo-class
-#' @name aliases rodeo-class
 #'
 #' @field prosTbl A data frame with fields 'name', 'unit', 'description', and
 #'   'expression' defining the process rates.
