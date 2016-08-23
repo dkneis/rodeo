@@ -464,7 +464,7 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
           rodeoConst$genIdent$ilist[item],codeElem(lang)$listElem,"\\1+1)", codeElem(lang)$eleClose)
       }
       if (lang == rodeoConst$lang["fortran"]) {
-        subst <- paste0(subst, L$cont,newline)
+        subst <- paste0("(",L$cont,newline,subst,")")
       }
       code <- gsub(pattern=pat, replacement=subst, x=code, fixed=FALSE)
     }
