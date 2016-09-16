@@ -1,4 +1,4 @@
-! THIS IS A GENERATED FILE 
+! GENERATED CODE -- YOU PROBABLY DO NOT WANT TO EDIT THIS
 
 include '/home/dkneis/R/x86_64-pc-linux-gnu-library/3.3/rodeo/fortran/forcingsGenericMethods.f95'
 module forcings
