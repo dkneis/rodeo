@@ -7,6 +7,7 @@ library("deSolve")
 
 library('devtools')
 install_github('dkneis/rodeo')
+library("rodeo")
 
 ################################################################################
 # Adjustable settings
