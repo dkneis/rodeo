@@ -54,8 +54,8 @@ The mandatory fields of the input data frames should be of type
   'left', and 'right'.
 
 Initialization does not assign numeric values to state variables or
-  parameters. Use the decicated methods \code{\link{assignVars}} and 
-  \code{\link{assignPars}} for that purpose.
+  parameters. Use the decicated methods \code{\link{setVars}} and 
+  \code{\link{setPars}} for that purpose.
 }
 \examples{
 data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)

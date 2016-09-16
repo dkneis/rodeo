@@ -69,10 +69,10 @@ its arguments and usage.
     function that computes process rates and the state variables' derivatives
     (either in R or Fortran). Consider to use the high-level method
     \code{\link{compile}}.
-  \item{\code{\link{assignVars}}} Assign values to state variables.
-  \item{\code{\link{assignPars}}} Assign values to parameters.
-  \item{\code{\link{queryVars}}} Returns the values of state variables.
-  \item{\code{\link{queryPars}}} Returns the values of parameters.
+  \item{\code{\link{setVars}}} Assign values to state variables.
+  \item{\code{\link{setPars}}} Assign values to parameters.
+  \item{\code{\link{getVars}}} Returns the values of state variables.
+  \item{\code{\link{getPars}}} Returns the values of parameters.
   \item{\code{\link{stoichiometry}}} Returns the stoichiometry matrix, either
     evaluated (numeric) or as text.
   \item{\code{\link{plotStoichiometry}}} Plots qualitative stoichiometry

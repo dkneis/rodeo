@@ -40,7 +40,7 @@ checkInputTabular <- function(x, itemNames, sections, testNumeric=TRUE) {
 #'
 #' Assign values to state variables of a \code{\link{rodeo}}-based model.
 #'
-#' @name assignVars
+#' @name setVars
 #'
 #' @param x A matrix, vector, or data frame holding the data to be assigned.
 #'   The appropriate type of input depends on the value of \code{tabular}. See
@@ -55,7 +55,7 @@ checkInputTabular <- function(x, itemNames, sections, testNumeric=TRUE) {
 #' @param testNumeric Logical. Test for numeric values when \code{check} is \code{TRUE}?
 #'
 #' @return \code{NULL} (invisible). The assigned numeric data are stored in the
-#'   object and can be accessed by the \code{\link{queryVars}} method.
+#'   object and can be accessed by the \code{\link{getVars}} method.
 #'
 #' @note If \code{tabular} is \code{FALSE}, the matrix passed as \code{x} must
 #'   have column names correspond to the names of state variables. The number of
@@ -65,7 +65,8 @@ checkInputTabular <- function(x, itemNames, sections, testNumeric=TRUE) {
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
-#' @seealso Other \code{\link{rodeo}} class methods
+#' @seealso The corresponding 'get' method is \code{\link{getVars}}. Use
+#'   \code{\link{setPars}} to assign values to parameters rather than variables.
 #'
 #' @examples
 #' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
@@ -78,15 +79,15 @@ checkInputTabular <- function(x, itemNames, sections, testNumeric=TRUE) {
 #' )
 #' # Set all values at a time by passing a matrix
 #' x <- cbind(c_z=c(1,1), c_do=c(9,9), v=c(1e6,1e6))
-#' model$assignVars(x)
-#' print(model$queryVars(asMatrix=TRUE))
+#' model$setVars(x)
+#' print(model$getVars(asMatrix=TRUE))
 #' # Set selected values by passing a data frame
 #' x <- data.frame(name=c("c_z","c_do"), section=c(1,2), value=c(2,11),
 #'   stringsAsFactors=FALSE)
-#' model$assignVars(x, tabular=TRUE)
-#' print(model$queryVars(asMatrix=TRUE))
+#' model$setVars(x, tabular=TRUE)
+#' print(model$getVars(asMatrix=TRUE))
 
-rodeo$set("public", "assignVars", function(x, tabular=FALSE, check=TRUE, testNumeric=TRUE) {
+rodeo$set("public", "setVars", function(x, tabular=FALSE, check=TRUE, testNumeric=TRUE) {
   if (!tabular) {
     if (is.vector(x))
       x <- matrix(x, nrow=1, dimnames=list(NULL, names(x)))
@@ -107,7 +108,7 @@ rodeo$set("public", "assignVars", function(x, tabular=FALSE, check=TRUE, testNum
 #'
 #' Assign values to parameters of a \code{\link{rodeo}}-based model.
 #'
-#' @name assignPars
+#' @name setPars
 #'
 #' @param x A matrix, vector, or data frame holding the data to be assigned.
 #'   The appropriate type of input depends on the value of \code{tabular}. See
@@ -120,16 +121,35 @@ rodeo$set("public", "assignVars", function(x, tabular=FALSE, check=TRUE, testNum
 #' @param testNumeric Logical. Test for numeric values when \code{check} is \code{TRUE}?
 #'
 #' @return \code{NULL} (invisible). The assigned numeric data are stored in the
-#'   object and can be accessed by the \code{\link{queryPars}} method.
+#'   object and can be accessed by the \code{\link{getPars}} method.
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
-#' @seealso Other \code{\link{rodeo}} class methods
+#' @seealso The corresponding 'get' method is \code{\link{getPars}}. Use
+#'   \code{\link{setVars}} to assign values to variables rather than parameters.
 #'
 #' @examples
-#' # see the example for method 'assignVars' which behaves in the same way
+#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+#' model <- rodeo$new(
+#'   vars=subset(exampleIdentifiers, type=="v"),
+#'   pars=subset(exampleIdentifiers, type=="p"),
+#'   funs=subset(exampleIdentifiers, type=="f"),
+#'   pros=exampleProcesses, stoi=exampleStoichiometry,
+#'   size=2
+#' )
+#' # Set all values at a time by passing a matrix
+#' x <- c(kd=5.78e-7, h_do=0.5, s_do_z=2.76,
+#'   wind=1, depth=2, temp=20, q_in=1, q_ex=1)
+#' x <- rbind(x, x)
+#' model$setPars(x)
+#' print(model$getPars(asMatrix=TRUE))
+#' # Set selected values by passing a data frame
+#' x <- data.frame(name=c("depth","temp"), section=c(1,2), value=c(1,25),
+#'   stringsAsFactors=FALSE)
+#' model$setPars(x, tabular=TRUE)
+#' print(model$getPars(asMatrix=TRUE))
 
-rodeo$set("public", "assignPars", function(x, tabular=FALSE, check=TRUE, testNumeric=TRUE) {
+rodeo$set("public", "setPars", function(x, tabular=FALSE, check=TRUE, testNumeric=TRUE) {
   if (!tabular) {
     if (is.vector(x))
       x <- matrix(x, nrow=1, dimnames=list(NULL, names(x)))

@@ -10,8 +10,8 @@
 #'   stoichiometry matrix are not evaluated, hence, they are returned as
 #'   character strings. If a spatial section is specified, a numeric matrix is
 #'   returned. In the latter case, the values of state variables and parameters
-#'   must have been set using the \code{\link{assignVars}} and
-#'   \code{\link{assignPars}} methods.
+#'   must have been set using the \code{\link{setVars}} and
+#'   \code{\link{setPars}} methods.
 #' @param time Time. The value is ignored in the case of autonomous models.
 #'
 #' @return A matrix of numeric or character type, depending on the value of
@@ -37,8 +37,8 @@
 #' )
 #' c_z_in <- function(time) {0.1}
 #' c_do_in <- function(time) {8.0}
-#' model$assignVars(c(c_z=1, c_do=9.022, v=1.e6))
-#' model$assignPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
+#' model$setVars(c(c_z=1, c_do=9.022, v=1.e6))
+#' model$setPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
 #'   temp=20, q_in=1, q_ex=1))
 #' print(model$stoichiometry(section=NULL))
 #' print(model$stoichiometry(section=1))

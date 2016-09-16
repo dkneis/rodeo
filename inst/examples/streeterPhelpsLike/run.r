@@ -41,8 +41,8 @@ model <- rodeo$new(vars=read_excel(fileTbl, "vars"),
   asMatrix=TRUE, size=1)
 
 # Assign initial values and parameters
-model$assignVars(vars)
-model$assignPars(pars)
+model$setVars(vars)
+model$setPars(pars)
 
 if (!compile) { # R-based version
 
@@ -52,8 +52,8 @@ if (!compile) { # R-based version
   source(fileFun)
 
   # Integrate
-  out <- ode(y=model$queryVars(), times=times, func=derivs,
-    parms=model$queryPars())
+  out <- ode(y=model$getVars(), times=times, func=derivs,
+    parms=model$getPars())
   colnames(out) <- c("time", model$namesVars(), model$namesPros())
 
 } else { # Fortran-based version
@@ -63,8 +63,8 @@ if (!compile) { # R-based version
   dyn.load(lib["libFile"])
 
   # Integrate
-  out <- ode(y=model$queryVars(), times=times, func=lib["libFunc"],
-    parms=model$queryPars(), dllname=lib["libName"], initfunc="initmod",
+  out <- ode(y=model$getVars(), times=times, func=lib["libFunc"],
+    parms=model$getPars(), dllname=lib["libName"], initfunc="initmod",
     nout=model$lenPros(), outnames=model$namesPros())
 
   # Clean-up

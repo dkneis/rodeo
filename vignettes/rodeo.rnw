@@ -233,12 +233,12 @@ c_do_in <- function(seconds) {
 }
 @
 
-We also need to set the values of parameters and state variables (initial values) using the dedicated methods \verb|assignPars| and \verb|assignVars|..
+We also need to set the values of parameters and state variables (initial values) using the dedicated methods \verb|setPars| and \verb|setVars|.
 
 <<dataSingleSection, echo=TRUE, eval=TRUE>>=
-model$assignPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76,
+model$setPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76,
  wind=1, depth=2, temp=20, q_in=1, q_ex=1))
-model$assignVars(c(c_z=1, c_do=9.022, v=1.e6))
+model$setVars(c(c_z=1, c_do=9.022, v=1.e6))
 @
 
 \subsection{Computing the stoichiometry matrix}
@@ -265,13 +265,13 @@ derivs <- eval(parse(text=code))
 
 \subsection{Solving the ODE system} \label{sec:solve-R}
 
-We are now ready to compute the evolution of the state variables over time by means of numerical integration. Note that the initial values (argument \verb|y| of \verb|deSolve::ode|) and parameters (argument \verb|p|) are set to the output of the model object's dedicated query methods. This is to make sure that the order of values in the two arrays is consistent with the generated code.
+We are now ready to compute the evolution of the state variables over time by means of numerical integration. Note that the initial values (argument \verb|y| of \verb|deSolve::ode|) and parameters (argument \verb|p|) are set to the output of the model object's dedicated 'get' methods. This is to make sure that the order of values in the two arrays is consistent with the generated code.
 
 <<solveSingleSectionR, echo=TRUE, eval=TRUE, fig=TRUE>>=
 library(deSolve)
 t <- seq(0, 30*86400, 3600)
-out <- ode(y=model$queryVars(), times=t, func=derivs,
-  parms=model$queryPars())
+out <- ode(y=model$getVars(), times=t, func=derivs,
+  parms=model$getPars())
 layout(matrix(1:9, ncol=3, byrow=TRUE))
 plot(out, mfrow=NULL)
 layout(1)
@@ -315,12 +315,12 @@ pars <- c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1,
   depth=2, temp=20, q_in=1, q_ex=1)
 pars <- matrix(rep(pars, model$size()), nrow=model$size(),
   byrow=TRUE, dimnames=list(NULL, names(pars)))  
-model$assignPars(pars)
-model$assignVars(vars)
+model$setPars(pars)
+model$setVars(vars)
 @
 <<solveMultiSectionsR, echo=TRUE, eval=TRUE, fig=TRUE, width=6, height=2.5>>=
-out <- ode(y=model$queryVars(), times=t, func=derivs,
-  parms=model$queryPars())
+out <- ode(y=model$getVars(), times=t, func=derivs,
+  parms=model$getPars())
 layout(matrix(1:model$size(), nrow=1))
 plot(out, which=paste("c_do",1:model$size(),sep="."), mfrow=NULL)
 @
@@ -387,8 +387,8 @@ We are now prepared to load the shared library and run the simulation based on t
 <<echo=TRUE, eval=TRUE, fig=TRUE, width=6, height=2.5>>=
 <<setDataMultiSect>>
 dyn.load(lib["libFile"])
-out <- ode(y=model$queryVars(), times=t, func=lib["libFunc"],
-  parms=model$queryPars(), dllname=lib["libName"],
+out <- ode(y=model$getVars(), times=t, func=lib["libFunc"],
+  parms=model$getPars(), dllname=lib["libName"],
   initfunc="initmod", nout=model$lenPros()*model$size())
 layout(matrix(1:model$size(), nrow=1))
 dyn.unload(lib["libFile"])

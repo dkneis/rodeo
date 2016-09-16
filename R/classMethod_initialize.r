@@ -43,8 +43,8 @@
 #'   'left', and 'right'.
 #'
 #' Initialization does not assign numeric values to state variables or
-#'   parameters. Use the decicated methods \code{\link{assignVars}} and 
-#'   \code{\link{assignPars}} for that purpose.
+#'   parameters. Use the decicated methods \code{\link{setVars}} and 
+#'   \code{\link{setPars}} for that purpose.
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'

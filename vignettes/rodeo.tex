@@ -264,13 +264,13 @@ In order to work with the object, we need to define functions that are reference
 \end{Sinput}
 \end{Schunk}
 
-We also need to set the values of parameters and state variables (initial values) using the dedicated methods \verb|assignPars| and \verb|assignVars|..
+We also need to set the values of parameters and state variables (initial values) using the dedicated methods \verb|setPars| and \verb|setVars|.
 
 \begin{Schunk}
 \begin{Sinput}
- model$assignPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76,
+ model$setPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76,
   wind=1, depth=2, temp=20, q_in=1, q_ex=1))
- model$assignVars(c(c_z=1, c_do=9.022, v=1.e6))
+ model$setVars(c(c_z=1, c_do=9.022, v=1.e6))
 \end{Sinput}
 \end{Schunk}
 
@@ -309,14 +309,14 @@ After generating the code, we need to make it executable. In \software{R}, we ca
 
 \subsection{Solving the ODE system} \label{sec:solve-R}
 
-We are now ready to compute the evolution of the state variables over time by means of numerical integration. Note that the initial values (argument \verb|y| of \verb|deSolve::ode|) and parameters (argument \verb|p|) are set to the output of the model object's dedicated query methods. This is to make sure that the order of values in the two arrays is consistent with the generated code.
+We are now ready to compute the evolution of the state variables over time by means of numerical integration. Note that the initial values (argument \verb|y| of \verb|deSolve::ode|) and parameters (argument \verb|p|) are set to the output of the model object's dedicated 'get' methods. This is to make sure that the order of values in the two arrays is consistent with the generated code.
 
 \begin{Schunk}
 \begin{Sinput}
  library(deSolve)
  t <- seq(0, 30*86400, 3600)
- out <- ode(y=model$queryVars(), times=t, func=derivs,
-   parms=model$queryPars())
+ out <- ode(y=model$getVars(), times=t, func=derivs,
+   parms=model$getPars())
  layout(matrix(1:9, ncol=3, byrow=TRUE))
  plot(out, mfrow=NULL)
  layout(1)
@@ -367,14 +367,14 @@ A zero-dimensional case (single reactor) has been considered so far. We will now
    depth=2, temp=20, q_in=1, q_ex=1)
  pars <- matrix(rep(pars, model$size()), nrow=model$size(),
    byrow=TRUE, dimnames=list(NULL, names(pars)))  
- model$assignPars(pars)
- model$assignVars(vars)
+ model$setPars(pars)
+ model$setVars(vars)
 \end{Sinput}
 \end{Schunk}
 \begin{Schunk}
 \begin{Sinput}
- out <- ode(y=model$queryVars(), times=t, func=derivs,
-   parms=model$queryPars())
+ out <- ode(y=model$getVars(), times=t, func=derivs,
+   parms=model$getPars())
  layout(matrix(1:model$size(), nrow=1))
  plot(out, which=paste("c_do",1:model$size(),sep="."), mfrow=NULL)
 \end{Sinput}
@@ -477,8 +477,8 @@ We are now prepared to load the shared library and run the simulation based on t
 \begin{Schunk}
 \begin{Sinput}
  dyn.load(lib["libFile"])
- out <- ode(y=model$queryVars(), times=t, func=lib["libFunc"],
-   parms=model$queryPars(), dllname=lib["libName"],
+ out <- ode(y=model$getVars(), times=t, func=lib["libFunc"],
+   parms=model$getPars(), dllname=lib["libName"],
    initfunc="initmod", nout=model$lenPros()*model$size())
  layout(matrix(1:model$size(), nrow=1))
  dyn.unload(lib["libFile"])
@@ -516,16 +516,16 @@ This section demonstrates how the 'functions-of-time' approach can be used in \s
 \end{Sinput}
 \begin{Soutput}
    time temp humid
-1     1   16    78
-2     2   20    98
-3     3   19    58
-4     4   22    63
-5     5   20    50
-6     6   21    82
-7     7   19    62
-8     8   12    59
-9     9   22    24
-10   10   15    84
+1     1   27    50
+2     2   20    41
+3     3   24    47
+4     4   16    48
+5     5   22     4
+6     6   21    96
+7     7   16    18
+8     8   16    88
+9     9   25    77
+10   10   16    41
 \end{Soutput}
 \end{Schunk}
 

@@ -50,10 +50,10 @@ model <- rodeo$new(vars=read_excel(fileTbl, "vars"),
 dNum <- u*dx/2
 
 # Assign initial values and parameters
-model$assignVars(cbind(
+model$setVars(cbind(
   c=ifelse((1:nCells)==inputCell, inputMass/wetArea/dx, 0)
 ))
-model$assignPars(cbind(
+model$setPars(cbind(
   leftmost= c(1, rep(0, nCells-1)),
   rightmost= c(rep(0, nCells-1), 1),
   u=u,
@@ -69,8 +69,8 @@ if (!compile) { # R-based version
   source(fileFun)
 
   # Integrate
-  solNum <- ode(y=model$queryVars(), times=times, func=derivs,
-    parms=model$queryPars(), jactype="bandint", bandup=1, banddown=1)
+  solNum <- ode(y=model$getVars(), times=times, func=derivs,
+    parms=model$getPars(), jactype="bandint", bandup=1, banddown=1)
   colnames(solNum) <- c("time",
     paste(rep(model$namesVars(), each=nCells),
       rep(1:model$size(), model$lenVars()), sep="."),
@@ -84,8 +84,8 @@ if (!compile) { # R-based version
   dyn.load(lib["libFile"])
 
   # Integrate
-  solNum <- ode(y=model$queryVars(), times=times, func=lib["libFunc"],
-    parms=model$queryPars(), dllname=lib["libName"], initfunc="initmod",
+  solNum <- ode(y=model$getVars(), times=times, func=lib["libFunc"],
+    parms=model$getPars(), dllname=lib["libName"], initfunc="initmod",
     nout=model$lenPros()*model$size(), jactype="bandint", bandup=1, banddown=1)
 
   # Clean-up
