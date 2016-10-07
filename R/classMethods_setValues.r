@@ -118,6 +118,8 @@ rodeo$set("public", "setVars", function(x, tabular=FALSE, check=TRUE, testNumeri
 #'   then \code{x} must be a data frame with 3 columns 'name', 'section', and
 #'   'value'. Use this to assign data to selected items and/or sections only.
 #' @param check Logical. By default, several checks are carried out on the
+#'   passed \code{x}. This can be turned off by setting \code{check} to
+#'   \code{FALSE}. May be used to avoid unnecessary checks in repeated calls.
 #' @param testNumeric Logical. Test for numeric values when \code{check} is \code{TRUE}?
 #'
 #' @return \code{NULL} (invisible). The assigned numeric data are stored in the
