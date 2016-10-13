@@ -41,15 +41,15 @@ stoi <- matrix(1, ncol=1, nrow=1, dimnames=list("diff","c"))
 
 # Initialize rodeo object
 model <- rodeo$new(vars=vars, pars=pars, funs=funs, pros=pros, stoi=stoi,
-  asMatrix=TRUE, size=nCells)
+  asMatrix=TRUE, dim=(nCells))
 
 # Assign initial values and parameters
 model$setVars(cbind(c=rep(0, nCells)))
 model$setPars(cbind(
-  leftmost= c(1, rep(0, nCells-1)),
-  cb=cb,
   d=d,
-  dx=dx
+  dx=dx,
+  cb=cb,
+  leftmost= c(1, rep(0, nCells-1))
 ))
 
 fileFun <- if (compile) paste0(tempfile(),".f95") else paste0(tempfile(),".r")
@@ -67,9 +67,9 @@ if (!compile) { # R-based version
     parms=model$getPars(), jactype="bandint", bandup=1, banddown=1)
   colnames(solNum) <- c("time",
     paste(rep(model$namesVars(), each=nCells),
-      rep(1:model$size(), model$lenVars()), sep="."),
+      rep(1:nCells, model$lenVars()), sep="."),
     paste(rep(model$namesPros(), each=nCells),
-      rep(1:model$size(), model$lenPros()), sep="."))
+      rep(1:nCells, model$lenPros()), sep="."))
 
 } else { # Fortran-based version
 
@@ -80,7 +80,8 @@ if (!compile) { # R-based version
   # Integrate
   solNum <- ode(y=model$getVars(), times=times, func=lib["libFunc"],
     parms=model$getPars(), dllname=lib["libName"], initfunc="initmod",
-    nout=model$lenPros()*model$size(), jactype="bandint", bandup=1, banddown=1)
+    nout=model$lenPros()*prod(model$getDim()),
+    jactype="bandint", bandup=1, banddown=1)
 
   # Clean-up
   dyn.unload(lib["libFile"])

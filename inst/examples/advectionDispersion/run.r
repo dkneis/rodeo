@@ -54,11 +54,11 @@ model$setVars(cbind(
   c=ifelse((1:nCells)==inputCell, inputMass/wetArea/dx, 0)
 ))
 model$setPars(cbind(
-  leftmost= c(1, rep(0, nCells-1)),
-  rightmost= c(rep(0, nCells-1), 1),
   u=u,
   d=d-dNum,
-  dx=dx
+  dx=dx,
+  leftmost= c(1, rep(0, nCells-1)),
+  rightmost= c(rep(0, nCells-1), 1)
 ))
 
 if (!compile) { # R-based version
@@ -73,9 +73,9 @@ if (!compile) { # R-based version
     parms=model$getPars(), jactype="bandint", bandup=1, banddown=1)
   colnames(solNum) <- c("time",
     paste(rep(model$namesVars(), each=nCells),
-      rep(1:model$size(), model$lenVars()), sep="."),
+      rep(1:nCells, model$lenVars()), sep="."),
     paste(rep(model$namesPros(), each=nCells),
-      rep(1:model$size(), model$lenPros()), sep="."))
+      rep(1:nCells, model$lenPros()), sep="."))
 
 } else { # Fortran-based version
 
@@ -86,7 +86,8 @@ if (!compile) { # R-based version
   # Integrate
   solNum <- ode(y=model$getVars(), times=times, func=lib["libFunc"],
     parms=model$getPars(), dllname=lib["libName"], initfunc="initmod",
-    nout=model$lenPros()*model$size(), jactype="bandint", bandup=1, banddown=1)
+    nout=model$lenPros()*prod(model$getDim()),
+    jactype="bandint", bandup=1, banddown=1)
 
   # Clean-up
   dyn.unload(lib["libFile"])
