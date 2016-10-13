@@ -1,46 +1,65 @@
 
+# Helper function to construct names for vector elements
+elNames <- function(items, dims) {
+  if (sum(dims) == 1) {
+    elNames <- items
+  } else {
+    # Note: In the output of expand.grid, the first factor varies fastest
+    nameParts <- expand.grid(lapply(dims[length(dims):1], function(x){1:x}))
+    nameParts <- nameParts[,ncol(nameParts):1]
+    nameParts <- cbind(rep(items, each=prod(dims)), nameParts)
+    elNames <- apply(nameParts, 1, paste, collapse=".")
+  }
+}
+
 #' Query Values of State Variables
 #'
 #' Query values of state variables of a \code{\link{rodeo}}-based model.
 #'
 #' @name getVars
 #'
-#' @param asMatrix Logical. If \code{TRUE}, data are returned as a matrix with
-#'   columns named after the variables and one row per spatial section. If
-#'   \code{FALSE}, a vector of the concatenated columns is returned.
-#'   In the latter case, element names follow the pattern
-#'   'variable.section', i.e. the section index is appended to the variable's
-#'   name, separated by a period. If there is a single section only (0D models),
-#'   the pure variable names are used, i.e. the extension '.1' is omitted.
+#' @param asArray Logical. If \code{FALSE}, the values of variables are returned
+#'  as vector irrespective of the model's spatial resolution. If \code{TRUE},
+#'  the values are returned as an \code{\link[base]{array}} with properly named
+#'  dimensions. The array's last dimension represents the variables and its
+#'  first (fastest cycling) dimension, if any, refers to the model's highest
+#'  spatial dimension.
+#' @param useNames Logical. Used to enable/disable element names for the return
+#'  vector when \code{asArray} is \code{FALSE}. The names follow the pattern
+#'  'x.i.j' where 'x' is the variable name and 'i', 'j' are indices of the
+#'  sub-units in the first and second spatial dimension. The actual suffix is
+#'  controlled by the number of dimensions and in the 0-dimensional case, no
+#'  suffix is applied at all, i.e. the pure variable names are used to label the
+#'  elements of the vector.
+#'  If \code{isArray} is \code{TRUE}, this argument is simply ignored, hence
+#'  the dimensions of a returned array are always named.
 #'
-#' @return A numeric matrix or vector, depending on the value of \code{asMatrix}.
+#' @return A numeric vector or array.
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
-#' @seealso The corresponding 'set' method is \code{\link{setVars}}. Use
-#'   \code{\link{getPars}} to query the values of parameters rather than variables.
-#'
-#' @examples
-#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-#' model <- rodeo$new(
-#'   vars=subset(exampleIdentifiers, type=="v"),
-#'   pars=subset(exampleIdentifiers, type=="p"),
-#'   funs=subset(exampleIdentifiers, type=="f"),
-#'   pros=exampleProcesses, stoi=exampleStoichiometry,
-#'   size=2
-#' )
-#' model$setVars(cbind(c_z=c(1,1), c_do=c(9,9), v=c(1e6, 1e6)))
-#' print(model$getVars())
-#' print(model$getVars(asMatrix=TRUE))
+#' @seealso The corresponding 'set' method is \code{\link{setVars}} and examples
+#'  can be found there. Use \code{\link{getPars}} to query the values of
+#'  parameters rather than variables.
 
-rodeo$set("public", "getVars", function(asMatrix=FALSE) {
-  if (asMatrix)
-    private$v
-  else {
-    elNames <- if (private$sections == 1) colnames(private$v) else
-      paste(rep(colnames(private$v), each=private$sections),
-      rep(1:private$sections, ncol(private$v)) , sep=".")
-    setNames(as.vector(private$v), elNames)
+rodeo$set("public", "getVars", function(asArray=FALSE, useNames=TRUE) {
+  if (!asArray) {
+    if (!useNames) {
+      return(private$vars)
+    } else {
+      return(setNames(private$vars, elNames(private$varsTbl$name, private$dim)))
+    }
+  } else {
+    if (sum(private$dim) == 1) {
+      return(array(private$vars, dim=nrow(private$varsTbl),
+        dimnames=list(variable=private$varsTbl$name)))
+    } else {
+      reverseDims <- private$dim[length(private$dim):1]
+      namesForDims <- lapply(reverseDims, function(i){1:i})
+      names(namesForDims) <- paste("dimension", length(private$dim):1, sep=".")
+      return(array(private$vars, dim= c(reverseDims, nrow(private$varsTbl)),
+        dimnames= c(namesForDims, list(variable=private$varsTbl$name))))
+    }
   }
 })
 
@@ -50,47 +69,48 @@ rodeo$set("public", "getVars", function(asMatrix=FALSE) {
 #'
 #' @name getPars
 #'
-#' @param asMatrix Logical. If \code{TRUE}, data are returned as a matrix with
-#'   columns named after the parameters and one row per spatial section. If
-#'   \code{FALSE}, a vector of the concatenated columns is returned.
-#'   In the latter case, element names follow the pattern
-#'   'parameter.section', i.e. the section index is appended to the parameter's
-#'   name, separated by a period. If there is a single section only (0D models),
-#'   the pure parameter names are used, i.e. the extension '.1' is omitted.
+#' @param asArray Logical. If \code{FALSE}, the values of parameters are returned
+#'  as vector irrespective of the model's spatial resolution. If \code{TRUE},
+#'  the values are returned as an \code{\link[base]{array}} with properly named
+#'  dimensions. The array's last dimension represents the parameters and its
+#'  first (fastest cycling) dimension, if any, refers to the model's highest
+#'  spatial dimension.
+#' @param useNames Logical. Used to enable/disable element names for the return
+#'  vector when \code{asArray} is \code{FALSE}. The names follow the pattern
+#'  'x.i.j' where 'x' is the parameter name and 'i', 'j' are indices of the
+#'  sub-units in the first and second spatial dimension. The actual suffix is
+#'  controlled by the number of dimensions and in the 0-dimensional case, no
+#'  suffix is applied at all, i.e. the pure parameter names are used to label the
+#'  elements of the vector.
+#'  If \code{isArray} is \code{TRUE}, this argument is simply ignored, hence
+#'  the dimensions of a returned array are always named.
 #'
-#' @return A numeric matrix or vector, depending on the value of \code{asMatrix}.
+#' @return A numeric vector or array.
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
-#' @seealso The corresponding 'set' method is \code{\link{setPars}}. Use
-#'   \code{\link{getVars}} to query the values of variables rather than parameters.
-#'
-#' @examples
-#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-#' model <- rodeo$new(
-#'   vars=subset(exampleIdentifiers, type=="v"),
-#'   pars=subset(exampleIdentifiers, type=="p"),
-#'   funs=subset(exampleIdentifiers, type=="f"),
-#'   pros=exampleProcesses, stoi=exampleStoichiometry,
-#'   size=2
-#' )
-#' x <- c(kd=5.78e-7, h_do=0.5, s_do_z=2.76,
-#'   wind=1, depth=2, temp=20, q_in=1, q_ex=1)
-#' x <- rbind(x, x)
-#' model$setPars(x)
-#' print(model$getPars())
-#' print(model$getPars(asMatrix=TRUE))
+#' @seealso The corresponding 'set' method is \code{\link{setPars}} and examples
+#'  can be found there. Use \code{\link{getVars}} to query the values of
+#'  variables rather than parameters.
 
-rodeo$set("public", "getPars", function(asMatrix=FALSE) {
-  "Returns the numeric values of parameters. See \\code{\\link{getPars}}
- for details."
-  if (asMatrix)
-    private$p
-  else {
-    elNames <- if (private$sections == 1) colnames(private$p) else
-      paste(rep(colnames(private$p), each=private$sections),
-      rep(1:private$sections, ncol(private$p)) , sep=".")
-    setNames(as.vector(private$p), elNames)
+rodeo$set("public", "getPars", function(asArray=FALSE, useNames=TRUE) {
+  if (!asArray) {
+    if (!useNames) {
+      return(private$pars)
+    } else {
+      return(setNames(private$pars, elNames(private$parsTbl$name, private$dim)))
+    }
+  } else {
+    if (sum(private$dims) == 1) {
+      return(array(private$pars, dim=nrow(private$parsTbl),
+        dimnames=list(parameter=private$parsTbl$name)))
+    } else {
+      reverseDims <- private$dim[length(private$dim):1]
+      namesForDims <- lapply(reverseDims, function(i){1:i})
+      names(namesForDims) <- paste("dimension", length(private$dim):1, sep=".")
+      return(array(private$pars, dim= c(reverseDims, nrow(private$parsTbl)),
+        dimnames= c(namesForDims, list(parameter=private$parsTbl$name))))
+    }
   }
 })
 

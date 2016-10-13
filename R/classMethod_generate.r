@@ -6,7 +6,7 @@
 #' @name generate
 #'
 #' @param lang Character string to select the language of the generated source
-#'   code. Must be either 'f95' (for Fortran) or 'r' (for R).
+#'   code. Currently either 'f95' (for Fortran) or 'r' (for R).
 #' @param name Name for the generated function (character string). It should
 #'   start with a letter, optionally followed by letters, numbers, or
 #'   underscores.
@@ -21,25 +21,21 @@
 #'
 #' If generated Fortran code is to be used with the numerical solvers from the
 #'   \code{\link[deSolve]{deSolve-package}} or
-#'   \code{\link[rootSolve]{rootSolve-package}} a wrapper is required. It is
-#'   best created with the non-class method \code{\link{solverInterface}}.
+#'   \code{\link[rootSolve]{rootSolve-package}} a wrapper is required and all
+#'   generated code needs to be compiled. See \code{\link{compile}}.
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
 #' @seealso See other methods of the \code{\link{rodeo-class}}, especially
-#'   \code{\link{compile}} or the non-class method \code{\link{solverInterface}}
-#'   to further process generated Fortran code.
+#'   \code{\link{compile}} which internally uses this method.
 #'
 #' @examples
-#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-#' model <- rodeo$new(
-#'   vars=subset(exampleIdentifiers, type=="v"),
-#'   pars=subset(exampleIdentifiers, type=="p"),
-#'   funs=subset(exampleIdentifiers, type=="f"),
-#'   pros=exampleProcesses, stoi=exampleStoichiometry
-#' )
+#' data(vars, pars, funs, pros, stoi)
+#' model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
 #' fortranCode <- model$generate(lang="f95")
+#' \dontrun{
 #' write(fortranCode, file="")
+#' }
 
 rodeo$set("public", "generate", function(lang, name="derivs") {
   newline="\n"
@@ -162,7 +158,7 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
       "=",nrow(private$parsTbl),newline)
     code <- paste0(code,"  integer, parameter:: ",rodeoConst$genIdent$len["pros"],
       "=",nrow(private$prosTbl),newline)
-    code <- paste0(code,"  ! Constant index arrays (for OD case or 1st section, respectively)",newline)
+    code <- paste0(code,"  ! Constant index arrays (for OD case or 1st box, respectively)",newline)
     code <- paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["vars"],
       "), target:: ",rodeoConst$genIdent$ivec0D["vars"],
       " =(/(i, i=1, ",rodeoConst$genIdent$len["vars"],")/)",newline)
@@ -172,7 +168,7 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
     code <- paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["pros"],
       "), parameter:: ",rodeoConst$genIdent$ivec0D["pros"],
       " =(/(i, i=1, ",rodeoConst$genIdent$len["pros"],")/)",newline)
-    code <- paste0(code,"  ! Modifyable index arrays (to be adjusted for each spatial section)",newline)
+    code <- paste0(code,"  ! Modifyable index arrays (to be adjusted for each spatial box)",newline)
     code <- paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["vars"],
       "), target:: ",rodeoConst$genIdent$ivec["vars"],newline)
     code <- paste0(code,"  integer, dimension(",rodeoConst$genIdent$len["pars"],
@@ -181,7 +177,7 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
       "), target:: ",rodeoConst$genIdent$ivec["pros"],newline)
     code <- paste0(code,newline)
 
-    code <- paste0(code,"  ! Lists of pointers to index arrays for first section (0D case)",newline)
+    code <- paste0(code,"  ! Lists of pointers to index arrays for first box (0D case)",newline)
     code <- paste0(code,"  ! Note: Only used in conjunction with left() or right()",newline)
     code <- paste0(code,"  type t_var0D",newline)
     code <- paste0(code,paste0("    integer, pointer:: ",names(indexVars)," => ",
@@ -195,7 +191,7 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
     code <- paste0(code,"  type (t_var0D):: ",rodeoConst$genIdent$ilist0D["vars"],newline)
     code <- paste0(code,"  type (t_par0D):: ",rodeoConst$genIdent$ilist0D["pars"],newline)
 
-    code <- paste0(code,"  ! Lists of pointers to index arrays whose values depend on the section",newline)
+    code <- paste0(code,"  ! Lists of pointers to index arrays whose values depend on the box",newline)
     code <- paste0(code,"  type t_var",newline)
     code <- paste0(code,paste0("    integer, pointer:: ",names(indexVars)," => ",
       rodeoConst$genIdent$ivec["vars"],"(",indexVars,")",newline,collapse=""))
@@ -217,7 +213,7 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
     code <- paste0(code,newline)
     code <- paste0(code,"subroutine ",name,"(",rodeoConst$reservedNames["time"],", ",rodeoConst$genIdent$vec["vars"],
       ", ",rodeoConst$genIdent$vec["pars"],
-      ", ",rodeoConst$genIdent$len["secs"],", ",rodeoConst$genIdent$vec["drvs"],
+      ", ",rodeoConst$genIdent$len["boxes"],", ",rodeoConst$genIdent$vec["drvs"],
       ", ",rodeoConst$genIdent$vec["pros"],
       ")",newline)
     code <- paste0(code,"  use dimensions_and_indices",newline)
@@ -227,87 +223,87 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
     code <- paste0(code,"  ! Inputs",newline)
     code <- paste0(code,"  double precision, intent(in):: ",rodeoConst$reservedNames["time"],newline)
     code <- paste0(code,"  double precision, dimension(",
-      rodeoConst$genIdent$len["vars"],"*",rodeoConst$genIdent$len["secs"],
+      rodeoConst$genIdent$len["vars"],"*",rodeoConst$genIdent$len["boxes"],
       "), intent(in):: ",rodeoConst$genIdent$vec["vars"],newline)
     code <- paste0(code,"  double precision, dimension(",
-      rodeoConst$genIdent$len["pars"],"*",rodeoConst$genIdent$len["secs"],
+      rodeoConst$genIdent$len["pars"],"*",rodeoConst$genIdent$len["boxes"],
       "), intent(in):: ",rodeoConst$genIdent$vec["pars"],newline)
-    code <- paste0(code,"  integer, intent(in):: ",rodeoConst$genIdent$len["secs"],newline)
+    code <- paste0(code,"  integer, intent(in):: ",rodeoConst$genIdent$len["boxes"],newline)
     code <- paste0(code,"  ! Outputs",newline)
     code <- paste0(code,"  double precision, dimension(",
-      rodeoConst$genIdent$len["vars"],"*",rodeoConst$genIdent$len["secs"],
+      rodeoConst$genIdent$len["vars"],"*",rodeoConst$genIdent$len["boxes"],
       "), intent(out):: ",rodeoConst$genIdent$vec["drvs"],newline)
     code <- paste0(code,"  double precision, dimension(",
-      rodeoConst$genIdent$len["pros"],"*",rodeoConst$genIdent$len["secs"],
+      rodeoConst$genIdent$len["pros"],"*",rodeoConst$genIdent$len["boxes"],
       "), intent(out):: ",rodeoConst$genIdent$vec["pros"],newline)
     # Local variables
     code <- paste0(code,"  ! Local variables",newline)
-    code <- paste0(code,"  integer:: ",rodeoConst$genIdent["iSection"],", i",newline)
+    code <- paste0(code,"  integer:: ",rodeoConst$genIdent["iBox"],", i",newline)
     # Local constants
     code <- paste0(code,newline)
     # Vectors of process rates and derivatives are set here
-    code <- paste0(code,"  ! Set vector of process rates (all spatial sections)",newline)
-    code <- paste0(code,"  do ",rodeoConst$genIdent["iSection"]," = 1, ",rodeoConst$genIdent$len["secs"],newline)
+    code <- paste0(code,"  ! Set vector of process rates (all spatial boxes)",newline)
+    code <- paste0(code,"  do ",rodeoConst$genIdent["iBox"]," = 1, ",rodeoConst$genIdent$len["boxes"],newline)
     code <- paste0(code,"    ",rodeoConst$genIdent$vec["pros"],
-      "((/(i, i=",rodeoConst$genIdent["iSection"],", ((",rodeoConst$genIdent$len["pros"],"-1)*",
-      rodeoConst$genIdent$len["secs"],"+",rodeoConst$genIdent["iSection"],"), ",
-      rodeoConst$genIdent$len["secs"],")/))","= ",
-      rodeoConst$genIdent$vec["pros"],"0D(",rodeoConst$genIdent["iSection"],")",newline)
+      "((/(i, i=",rodeoConst$genIdent["iBox"],", ((",rodeoConst$genIdent$len["pros"],"-1)*",
+      rodeoConst$genIdent$len["boxes"],"+",rodeoConst$genIdent["iBox"],"), ",
+      rodeoConst$genIdent$len["boxes"],")/))","= ",
+      rodeoConst$genIdent$vec["pros"],"0D(",rodeoConst$genIdent["iBox"],")",newline)
     code <- paste0(code,"  end do",newline)
     code <- paste0(code,newline)
-    code <- paste0(code,"  ! Set vector of derivatives (all spatial sections)",newline)
-    code <- paste0(code,"  do ",rodeoConst$genIdent["iSection"]," = 1, ",rodeoConst$genIdent$len["secs"],newline)
+    code <- paste0(code,"  ! Set vector of derivatives (all spatial boxes)",newline)
+    code <- paste0(code,"  do ",rodeoConst$genIdent["iBox"]," = 1, ",rodeoConst$genIdent$len["boxes"],newline)
     code <- paste0(code,"    ",rodeoConst$genIdent$vec["drvs"],
-      "((/(i, i=",rodeoConst$genIdent["iSection"],", ((",rodeoConst$genIdent$len["vars"],"-1)*",
-      rodeoConst$genIdent$len["secs"],"+",rodeoConst$genIdent["iSection"],"), ",
-      rodeoConst$genIdent$len["secs"],")/))","= ",
-      rodeoConst$genIdent$vec["drvs"],"0D(",rodeoConst$genIdent["iSection"],")",newline)
+      "((/(i, i=",rodeoConst$genIdent["iBox"],", ((",rodeoConst$genIdent$len["vars"],"-1)*",
+      rodeoConst$genIdent$len["boxes"],"+",rodeoConst$genIdent["iBox"],"), ",
+      rodeoConst$genIdent$len["boxes"],")/))","= ",
+      rodeoConst$genIdent$vec["drvs"],"0D(",rodeoConst$genIdent["iBox"],")",newline)
     code <- paste0(code,"  end do",newline)
     code <- paste0(code,newline)
     # Internal functions
     code <- paste0(code,"  contains  ! Internal functions follow",newline)
     code <- paste0(code,newline)
-    # Process rates in a particular section
-    code <- paste0(code,"  ! Process rates in a particular section",newline)
+    # Process rates in a particular box
+    code <- paste0(code,"  ! Process rates in a particular box",newline)
     code <- paste0(code,"  function ",rodeoConst$genIdent$vec["pros"],
-      "0D(",rodeoConst$genIdent["iSection"],")",newline)
+      "0D(",rodeoConst$genIdent["iBox"],")",newline)
     code <- paste0(code,"    implicit none",newline)
     code <- paste0(code,"    ! Inputs",newline)
-    code <- paste0(code,"    integer, intent(in):: ",rodeoConst$genIdent["iSection"],newline)
+    code <- paste0(code,"    integer, intent(in):: ",rodeoConst$genIdent["iBox"],newline)
     code <- paste0(code,"    ! Outputs",newline)
     code <- paste0(code,"    double precision, dimension(",
       rodeoConst$genIdent$len["pros"],"):: ",rodeoConst$genIdent$vec["pros"],"0D",newline)
     code <- paste0(code,"    ! Update indices",newline)
     code <- paste0(code,"    ",rodeoConst$genIdent$ivec["vars"],"= (",
-      rodeoConst$genIdent$ivec0D["vars"]," - 1) * ",rodeoConst$genIdent$len["secs"],
-      " + ",rodeoConst$genIdent["iSection"],newline)
+      rodeoConst$genIdent$ivec0D["vars"]," - 1) * ",rodeoConst$genIdent$len["boxes"],
+      " + ",rodeoConst$genIdent["iBox"],newline)
     code <- paste0(code,"    ",rodeoConst$genIdent$ivec["pars"],"= (",
-      rodeoConst$genIdent$ivec0D["pars"]," - 1) * ",rodeoConst$genIdent$len["secs"],
-      " + ",rodeoConst$genIdent["iSection"],newline)
+      rodeoConst$genIdent$ivec0D["pars"]," - 1) * ",rodeoConst$genIdent$len["boxes"],
+      " + ",rodeoConst$genIdent["iBox"],newline)
     code <- paste0(code,"    ! Set return vector",newline)
     code <- paste0(code,"    ",code_pros,newline)
     code <- paste0(code,"  end function",newline)
     code <- paste0(code,newline)
-    # Derivatives in a particular section
-    code <- paste0(code,"  ! Derivatives in a particular section",newline)
+    # Derivatives in a particular box
+    code <- paste0(code,"  ! Derivatives in a particular box",newline)
     code <- paste0(code,"  function ",rodeoConst$genIdent$vec["drvs"],
-      "0D(",rodeoConst$genIdent["iSection"],")",newline)
+      "0D(",rodeoConst$genIdent["iBox"],")",newline)
     code <- paste0(code,"    implicit none",newline)
     code <- paste0(code,"    ! Inputs",newline)
-    code <- paste0(code,"    integer, intent(in):: ",rodeoConst$genIdent["iSection"],newline)
+    code <- paste0(code,"    integer, intent(in):: ",rodeoConst$genIdent["iBox"],newline)
     code <- paste0(code,"    ! Outputs",newline)
     code <- paste0(code,"    double precision, dimension(",
       rodeoConst$genIdent$len["vars"],"):: ",rodeoConst$genIdent$vec["drvs"],"0D",newline)
     code <- paste0(code,"    ! Update indices",newline)
     code <- paste0(code,"    ",rodeoConst$genIdent$ivec["vars"],"= (",
-      rodeoConst$genIdent$ivec0D["vars"]," - 1) * ",rodeoConst$genIdent$len["secs"],
-      " + ",rodeoConst$genIdent["iSection"],newline)
+      rodeoConst$genIdent$ivec0D["vars"]," - 1) * ",rodeoConst$genIdent$len["boxes"],
+      " + ",rodeoConst$genIdent["iBox"],newline)
     code <- paste0(code,"    ",rodeoConst$genIdent$ivec["pars"],"= (",
-      rodeoConst$genIdent$ivec0D["pars"]," - 1) * ",rodeoConst$genIdent$len["secs"],
-      " + ",rodeoConst$genIdent["iSection"],newline)
+      rodeoConst$genIdent$ivec0D["pars"]," - 1) * ",rodeoConst$genIdent$len["boxes"],
+      " + ",rodeoConst$genIdent["iBox"],newline)
     code <- paste0(code,"    ",rodeoConst$genIdent$ivec["pros"],"= (",
-      rodeoConst$genIdent$ivec0D["pros"]," - 1) * ",rodeoConst$genIdent$len["secs"],
-      " + ",rodeoConst$genIdent["iSection"],newline)
+      rodeoConst$genIdent$ivec0D["pros"]," - 1) * ",rodeoConst$genIdent$len["boxes"],
+      " + ",rodeoConst$genIdent["iBox"],newline)
     code <- paste0(code,"    ! Set return vector",newline)
     code <- paste0(code,"    ",code_drvs,newline)
     code <- paste0(code,"  end function",newline)
@@ -323,7 +319,7 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
       ", ",rodeoConst$genIdent$vec["pars"],", check=TRUE) {",newline)
     code <- paste0(code,newline)
     code <- paste0(code,"  # Dimension constants",newline)
-    code <- paste0(code,"  ",rodeoConst$genIdent$len["secs"],"=",private$sections,newline)
+    code <- paste0(code,"  ",rodeoConst$genIdent$len["boxes"],"=",prod(private$dim),newline)
     code <- paste0(code,"  ",rodeoConst$genIdent$len["vars"],"=",nrow(private$varsTbl),newline)
     code <- paste0(code,"  ",rodeoConst$genIdent$len["pars"],"=",nrow(private$parsTbl),newline)
     code <- paste0(code,"  ",rodeoConst$genIdent$len["pros"],"=",nrow(private$prosTbl),newline)
@@ -331,19 +327,19 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
     code <- paste0(code,"  # Check length of arguments",newline)
     code <- paste0(code,"  if (check) {",newline)
     code <- paste0(code,"    if (length(",rodeoConst$genIdent$vec["vars"],
-      ") != (",rodeoConst$genIdent$len["vars"]," * ",rodeoConst$genIdent$len["secs"],"))",newline)
+      ") != (",rodeoConst$genIdent$len["vars"]," * ",rodeoConst$genIdent$len["boxes"],"))",newline)
     code <- paste0(code,"      stop(paste0(\"length of argument '",rodeoConst$genIdent$vec["vars"],
       "' is \",length(",rodeoConst$genIdent$vec["vars"],"),",newline,
       "        \" but it should be \",",rodeoConst$genIdent$len["vars"]," * ",
-      rodeoConst$genIdent$len["secs"],",",newline,
-      "        \" (number of variables * number of sections)\"))",newline)
+      rodeoConst$genIdent$len["boxes"],",",newline,
+      "        \" (number of variables * number of boxes)\"))",newline)
     code <- paste0(code,"    if (length(",rodeoConst$genIdent$vec["pars"],
-      ") != (",rodeoConst$genIdent$len["pars"]," * ",rodeoConst$genIdent$len["secs"],"))",newline)
+      ") != (",rodeoConst$genIdent$len["pars"]," * ",rodeoConst$genIdent$len["boxes"],"))",newline)
     code <- paste0(code,"      stop(paste0(\"length of argument '",rodeoConst$genIdent$vec["pars"],
       "' is \",length(",rodeoConst$genIdent$vec["pars"],"),",newline,
       "        \" but it should be \",",rodeoConst$genIdent$len["pars"]," * ",
-      rodeoConst$genIdent$len["secs"],",",newline,
-      "        \" (number of parameters * number of sections)\"))",newline)
+      rodeoConst$genIdent$len["boxes"],",",newline,
+      "        \" (number of parameters * number of boxes)\"))",newline)
     code <- paste0(code,"  }",newline)
     code <- paste0(code,"  # Lists of array indices",newline)
     code <- paste0(code,"  ",rodeoConst$genIdent$ilist0D["vars"]," = list(",
@@ -353,31 +349,31 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
     code <- paste0(code,"  ",rodeoConst$genIdent$ilist0D["pros"]," = list(",
       "    ",paste0(names(indexPros),"=",indexPros,collapse=", "),"  )",newline)
     code <- paste0(code,newline)
-    code <- paste0(code,"  # Function to update indices for particular sections(s)",newline)
-    code <- paste0(code,"  adjIdx= function (x, ",rodeoConst$genIdent$len["secs"],
-      ", ",rodeoConst$genIdent["iSection"],") { (x - 1) * ",
-      rodeoConst$genIdent$len["secs"]," + ",rodeoConst$genIdent["iSection"]," }",newline)
+    code <- paste0(code,"  # Function to update indices for particular box(es)",newline)
+    code <- paste0(code,"  adjIdx= function (x, ",rodeoConst$genIdent$len["boxes"],
+      ", ",rodeoConst$genIdent["iBox"],") { (x - 1) * ",
+      rodeoConst$genIdent$len["boxes"]," + ",rodeoConst$genIdent["iBox"]," }",newline)
     code <- paste0(code,newline)
-    code <- paste0(code,"  # Internal function: Process rates in a particular section",newline)
+    code <- paste0(code,"  # Internal function: Process rates in a particular box",newline)
     code <- paste0(code,"  fun_",rodeoConst$genIdent$vec["pros"],"0D = function (",
-      rodeoConst$genIdent["iSection"],") {",newline)
+      rodeoConst$genIdent["iBox"],") {",newline)
     code <- paste0(code,"    # Update indices",newline)
     code <- paste0(code,"    ",rodeoConst$genIdent$ilist["vars"]," = lapply(",
       rodeoConst$genIdent$ilist0D["vars"],", adjIdx ,",
-      rodeoConst$genIdent$len["secs"],"=",rodeoConst$genIdent$len["secs"],", ",
-      rodeoConst$genIdent["iSection"],"=",rodeoConst$genIdent["iSection"],")",newline)
+      rodeoConst$genIdent$len["boxes"],"=",rodeoConst$genIdent$len["boxes"],", ",
+      rodeoConst$genIdent["iBox"],"=",rodeoConst$genIdent["iBox"],")",newline)
     code <- paste0(code,"    ",rodeoConst$genIdent$ilist["pars"]," = lapply(",
       rodeoConst$genIdent$ilist0D["pars"],", adjIdx ,",
-      rodeoConst$genIdent$len["secs"],"=",rodeoConst$genIdent$len["secs"],", ",
-      rodeoConst$genIdent["iSection"],"=",rodeoConst$genIdent["iSection"],")",newline)
+      rodeoConst$genIdent$len["boxes"],"=",rodeoConst$genIdent$len["boxes"],", ",
+      rodeoConst$genIdent["iBox"],"=",rodeoConst$genIdent["iBox"],")",newline)
     code <- paste0(code,"    # Set return vector",newline)
     code <- paste0(code,"    ",code_pros,newline)
     code <- paste0(code,"  }",newline)
     code <- paste0(code,newline)
 
-    code <- paste0(code,"  # Set vector of process rates (all spatial sections)",newline)
+    code <- paste0(code,"  # Set vector of process rates (all spatial boxes)",newline)
     code <- paste0(code,"  ",rodeoConst$genIdent$vec["pros"]," = as.vector(t(vapply(",
-      "X= 1:",rodeoConst$genIdent$len["secs"],", ",
+      "X= 1:",rodeoConst$genIdent$len["boxes"],", ",
       "FUN= fun_",rodeoConst$genIdent$vec["pros"],"0D, ",newline,
       "    FUN.VALUE= numeric(",rodeoConst$genIdent$len["pros"],"), USE.NAMES=FALSE)))", newline)
 #    NOTE: The following vectorized alternative does not work in general, because
@@ -393,35 +389,35 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
 #          constructs like pmin/pmax/ifelse need to be used.
 #    # DONT USE
 #    code <- paste0(code,"  ",rodeoConst$genIdent$vec["pros"]," = unname(fun_",
-#      rodeoConst$genIdent$vec["pros"],"0D(1:",rodeoConst$genIdent$len["secs"],"))",newline)
+#      rodeoConst$genIdent$vec["pros"],"0D(1:",rodeoConst$genIdent$len["boxes"],"))",newline)
 #    code <- paste0(code,newline)
 #    # END DONT USE
     code <- paste0(code,newline)
 
-    code <- paste0(code,"  # Internal function: Derivatives in a particular section",newline)
+    code <- paste0(code,"  # Internal function: Derivatives in a particular box",newline)
     code <- paste0(code,"  fun_",rodeoConst$genIdent$vec["drvs"],"0D = function (",
-      rodeoConst$genIdent["iSection"],") {",newline)
+      rodeoConst$genIdent["iBox"],") {",newline)
     code <- paste0(code,"    # Update indices",newline)
     code <- paste0(code,"    ",rodeoConst$genIdent$ilist["vars"]," = lapply(",
       rodeoConst$genIdent$ilist0D["vars"],", adjIdx ,",
-      rodeoConst$genIdent$len["secs"],"=",rodeoConst$genIdent$len["secs"],", ",
-      rodeoConst$genIdent["iSection"],"=",rodeoConst$genIdent["iSection"],")",newline)
+      rodeoConst$genIdent$len["boxes"],"=",rodeoConst$genIdent$len["boxes"],", ",
+      rodeoConst$genIdent["iBox"],"=",rodeoConst$genIdent["iBox"],")",newline)
     code <- paste0(code,"    ",rodeoConst$genIdent$ilist["pars"]," = lapply(",
       rodeoConst$genIdent$ilist0D["pars"],", adjIdx ,",
-      rodeoConst$genIdent$len["secs"],"=",rodeoConst$genIdent$len["secs"],", ",
-      rodeoConst$genIdent["iSection"],"=",rodeoConst$genIdent["iSection"],")",newline)
+      rodeoConst$genIdent$len["boxes"],"=",rodeoConst$genIdent$len["boxes"],", ",
+      rodeoConst$genIdent["iBox"],"=",rodeoConst$genIdent["iBox"],")",newline)
     code <- paste0(code,"    ",rodeoConst$genIdent$ilist["pros"]," = lapply(",
       rodeoConst$genIdent$ilist0D["pros"],", adjIdx ,",
-      rodeoConst$genIdent$len["secs"],"=",rodeoConst$genIdent$len["secs"],", ",
-      rodeoConst$genIdent["iSection"],"=",rodeoConst$genIdent["iSection"],")",newline)
+      rodeoConst$genIdent$len["boxes"],"=",rodeoConst$genIdent$len["boxes"],", ",
+      rodeoConst$genIdent["iBox"],"=",rodeoConst$genIdent["iBox"],")",newline)
     code <- paste0(code,"    # Set return vector",newline)
     code <- paste0(code,"    ",code_drvs,newline)
     code <- paste0(code,"  }",newline)
     code <- paste0(code,newline)
 
-    code <- paste0(code,"  # Set vector of derivatives (all spatial sections)",newline)
+    code <- paste0(code,"  # Set vector of derivatives (all spatial boxes)",newline)
     code <- paste0(code,"  ",rodeoConst$genIdent$vec["drvs"]," = as.vector(t(vapply(",
-      "X= 1:",rodeoConst$genIdent$len["secs"],", ",
+      "X= 1:",rodeoConst$genIdent$len["boxes"],", ",
       "FUN= fun_",rodeoConst$genIdent$vec["drvs"],"0D, ",newline,
       "    FUN.VALUE= numeric(",rodeoConst$genIdent$len["vars"],"), USE.NAMES=FALSE)))", newline)
     code <- paste0(code,newline)
@@ -429,7 +425,7 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
 #          comments above for details).
 #    # DONT USE
 #    code <- paste0(code,"  ",rodeoConst$genIdent$vec["drvs"]," = unname(fun_",
-#      rodeoConst$genIdent$vec["drvs"],"0D(1:",rodeoConst$genIdent$len["secs"],"))",newline)
+#      rodeoConst$genIdent$vec["drvs"],"0D(1:",rodeoConst$genIdent$len["boxes"],"))",newline)
 #    code <- paste0(code,newline)
 #    # END DONT USE
 
@@ -452,13 +448,13 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
         "([^",codeElem(lang)$eleClose,"]+)","[",codeElem(lang)$eleClose,"][)]")
       if (fun == rodeoConst$reservedNames["left"]) {
         leftmost <- paste0("(",rodeoConst$genIdent$ilist0D[item],codeElem(lang)$listElem,
-          "\\1-1)*",rodeoConst$genIdent$len["secs"],"+1")
+          "\\1-1)*",rodeoConst$genIdent$len["boxes"],"+1")
         subst <- paste0(rodeoConst$genIdent$vec[item],codeElem(lang)$eleOpen,
           codeElem(lang)$max,"(",leftmost,",",
           rodeoConst$genIdent$ilist[item],codeElem(lang)$listElem,"\\1-1)", codeElem(lang)$eleClose)
       } else if (fun == rodeoConst$reservedNames["right"]) {
         rightmost <- paste0(rodeoConst$genIdent$ilist0D[item],codeElem(lang)$listElem,
-          "\\1*",rodeoConst$genIdent$len["secs"])
+          "\\1*",rodeoConst$genIdent$len["boxes"])
         subst <- paste0(rodeoConst$genIdent$vec[item],codeElem(lang)$eleOpen,
           codeElem(lang)$min,"(",rightmost,",",
           rodeoConst$genIdent$ilist[item],codeElem(lang)$listElem,"\\1+1)", codeElem(lang)$eleClose)

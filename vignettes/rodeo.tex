@@ -95,25 +95,15 @@ The \software{rodeo} package facilitates the implementation of ODE-based models.
 \begin{itemize}
 \item Models are defined using plain tabular text files or spreadsheets. Thus, the model is formulated independent from source code. This facilitates documentation, portability, and re-use.
 \item You are forced to provide the model in stoichiometry matrix notation (see \url{http://en.wikipedia.org/wiki/Petersen_matrix}). Although this is a restriction, it is a very useful one and benefit is almost guaranteed.
-\item Owing to the matrix notation, redundant terms are eliminated from the differential equations. This contributes to comprehensibility and increases computational efficiency. The stoichiometry matrix can also be visualized to better communicate the model to users or non-modelers.
+\item Owing to the matrix notation, redundant terms are largely eliminated from the differential equations. This contributes to comprehensibility and increases computational efficiency. The stoichiometry matrix can also be visualized to better communicate the model to users or non-modelers.
 \item \software{rodeo} provides a code generator which supports \software{R} and \software{Fortran} as target languages. Using compiled \software{Fortran} can speed up numerical integration by 1 or 2 orders of magnitude (compared to plain \software{R}).
 \item Code can be generated for an arbitrary number of sections (e.g. control volumes in a spatially discretized model). This allows even partial differential equations (e.~g. reactive transport problems) to be tackled by means of semi-discretization  (see \url{http://en.wikipedia.org/wiki/Method_of_lines}).
 \end{itemize}
 
 \section{Example problem}
-The functioning of the package is best illustrated by an example. In this document, we consider a continuous flow stirred tank reactor (CFSTR) containing a degradable organic matter (concentration \verb|c_z|) and dissolved oxygen, \verb|c_do| (Fig.~\ref{fig:reactor}). Due to mixing, the reactors contents is spatially homogeneous, hence the concentrations are scalars. Changes in concentrations are triggered by
-\begin{enumerate}
-\item the loads in the reactor's inflow,
-\item aerobic degradation of the organic matter (1st order) which consumes dissolved oxygen,
-\item exchange of oxygen with the atmosphere.
-\end{enumerate}
+The functioning of the package is illustrated with simple model of bacteria growth in a continuous flow stirred tank reactor (CFSTR) also known as chemostat. In is assuemed that the bacteria grow on a single resource (e.~g. a source of organic carbon) which is imported via the reactor's inflow (Fig.~\ref{fig:reactor}). Due to mixing, the reactors contents is spatially homogeneous, hence the density of bacteria as well as the concentration of the substrate are scalars.
 
-Some specific aspects of the model are as follows:
-\begin{itemize}
-\item The dependence of aerobic degradation on available oxygen is described with a Monod term (Michaelis-Menten model).
-\item The rate of oxygen exchange between water and atmosphere is described as an empirical function of water depth and wind speed.
-\item The model does \emph{not} assume steady flow conditions, hence the volume of the reactor is a state variable too.
-\end{itemize}
+Changes in bacteria density are due to (1) resource-limited growth and (2) wash-out from the reactor. The substrate concentration is controlled by (1) the inflow as well as (2) the consumption by bacteria. A classical Monod term was used to model the resource dependency of bacteria growth. For the sake of simplicity, the external forcings (i.~e. flow rate and substrate load) are held constant.
 
 \begin{figure}
 \centering
@@ -121,73 +111,77 @@ Some specific aspects of the model are as follows:
 \caption{Sketch of considered system. \label{fig:reactor}}
 \end{figure}
 
-Using \software{rodeo}, the model can be described using just tabular text files (Tables~\ref{tab:identifiers} -- \ref{tab:stoichiometry}). These files are shipped with the package and can be loaded with \software{R}'s \verb|data| method.
+Using \software{rodeo}, the model can be described using just tabular text files (Tables~\ref{tab:vars} -- \ref{tab:stoi}). These files are shipped with the package and can be loaded with \software{R}'s \verb|data| method.
 
 \begin{table}
-\caption{Declaration of identifiers (data set 'exampleIdentifiers'). The type column indicates whether an item is a state variable (v), parameter (p), or function (f). \label{tab:identifiers}}
-\begin{shaded}
-\begin{small}
+\caption{Declaration of state variables. \label{tab:vars}}
+\begin{shaded}\begin{small}
 \begin{Schunk}
 \begin{Soutput}
-    name type unit              description       tex              html
-    c_do    v mg/l             dissolved O2    c_{DO}    c<sub>DO</sub>
-     c_z    v mg/l degradable org. matter Z       c_Z     c<sub>Z</sub>
-       v    v   m3  water volume in reactor         v                 v
-    q_in    p m3/s              inflow rate    q_{in}    q<sub>in</sub>
-    q_ex    p m3/s             outflow rate    q_{ex}    q<sub>ex</sub>
-      kd    p  1/d               decay rate       k_d     k<sub>d</sub>
-  s_do_z    p  g/g     stoichiometry (O2/Z)  s_{DO,Z}  s<sub>DO,Z</sub>
-    h_do    p g/m3       half-saturation O2    h_{DO}    h<sub>DO</sub>
-    temp    p degC              temperature         T                 T
-    wind    p  m/s               wind speed         W                 W
-   depth    p    m              water depth         D                 D
-   O2sat    f mg/l   O2 saturation, f(temp)  O2_{sat}  O2<sub>sat</sub>
-      ka    f  1/d aeration, f(wind, depth)       k_a     k<sub>a</sub>
-   monod    f    -              monod model     monod             monod
-  c_z_in    f g/m3     Z in inflow, f(time)  c_{Z,in}  c<sub>Z,in</sub>
- c_do_in    f g/m3    O2 in inflow, f(time) c_{DO,in} c<sub>DO,in</sub>
+ name     unit             description
+ bacs cells/ml        bacteria density
+ subs    mg/ml substrate concentration
 \end{Soutput}
 \end{Schunk}
-\end{small}
-\end{shaded}
+\end{small}\end{shaded}
 \end{table}
 
 \begin{table}
-\caption{Specification of processes (data set 'exampleProcesses'). \label{tab:processes}}
-\begin{shaded}
-\begin{small}
+\caption{Declaration of parameters. \label{tab:pars}}
+\begin{shaded}\begin{small}
 \begin{Schunk}
 \begin{Soutput}
-     name   unit   description                            expression
-     flow   m3/s water balance                           q_in - q_ex
- flushing    1/s flushing rate                              q_in / v
-    decay g/m3/s    decay of z          kd * c_z * monod(c_do, h_do)
- aeration g/m3/s   O2-exchange ka(wind,depth) * (O2sat(temp) - c_do)
+    name     unit                                             description
+      mu   1/hour                          intrinsic bacteria growth rate
+    half    mg/ml substrate level where bacteria grow at 50% of max. rate
+   yield cells/mg                  cells produced per amount of substrate
+     vol       ml                                       volume of reactor
+    flow  ml/hour                                    rate of through-flow
+ subs_in    mg/ml                       substrate concentration in inflow
 \end{Soutput}
 \end{Schunk}
-\end{small}
-\end{shaded}
+\end{small}\end{shaded}
 \end{table}
 
 \begin{table}
-\caption{Specification of stoichiometric factors (data set 'exampleStoichiometry'). \label{tab:stoichiometry}}
-\begin{shaded}
-\begin{small}
+\caption{Declaration of functions being reference in process rate expressions and/or stoichiometric factor expressions. \label{tab:funs}}
+\begin{shaded}\begin{small}
 \begin{Schunk}
 \begin{Soutput}
- variable  process           expression
-        v     flow                    1
-      c_z flushing   c_z_in(time) - c_z
-      c_z    decay                   -1
-     c_do flushing c_do_in(time) - c_do
-     c_do    decay              -s_do_z
-     c_do aeration                    1
+  name unit                              description
+ monod    - monod expression for resource limitation
 \end{Soutput}
 \end{Schunk}
-\end{small}
-\end{shaded}
+\end{small}\end{shaded}
 \end{table}
 
+\begin{table}
+\caption{Specification of processes. \label{tab:pros}}
+\begin{shaded}\begin{small}
+\begin{Schunk}
+\begin{Soutput}
+    name       unit           description                    expression
+ growth  cells/hour bacteria growth       mu * monod(subs, half) * bacs
+ renewal 1/hour     rate of water renewal flow/vol                     
+\end{Soutput}
+\end{Schunk}
+\end{small}\end{shaded}
+\end{table}
+
+\begin{table}
+\caption{Specification of stoichiometric factors. \label{tab:stoi}}
+\begin{shaded}\begin{small}
+\begin{Schunk}
+\begin{Soutput}
+ variable process       expression
+     bacs growth  1               
+     bacs renewal -bacs           
+     subs growth  -1 / yield      
+     subs renewal (subs_in - subs)
+\end{Soutput}
+\end{Schunk}
+\end{small}\end{shaded}
+\end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -204,21 +198,17 @@ We start by loading the package and the example data.
 \begin{Sinput}
  library(rodeo, quietly=TRUE)
  # Load sample data frames (contents shown above)
- data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+ data(vars, pars, pros, funs, stoi)
 \end{Sinput}
 \end{Schunk}
 
-Then, a new object is created with \verb|new|. This requires us to supply the name of the class, data frames for initialization, as well as the number of sections. Here, we create a zero-dimensional model (single section). 
+Then, a new object is created with \verb|new|. This requires us to supply the name of the class, data frames for initialization, as well as the spatial dimensions. Here, we create a single-box model (one dimension with no sub-units). 
 
 \begin{Schunk}
 \begin{Sinput}
  # Instantiate new object
- model <- rodeo$new(vars=subset(exampleIdentifiers,type=="v"),
-   pars=subset(exampleIdentifiers,type=="p"),
-   funs=subset(exampleIdentifiers,type=="f"),
-   pros=exampleProcesses,
-   stoi=exampleStoichiometry,
-   size=1)
+ model <- rodeo$new(vars=vars, pars=pars, funs=funs,
+   pros=pros, stoi=stoi, dim=c(1))
 \end{Sinput}
 \end{Schunk}
 
@@ -235,60 +225,38 @@ To inspect the object's contents, we can use the following:
 
 \subsection{Defining functions and supplying data}
 
-In order to work with the object, we need to define functions that are referenced in the model's mathematical expressions. This includes the forcings which are functions of a special argument with the reserved name 'time'. See Sect.~\ref{sec:advanced:forcings} for details.
+In order to work with the object, we need to define functions that are referenced in the process rate expressions or stoichiometric factors (i.~e. the ODEs' right hand sides). For non-autonomous models, this includes the definition of forcings which are functions of a special argument with the reserved name 'time'. See Sect.~\ref{sec:advanced:forcings} for details.
 
+For the example, we need just one simple function (see \url{https://en.wikipedia.org/wiki/Monod_equation}).
 \begin{Schunk}
 \begin{Sinput}
- # 'normal' functions
- O2sat <- function(t) {
-   14.652 - 0.41022*t + 0.007991*t^2 - 0.000077774*t^3
- }
- ka <- function(u, d) {
-   (0.728*sqrt(u) - 0.317*u + 0.0372*u^2) / d / 86400
- }
- monod <- function(s,h) {
-   s / (s + h)
- }
+ monod <- function(c,h) { c / (c + h) }
 \end{Sinput}
 \end{Schunk}
 
-\begin{Schunk}
-\begin{Sinput}
- # forcings are functions of special variable 'time'
- c_z_in <- function(seconds) {
-   0.1 * seconds/(7*86400 + seconds)
- }
- c_do_in <- function(seconds) {
-   10.  # taken as constant
- }
-\end{Sinput}
-\end{Schunk}
-
-We also need to set the values of parameters and state variables (initial values) using the dedicated methods \verb|setPars| and \verb|setVars|.
+We also need to set the values of parameters and state variables (initial values) using the dedicated methods \verb|setPars| and \verb|setVars|. Since we deal with a single-box model, parameters and initial values can be stored in ordinary vectors.
 
 \begin{Schunk}
 \begin{Sinput}
- model$setPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76,
-  wind=1, depth=2, temp=20, q_in=1, q_ex=1))
- model$setVars(c(c_z=1, c_do=9.022, v=1.e6))
+ model$setVars(c(bacs=0.01, subs=0))
+ model$setPars(c(mu=0.8, half=0.1, yield= 0.1,
+   vol=1000, flow=50, subs_in=1))
 \end{Sinput}
 \end{Schunk}
 
 \subsection{Computing the stoichiometry matrix}
 
-Having defined all functions and having set the values of variables and parameters, one can compute the stoichiometric factors. In general, explicitly computing these factors is not necessary, it may be helpful in debugging however. To do so, the \verb|stoichiometry| method needs to be supplied with values of all state variables, parameters, as well as a time value (in the case of non-autonomous models).
+Having defined all functions and having set the values of variables and parameters, one can compute the stoichiometric factors. In general, explicitly computing these factors is not necessary, it may be helpful in debugging however. To do so, the \verb|stoichiometry| method needs to be supplied with the index of the spatial box (only relevant for multi-box models) as well as a time value (in the case of non-autonomous models).
 
 \begin{Schunk}
 \begin{Sinput}
- m <- model$stoichiometry(section=1, time=0)
+ m <- model$stoichiometry(box=1, time=0)
  print(signif(m, 3))
 \end{Sinput}
 \begin{Soutput}
-           c_do c_z v
-flow      0.000   0 1
-flushing  0.978  -1 0
-decay    -2.760  -1 0
-aeration  1.000   0 0
+         bacs subs
+growth   1.00  -10
+renewal -0.01    1
 \end{Soutput}
 \end{Schunk}
 
@@ -314,15 +282,14 @@ We are now ready to compute the evolution of the state variables over time by me
 \begin{Schunk}
 \begin{Sinput}
  library(deSolve)
- t <- seq(0, 30*86400, 3600)
- out <- ode(y=model$getVars(), times=t, func=derivs,
+ out <- deSolve::ode(y=model$getVars(useNames=TRUE), times=0:96, func=derivs,
    parms=model$getPars())
- layout(matrix(1:9, ncol=3, byrow=TRUE))
+ layout(matrix(1:4, ncol=2, byrow=TRUE))
  plot(out, mfrow=NULL)
  layout(1)
 \end{Sinput}
 \end{Schunk}
-\includegraphics{rodeo-solveSingleSectionR}
+\includegraphics{rodeo-solveSingleBoxR}
 
 In addition to the dynamics of the state variables, the numerical solver also outputs the dynamics of the process rates. This is valuable information in general and it also facilitates debugging.
 
@@ -338,17 +305,13 @@ In addition to the dynamics of the state variables, the numerical solver also ou
 
 \subsection{Spatially distributed systems (multi-section models)} \label{sec:advanced:multiSect}
 
-A zero-dimensional case (single reactor) has been considered so far. We will now extend the model for multiple spatial sections, i.~e. for a collection of (isolated) reactors. First, we need to create a model object with the desired dimension. Second, the code needs to be re-generated to reflect the altered dimension. Third, initial values and parameters need to be specified as matrices where each row represents a spatial section. In the example, we initialize every modeled reactor with a different concentration of organic matter.
+A single-box case has been considered so far. We will now extend the model for multiple boxes, i.~e. for a collection of (isolated) reactors. To keep it simple, we use just a few boxes in a single spatial dimension. First, we need to create a model object with the desired dimensions and resolution. Second, the code needs to be re-generated to reflect the altered dimension. Third, initial values and parameters need to be specified as arrays to account for the spatial discretization. For a model with one spatial dimension, we must use two-dimensional arrays, i.~e. matrices. Here, we initialize every modeled reactor with a different bacteria density.
 
 \begin{Schunk}
 \begin{Sinput}
- # Instantiate new object
- model <- rodeo$new(vars=subset(exampleIdentifiers,type=="v"),
-   pars=subset(exampleIdentifiers,type=="p"),
-   funs=subset(exampleIdentifiers,type=="f"),
-   pros=exampleProcesses,
-   stoi=exampleStoichiometry,
-   size=3)
+ nBox <- 2
+ model <- rodeo$new(vars=vars, pars=pars, funs=funs,
+   pros=pros, stoi=stoi, dim=c(nBox))
 \end{Sinput}
 \end{Schunk}
 \begin{Schunk}
@@ -359,27 +322,27 @@ A zero-dimensional case (single reactor) has been considered so far. We will now
 \end{Schunk}
 \begin{Schunk}
 \begin{Sinput}
- vars <- cbind(
-   c_z=seq(from=0, to=50, length.out=model$size()),
-   c_do=rep(9.022, model$size()),
-   v=rep(1.e6, model$size()))
- pars <- c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1,
-   depth=2, temp=20, q_in=1, q_ex=1)
- pars <- matrix(rep(pars, model$size()), nrow=model$size(),
-   byrow=TRUE, dimnames=list(NULL, names(pars)))  
- model$setPars(pars)
- model$setVars(vars)
+ v <- cbind(
+   bacs= seq(from=0.01, to=0.2, length.out=nBox),
+   subs= rep(0, nBox)
+ )
+ model$setVars(v)
+ p <- c(mu=0.8, half=0.1, yield= 0.1,
+   vol=1000, flow=50, subs_in=1)
+ model$setPars(matrix(rep(p, each=nBox), nrow=nBox,
+   dimnames=list(NULL, names(p))))
 \end{Sinput}
 \end{Schunk}
 \begin{Schunk}
 \begin{Sinput}
- out <- ode(y=model$getVars(), times=t, func=derivs,
+ out <- ode(y=model$getVars(useNames=TRUE), times=0:96, func=derivs,
    parms=model$getPars())
- layout(matrix(1:model$size(), nrow=1))
- plot(out, which=paste("c_do",1:model$size(),sep="."), mfrow=NULL)
+ layout(matrix(1:(model$lenVars()*nBox), nrow=nBox, byrow=TRUE))
+ plot(out, which=1:(model$lenVars()*nBox), mfrow=NULL)
+ layout(1)
 \end{Sinput}
 \end{Schunk}
-\includegraphics{rodeo-solveMultiSectionsR}
+\includegraphics{rodeo-solveMultiBoxR}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -425,7 +388,7 @@ The \verb|compile| method takes as argument the name of a file holding the \soft
 
 \begin{Schunk}
 \begin{Sinput}
- lib <- model$compile(fileFun="functionsCode.f95")
+ lib <- model$compile(sources="functionsCode.f95")
 \end{Sinput}
 \end{Schunk}
 
@@ -440,31 +403,9 @@ module functions
    implicit none 
    contains 
   
-   double precision function O2sat(t)  
-     double precision, intent(in):: t 
-     O2sat= 14.652d0 - 0.41022d0*t + 7.991d-3*(t**2d0) - & 
-       7.7774d-5*(t**3d0) 
-   end function 
-  
-   double precision function ka(u, d)  
-     double precision, intent(in):: u, d 
-     ka= (0.728d0*sqrt(u) - 0.317d0*u + 0.0372d0*(u**2.d0)) / & 
-       d / 86400.d0 
-   end function 
-  
-   double precision function monod(s, h)  
-     double precision, intent(in):: s, h 
-     monod= s / (s + h) 
-   end function 
-  
-   double precision function c_z_in(seconds)  
-     double precision, intent(in):: seconds 
-     c_z_in= 0.1d0 * seconds/(7d0*86400d0 + seconds) 
-   end function 
-  
-   double precision function c_do_in(seconds)  
-     double precision, intent(in):: seconds 
-     c_do_in= 10.d0 
+   double precision function monod(c, h)  
+     double precision, intent(in):: c, h 
+     monod= c / (c + h) 
    end function 
   
  end module 
@@ -476,17 +417,27 @@ We are now prepared to load the shared library and run the simulation based on t
 
 \begin{Schunk}
 \begin{Sinput}
+ v <- cbind(
+   bacs= seq(from=0.01, to=0.2, length.out=nBox),
+   subs= rep(0, nBox)
+ )
+ model$setVars(v)
+ p <- c(mu=0.8, half=0.1, yield= 0.1,
+   vol=1000, flow=50, subs_in=1)
+ model$setPars(matrix(rep(p, each=nBox), nrow=nBox,
+   dimnames=list(NULL, names(p))))
  dyn.load(lib["libFile"])
- out <- ode(y=model$getVars(), times=t, func=lib["libFunc"],
-   parms=model$getPars(), dllname=lib["libName"],
-   initfunc="initmod", nout=model$lenPros()*model$size())
- layout(matrix(1:model$size(), nrow=1))
+ out <- ode(y=model$getVars(useNames=TRUE), times=0:96,
+   func=lib["libFunc"], parms=model$getPars(), dllname=lib["libName"],
+   initfunc="initmod", nout=model$lenPros()*prod(model$getDim()))
+ layout(matrix(1:(model$lenVars()*nBox), nrow=nBox, byrow=TRUE))
+ plot(out, which=1:(model$lenVars()*nBox), mfrow=NULL)
+ layout(1)
  dyn.unload(lib["libFile"])
- plot(out, which=paste("c_do",1:model$size(),sep="."), mfrow=NULL)
+ invisible(file.remove(lib["libFile"]))
 \end{Sinput}
 \end{Schunk}
-\includegraphics{rodeo-021}
-
+\includegraphics{rodeo-022}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -516,16 +467,16 @@ This section demonstrates how the 'functions-of-time' approach can be used in \s
 \end{Sinput}
 \begin{Soutput}
    time temp humid
-1     1   27    50
-2     2   20    41
-3     3   24    47
-4     4   16    48
-5     5   22     4
-6     6   21    96
-7     7   16    18
-8     8   16    88
-9     9   25    77
-10   10   16    41
+1     1   12    19
+2     2   18    20
+3     3   21    32
+4     4   23    74
+5     5   21    13
+6     6   20    51
+7     7   19    41
+8     8   23    38
+9     9   22    27
+10   10   20    97
 \end{Soutput}
 \end{Schunk}
 
@@ -624,9 +575,8 @@ generates the following \LaTeX{} code
 \begin{Soutput}
   \begin{tabular}{lll}\hline
     \textbf{symbol} & \textbf{unit} & \textbf{description} \\ \hline
-    $c_{DO}$ & mg/l & dissolved O2 \\
-    $c_Z$ & mg/l & degradable org. matter Z \\
-    $v$ & m3 & water volume in reactor \\ \hline
+    $bacs$ & cells/ml & bacteria density \\
+    $subs$ & mg/ml & substrate concentration \\ \hline
   \end{tabular}
 \end{Soutput}
 \end{Schunk}
@@ -638,9 +588,8 @@ holding tabular information on the model's state variables. To include the resul
 \begin{center}
   \begin{tabular}{lll}\hline
     \textbf{symbol} & \textbf{unit} & \textbf{description} \\ \hline
-    $c_{DO}$ & mg/l & dissolved O2 \\
-    $c_Z$ & mg/l & degradable org. matter Z \\
-    $v$ & m3 & water volume in reactor \\ \hline
+    $bacs$ & cells/ml & bacteria density \\
+    $subs$ & mg/ml & substrate concentration \\ \hline
   \end{tabular}\end{center}
 
 \bigskip
@@ -680,7 +629,7 @@ One can use the class method \verb|plotStoichiometry| to visualize the matrix us
 
 \begin{Schunk}
 \begin{Sinput}
- model$plotStoichiometry(section=1, time=0, cex=0.3)
+ model$plotStoichiometry(box=1, time=0, cex=0.3)
 \end{Sinput}
 \end{Schunk}
 \includegraphics{rodeo-030}
@@ -697,7 +646,7 @@ The following example generates suitable code for inclusion in \LaTeX{} document
  }
  rot90 <- function(x) { paste0("\\rotatebox{90}
    {$",gsub(pattern="*", replacement="\\cdot ", x=x, fixed=TRUE),"$}") }
- m <- model$stoichiometry(section=1, time=0)
+ m <- model$stoichiometry(box=1, time=0)
  tbl <- cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE),
    as.data.frame(m))
  tex <- exportDF(x=tbl, tex=TRUE,
@@ -729,7 +678,7 @@ The following example generates suitable code for inclusion in HTML documents.
    if (as.numeric(x) < 0) return("&#9661;")
    return("")
  }
- m <- model$stoichiometry(section=1, time=0)
+ m <- model$stoichiometry(box=1, time=0)
  tbl <- cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE),
    as.data.frame(m))
  html <- exportDF(x=tbl, tex=FALSE,
@@ -755,7 +704,7 @@ A \software{markdown} compatible can be generated with the \software{knitr} func
    if (as.numeric(x) < 0) return("$\\blacktriangledown$")
    return("")
  }
- stoi_mat <- model$stoichiometry(section=1, time=0)
+ stoi_mat <- model$stoichiometry(box=1, time=0)
  stoi_mat <- data.frame(apply(stoi_mat, MARGIN = c(1, 2), signsymbol))
  stoi_mat <- setNames(stoi_mat, paste0("$",     
    model$getVarsTable()$tex[match(colnames(stoi_mat),

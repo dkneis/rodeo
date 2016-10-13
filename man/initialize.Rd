@@ -27,8 +27,11 @@ matrix elements are interpreted as zero stoichiometry factors.}
 \item{asMatrix}{Logical. Specifies whether stoichiometry information is given
 in matrix or data base format.}
 
-\item{size}{Number of spatial sections. The default of 1 assumes
-a zero-dimensional model.}
+\item{dim}{An integer vector, specifying the number of boxes in each spatial
+dimension. Use \code{c(1)} to create a zero-dimensional
+(i.e. single-box) model. This is the default.
+Use, e.g. \code{c(5)} to create a 1-dimensional model with 5 boxes.
+To create, e.g., a 2-dimensional model with 4 x 5 boxes, use \code{c(4,5)}.}
 }
 \value{
 The method is called implicitly for its side effects when a
@@ -58,13 +61,8 @@ Initialization does not assign numeric values to state variables or
   \code{\link{setPars}} for that purpose.
 }
 \examples{
-data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model <- rodeo$new(
-  vars=subset(exampleIdentifiers, type=="v"),
-  pars=subset(exampleIdentifiers, type=="p"),
-  funs=subset(exampleIdentifiers, type=="f"),
-  pros=exampleProcesses, stoi=exampleStoichiometry
-)
+data(vars, pars, funs, pros, stoi)
+model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
 print(model)
 }
 \author{

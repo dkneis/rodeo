@@ -5,7 +5,7 @@
 \title{Code Generator}
 \arguments{
 \item{lang}{Character string to select the language of the generated source
-code. Must be either 'f95' (for Fortran) or 'r' (for R).}
+code. Currently either 'f95' (for Fortran) or 'r' (for R).}
 
 \item{name}{Name for the generated function (character string). It should
 start with a letter, optionally followed by letters, numbers, or
@@ -27,26 +27,22 @@ Fortran code requires compilation but typically runs much faster than
 
 If generated Fortran code is to be used with the numerical solvers from the
   \code{\link[deSolve]{deSolve-package}} or
-  \code{\link[rootSolve]{rootSolve-package}} a wrapper is required. It is
-  best created with the non-class method \code{\link{solverInterface}}.
+  \code{\link[rootSolve]{rootSolve-package}} a wrapper is required and all
+  generated code needs to be compiled. See \code{\link{compile}}.
 }
 \examples{
-data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model <- rodeo$new(
-  vars=subset(exampleIdentifiers, type=="v"),
-  pars=subset(exampleIdentifiers, type=="p"),
-  funs=subset(exampleIdentifiers, type=="f"),
-  pros=exampleProcesses, stoi=exampleStoichiometry
-)
+data(vars, pars, funs, pros, stoi)
+model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
 fortranCode <- model$generate(lang="f95")
+\dontrun{
 write(fortranCode, file="")
+}
 }
 \author{
 \email{david.kneis@tu-dresden.de}
 }
 \seealso{
 See other methods of the \code{\link{rodeo-class}}, especially
-  \code{\link{compile}} or the non-class method \code{\link{solverInterface}}
-  to further process generated Fortran code.
+  \code{\link{compile}} which internally uses this method.
 }
 

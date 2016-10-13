@@ -22,8 +22,11 @@
 #'   matrix elements are interpreted as zero stoichiometry factors.
 #' @param asMatrix Logical. Specifies whether stoichiometry information is given
 #'   in matrix or data base format.
-#' @param size Number of spatial sections. The default of 1 assumes
-#'   a zero-dimensional model.
+#' @param dim An integer vector, specifying the number of boxes in each spatial
+#'   dimension. Use \code{c(1)} to create a zero-dimensional
+#'   (i.e. single-box) model. This is the default.
+#'   Use, e.g. \code{c(5)} to create a 1-dimensional model with 5 boxes.
+#'   To create, e.g., a 2-dimensional model with 4 x 5 boxes, use \code{c(4,5)}.
 #'
 #' @return The method is called implicitly for its side effects when a
 #'   \code{\link{rodeo}} object is instantiated with \code{\link[methods]{new}}.
@@ -51,17 +54,12 @@
 #' @seealso See the package vignette for examples.
 #'
 #' @examples
-#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-#' model <- rodeo$new(
-#'   vars=subset(exampleIdentifiers, type=="v"),
-#'   pars=subset(exampleIdentifiers, type=="p"),
-#'   funs=subset(exampleIdentifiers, type=="f"),
-#'   pros=exampleProcesses, stoi=exampleStoichiometry
-#' )
+#' data(vars, pars, funs, pros, stoi)
+#' model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
 #' print(model)
 
 rodeo$set("public", "initialize",
-  function(vars, pars, funs, pros, stoi, asMatrix=FALSE, size=1
+  function(vars, pars, funs, pros, stoi, asMatrix=FALSE, dim=c(1)
 ) {
   # Set variables ##############################################################
   cn <- c("name","unit","description")
@@ -232,15 +230,16 @@ rodeo$set("public", "initialize",
   stoi$variable_tex <- vars$tex[match(stoi$variable, vars$name)]
   stoi$variable_html <- vars$html[match(stoi$variable, vars$name)]
   private$stoiTbl <- as.data.frame(stoi, stringsAsFactors=FALSE)
-  # Initialize number of spatial sections ########################################
-  if (as.integer(size) <= 0)
-    stop("number of spatial sections must be a positive integer")
-  private$sections <- as.integer(size)
+  # Initialize spatial dimensions ##############################################
+  dim <- as.integer(dim)
+  if ((length(dim) == 0) || any(!is.integer(dim)) || any(dim < 1))
+    stop("'dim' must be a vector of positive integers")
+  if ((length(dim) > 1) && any(dim < 2))
+    stop("all elements of 'dim' must be > 1 when length of 'dim' is > 1")
+  private$dim <- dim
   # Initialize numeric data ####################################################
-  private$v <- matrix(NA, nrow=private$sections, ncol=nrow(vars),
-    dimnames=list(NULL, vars$name))
-  private$p <- matrix(NA, nrow=private$sections, ncol=nrow(pars),
-    dimnames=list(NULL, pars$name))
+  private$vars <- rep(NA, nrow(vars)*prod(dim))
+  private$pars <- rep(NA, nrow(pars)*prod(dim))
   # Register finalizer (unloads stepper libs)
   unld <- function(x) {
     if (length(x$steppers) > 0) {

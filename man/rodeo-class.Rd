@@ -35,13 +35,11 @@ identifiers to be used in the expression fields of \code{prosTbl} or \code{stoiT
 \item{\code{funsTbl}}{A data frame of the same structure as \code{vars} declaring any
 functions referenced in the expression fields of \code{prosTbl} or \code{stoiTbl}.}
 
-\item{\code{sections}}{Number of spatial sections (integer).}
+\item{\code{dim}}{Integer vector specifying the spatial dimensions.}
 
-\item{\code{v}}{Numeric matrix, holding values of variables (columns) in the
-model's spatial compartments (rows).}
+\item{\code{vars}}{Numeric vector, holding values of state variables.}
 
-\item{\code{p}}{Numeric matrix, holding values of parameters (columns) in the
-model's spatial compartments (rows).}
+\item{\code{pars}}{Numeric vector, holding values of parameters.}
 }}
 \section{Class methods}{
 
@@ -60,8 +58,8 @@ its arguments and usage.
   \item{\code{getVarsTable, getParsTable, getFunsTable, getProsTable,
     getStoiTable}} Functions returning the data frames used to initialize
     the object. No arguments
-  \item{\code{size}} Returns the number spatial sections (integer).
-    No arguments."
+  \item{\code{getDim}} Returns the spatial dimensions as an integer vector.
+    No arguments.
   \item{\code{\link{compile}}} Compiles a Fortran library for use with
     numerical methods from packages \code{\link[deSolve]{deSolve}} or
     \code{\link[rootSolve]{rootSolve}}.
@@ -80,15 +78,30 @@ its arguments and usage.
 }
 }
 \examples{
-data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model <- rodeo$new(
-  vars=subset(exampleIdentifiers, type=="v"),
-  pars=subset(exampleIdentifiers, type=="p"),
-  funs=subset(exampleIdentifiers, type=="f"),
-  pros=exampleProcesses, stoi=exampleStoichiometry
-)
-print(model)
+# Bacteria growth in a continuous flow culture
+library("deSolve")
 
+# Creation of model object
+data(vars, pars, funs, pros, stoi)
+model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
+
+# Parameters, initial values
+model$setPars(c(mu=0.8, half=0.1, yield= 0.1, vol=1000, flow=50, subs_in=1))
+model$setVars(c(bacs=0.01, subs=0))
+
+# Implementation of functions declared in 'funs'
+monod <- function(c,h) {c/(c+h)}
+
+# Creation of derivatives function
+code <- model$generate(name="derivs", lang="r")
+derivs <- eval(parse(text=code))
+
+# Integration
+times <- 0:96
+out <- deSolve::ode(y=model$getVars(), times=times, func=derivs,
+  parms=model$getPars())
+colnames(out) <- c("time", model$namesVars(), model$namesPros())
+plot(out)
 }
 \seealso{
 See the \code{\link{rodeo-package}} main page or type

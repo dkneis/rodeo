@@ -26,7 +26,7 @@ may increase performance in repeated calls.}
 \value{
 A numeric matrix (with column names). There is one column for each
   state variable and process rate. The number of rows equals the number of
-  spatial sections, i.e. the result is a single-column matrix in case of a
+  spatial boxes, i.e. the result is a single-row matrix in case of a
   zero-dimensional model.
 }
 \description{

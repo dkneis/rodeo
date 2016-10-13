@@ -1,32 +1,59 @@
 
 # This provides the roxygen documentation for the package's data sets
 
-#' Declaration of Identifiers
+#' Declaration of Variables
 #'
-#' Declaration of items (i.e. identifiers) appearing in the model's
-#' mathematical expressions.
+#' Declaration of variables of the bacteria growth example model.
 #'
 #' @docType data
-#' @name exampleIdentifiers
+#' @name vars
 #' @format A data frame with the following fields:
 #'   \itemize{
-#'     \item{name : }{Name of the item}
-#'     \item{type : }{'v' for variable, 'p' for paraneter, 'f' for function}
-#'     \item{units : }{Units of the item}
+#'     \item{name : }{Name of the variable}
+#'     \item{units : }{Unit}
+#'     \item{description : }{Short description (text)}
+#'   }
+NULL
+
+#' Declaration of Parameters
+#'
+#' Declaration of parameters of the bacteria growth example model.
+#'
+#' @docType data
+#' @name pars
+#' @format A data frame with the following fields:
+#'   \itemize{
+#'     \item{name : }{Name of the parameter}
+#'     \item{units : }{Unit}
+#'     \item{description : }{Short description (text)}
+#'   }
+NULL
+
+#' Declaration of Functions
+#'
+#' Declaration of functions referenced at the ODE's right hand sides
+#' of the bacteria growth example model.
+#'
+#' @docType data
+#' @name funs
+#' @format A data frame with the following fields:
+#'   \itemize{
+#'     \item{name : }{Name of the function}
+#'     \item{units : }{Unit of the return value}
 #'     \item{description : }{Short description (text)}
 #'   }
 NULL
 
 #' Declaration of Processes
 #'
-#' Definition of simulated processes.
+#' Definition of processes of the bacteria growth example model.
 #'
 #' @docType data
-#' @name exampleProcesses
+#' @name pros
 #' @format A data frame with the following fields:
 #'   \itemize{
 #'     \item{name : }{Name of the process}
-#'     \item{units : }{Units of the rate expression}
+#'     \item{units : }{Unit of the rate expression}
 #'     \item{description : }{Short description (text)}
 #'     \item{expression : }{Mathematical expression (as a string)}
 #'   }
@@ -34,10 +61,11 @@ NULL
 
 #' Specification of Stoichiometry
 #'
-#' Definition of the links between simulated processes and state variables.
+#' Definition of the links between simulated processes and state variables
+#' in the bacteria growth example model.
 #'
 #' @docType data
-#' @name exampleStoichiometry
+#' @name stoi
 #' @format A data frame with the following fields:
 #'   \itemize{
 #'     \item{variable : }{Name of the state variable}

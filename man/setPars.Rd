@@ -4,18 +4,9 @@
 \alias{setPars}
 \title{Assign Values to Parameters}
 \arguments{
-\item{x}{A matrix, vector, or data frame holding the data to be assigned.
-The appropriate type of input depends on the value of \code{tabular}. See
-details below.}
-
-\item{tabular}{If set to \code{FALSE}, then \code{x} must be a numeric matrix
-(or vector) holding data for \emph{all} items and sections. If \code{TRUE},
-then \code{x} must be a data frame with 3 columns 'name', 'section', and
-'value'. Use this to assign data to selected items and/or sections only.}
-
-\item{check}{Logical. By default, several checks are carried out on the}
-
-\item{testNumeric}{Logical. Test for numeric values when \code{check} is \code{TRUE}?}
+\item{x}{A numeric vector or array, depending on the model's spatial
+dimensions. Consult the help page of the sister method
+\code{\link{setVars}} for details on the required input.}
 }
 \value{
 \code{NULL} (invisible). The assigned numeric data are stored in the
@@ -24,26 +15,9 @@ then \code{x} must be a data frame with 3 columns 'name', 'section', and
 \description{
 Assign values to parameters of a \code{\link{rodeo}}-based model.
 }
-\examples{
-data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model <- rodeo$new(
-  vars=subset(exampleIdentifiers, type=="v"),
-  pars=subset(exampleIdentifiers, type=="p"),
-  funs=subset(exampleIdentifiers, type=="f"),
-  pros=exampleProcesses, stoi=exampleStoichiometry,
-  size=2
-)
-# Set all values at a time by passing a matrix
-x <- c(kd=5.78e-7, h_do=0.5, s_do_z=2.76,
-  wind=1, depth=2, temp=20, q_in=1, q_ex=1)
-x <- rbind(x, x)
-model$setPars(x)
-print(model$getPars(asMatrix=TRUE))
-# Set selected values by passing a data frame
-x <- data.frame(name=c("depth","temp"), section=c(1,2), value=c(1,25),
-  stringsAsFactors=FALSE)
-model$setPars(x, tabular=TRUE)
-print(model$getPars(asMatrix=TRUE))
+\note{
+Look at the notes and examples for the \code{\link{setVars}} method.
+  This sister
 }
 \author{
 \email{david.kneis@tu-dresden.de}
@@ -51,5 +25,6 @@ print(model$getPars(asMatrix=TRUE))
 \seealso{
 The corresponding 'get' method is \code{\link{getPars}}. Use
   \code{\link{setVars}} to assign values to variables rather than parameters.
+  Consult the help page of the latter function for examples.
 }
 

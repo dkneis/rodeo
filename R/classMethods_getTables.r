@@ -18,6 +18,3 @@ rodeo$set("public", "getFunsTable", function() { private$funsTbl })
 rodeo$set("public", "getProsTable", function() { private$prosTbl })
 rodeo$set("public", "getStoiTable", function() { private$stoiTbl })
 
-# Method to return the number of spatial sections
-rodeo$set("public", "size", function() { private$sections })
-

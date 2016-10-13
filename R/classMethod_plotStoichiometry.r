@@ -6,9 +6,8 @@
 #'
 #' @name plotStoichiometry
 #'
-#' @param section A positive integer representing a spatial section. The values of
-#'   state variables and parameters must have been set using the
-#'   \code{\link{setVars}} and \code{\link{setPars}} methods.
+#' @param box A vector of positive integers pointing to a spatial sub-unit of
+#'   the model.
 #' @param time Time. The value is ignored in the case of autonomous models.
 #' @param cex Character expansion factor.
 #' @param colPositive Color for positive stoichiometric factors.
@@ -17,10 +16,11 @@
 #'
 #' @return NULL
 #'
-#' @note If the stoichiometric factors are mathematical expressions involving
+#' @note The values of state variables and parameters must have been set using
+#'   the \code{\link{setVars}} and \code{\link{setPars}} methods. If the
+#'   stoichiometric factors are mathematical expressions involving
 #'   function references, these functions must be defined in R (even if the
 #'   numerical computations are based on generated Fortran code).
-#'   
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
@@ -30,24 +30,17 @@
 #'   in the package vignette.
 #'
 #' @examples
-#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-#' model <- rodeo$new(
-#'   vars=subset(exampleIdentifiers, type=="v"),
-#'   pars=subset(exampleIdentifiers, type=="p"),
-#'   funs=subset(exampleIdentifiers, type=="f"),
-#'   pros=exampleProcesses, stoi=exampleStoichiometry
-#' )
-#' c_z_in <- function(time) {0.1}
-#' c_do_in <- function(time) {8.0}
-#' model$setVars(c(c_z=1, c_do=9.022, v=1.e6))
-#' model$setPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
-#'   temp=20, q_in=1, q_ex=1))
-#' model$plotStoichiometry(section=1, time=0)
+#' data(vars, pars, funs, pros, stoi)
+#' model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
+#' model$setVars(c(bacs=0.1, subs=0.5))
+#' model$setPars(c(mu=0.8, half=0.1, yield= 0.1, vol=1000, flow=50, subs_in=1))
+#' monod <- function(c,h) {c/(c+h)}
+#' model$plotStoichiometry(box=c(1))
 
-rodeo$set("public", "plotStoichiometry", function(section=1, time=0, cex=1,
+rodeo$set("public", "plotStoichiometry", function(box, time=0, cex=1,
   colPositive="darkorange", colNegative="steelblue4", colGrid="grey"
 ) {
-  m <- self$stoichiometry(section=section, time=time)
+  m <- self$stoichiometry(box=box, time=time)
   dx <- 0.2
   dy <- sqrt((dx**2)/2)
   mar <- 0.5

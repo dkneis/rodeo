@@ -4,20 +4,8 @@
 \alias{setVars}
 \title{Assign Values to State Variables}
 \arguments{
-\item{x}{A matrix, vector, or data frame holding the data to be assigned.
-The appropriate type of input depends on the value of \code{tabular}. See
-details below.}
-
-\item{tabular}{If set to \code{FALSE}, then \code{x} must be a numeric matrix
-(or vector) holding data for \emph{all} items and sections. If \code{TRUE},
-then \code{x} must be a data frame with 3 columns 'name', 'section', and
-'value'. Use this to assign data to selected items and/or sections only.}
-
-\item{check}{Logical. By default, several checks are carried out on the
-passed \code{x}. This can be turned off by setting \code{check} to
-\code{FALSE}. May be used to avoid unnecessary checks in repeated calls.}
-
-\item{testNumeric}{Logical. Test for numeric values when \code{check} is \code{TRUE}?}
+\item{x}{A numeric vector or array, depending on the model's spatial
+dimensions. See details below.}
 }
 \value{
 \code{NULL} (invisible). The assigned numeric data are stored in the
@@ -27,30 +15,48 @@ passed \code{x}. This can be turned off by setting \code{check} to
 Assign values to state variables of a \code{\link{rodeo}}-based model.
 }
 \note{
-If \code{tabular} is \code{FALSE}, the matrix passed as \code{x} must
-  have column names correspond to the names of state variables. The number of
-  rows is expect to match the object's number of spatial sections. In the
-  common case of a single spatial section, \code{x} can also be a named
-  vector instead of a single-row matrix.
+For a 0-dimensional model (i.e. a model without spatial resolution),
+  \code{x} must be a numeric vector whose length equals the number of state
+  variables. The element names of \code{x} must match those returned by the
+  object's \code{namesVars} method.
+
+  For models with a spatial resolution, \code{x} must be a numeric array of
+  proper dimensions. The last dimension (cycling slowest) corresponds to the
+  variables and the first dimension (cycling fastest) corresponds to the
+  models' highest spatial dimension. Thus, \code{dim(x)} must be equal to
+  \code{c(rev(obj$getDim()), obj$namesVars())} where \code{obj} is the object
+  whose variables are to be assigned. The names of the array's last dimension
+  must match the return value of  \code{obj$namesVars()}.
+
+  In the common 1-dimensional case, this just means that \code{x} must be a
+  matrix with column names matching the return value of
+  \code{obj$namesVars()} and as many rows as given by \code{obj$getDim()}.
 }
 \examples{
-data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model <- rodeo$new(
-  vars=subset(exampleIdentifiers, type=="v"),
-  pars=subset(exampleIdentifiers, type=="p"),
-  funs=subset(exampleIdentifiers, type=="f"),
-  pros=exampleProcesses, stoi=exampleStoichiometry,
-  size=2
-)
-# Set all values at a time by passing a matrix
-x <- cbind(c_z=c(1,1), c_do=c(9,9), v=c(1e6,1e6))
-model$setVars(x)
-print(model$getVars(asMatrix=TRUE))
-# Set selected values by passing a data frame
-x <- data.frame(name=c("c_z","c_do"), section=c(1,2), value=c(2,11),
-  stringsAsFactors=FALSE)
-model$setVars(x, tabular=TRUE)
-print(model$getVars(asMatrix=TRUE))
+data(vars, pars, funs, pros, stoi)
+x0 <- c(bacs=0.1, subs=0.5)
+
+# 0-dimensional model
+model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
+model$setVars(x0)
+print(model$getVars())
+
+# 1-dimensional model with 3 boxes
+nBox <- 3
+model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(nBox))
+x1 <- matrix(rep(x0, each=nBox), nrow=nBox, ncol=model$lenVars(),
+  dimnames=list(NULL, model$namesVars()))
+model$setVars(x1)
+print(model$getVars())
+print(model$getVars(asArray=TRUE))
+
+# 2-dimensional model with 3 x 4 boxes
+model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(3,4))
+x2 <- array(rep(x0, each=3*4), dim=c(4,3,model$lenVars()),
+  dimnames=list(dim2=NULL, dim1=NULL, variables=model$namesVars()))
+model$setVars(x2)
+print(model$getVars())
+print(model$getVars(asArray=TRUE))
 }
 \author{
 \email{david.kneis@tu-dresden.de}

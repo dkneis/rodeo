@@ -37,9 +37,6 @@ library("deSolve")
 #'   documentation of non-class methods contained in the package.
 #'
 #' \itemize{
-#'   \item{\code{\link{solverInterface}}} Generation of Fortran wrapper code for
-#'     use with the numerical solvers from packages
-#'     \code{\link[deSolve]{deSolve}} and \code{\link[rootSolve]{rootSolve}}.
 #'   \item{\code{\link{forcingFunctions}}} Generation of forcing functions
 #'     in Fortran.
 #'   \item{\code{\link{exportDF}}} Export of data frames as TEX or HTML code.
@@ -50,4 +47,5 @@ library("deSolve")
 #' }
 #' 
 #' @author \email{david.kneis@@tu-dresden.de}
+
 NULL

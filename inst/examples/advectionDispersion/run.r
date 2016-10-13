@@ -44,7 +44,7 @@ stoi <- matrix(unlist(stoi[,2:ncol(stoi)]), nrow=nrow(stoi),
 model <- rodeo$new(vars=read_excel(fileTbl, "vars"),
   pars=read_excel(fileTbl, "pars"), funs=read_excel(fileTbl, "funs"),
   pros=read_excel(fileTbl, "pros"), stoi=stoi,
-  asMatrix=TRUE, size=nCells)
+  asMatrix=TRUE, dim=c(nCells))
 
 # Numerical dispersion for backward finite-difference approx. of advection term
 dNum <- u*dx/2

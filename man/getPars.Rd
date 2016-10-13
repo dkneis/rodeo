@@ -4,41 +4,35 @@
 \alias{getPars}
 \title{Query Values of Parameters}
 \arguments{
-\item{asMatrix}{Logical. If \code{TRUE}, data are returned as a matrix with
-columns named after the parameters and one row per spatial section. If
-\code{FALSE}, a vector of the concatenated columns is returned.
-In the latter case, element names follow the pattern
-'parameter.section', i.e. the section index is appended to the parameter's
-name, separated by a period. If there is a single section only (0D models),
-the pure parameter names are used, i.e. the extension '.1' is omitted.}
+\item{asArray}{Logical. If \code{FALSE}, the values of parameters are returned
+as vector irrespective of the model's spatial resolution. If \code{TRUE},
+the values are returned as an \code{\link[base]{array}} with properly named
+dimensions. The array's last dimension represents the parameters and its
+first (fastest cycling) dimension, if any, refers to the model's highest
+spatial dimension.}
+
+\item{useNames}{Logical. Used to enable/disable element names for the return
+vector when \code{asArray} is \code{FALSE}. The names follow the pattern
+'x.i.j' where 'x' is the parameter name and 'i', 'j' are indices of the
+sub-units in the first and second spatial dimension. The actual suffix is
+controlled by the number of dimensions and in the 0-dimensional case, no
+suffix is applied at all, i.e. the pure parameter names are used to label the
+elements of the vector.
+If \code{isArray} is \code{TRUE}, this argument is simply ignored, hence
+the dimensions of a returned array are always named.}
 }
 \value{
-A numeric matrix or vector, depending on the value of \code{asMatrix}.
+A numeric vector or array.
 }
 \description{
 Query values of parameters of a \code{\link{rodeo}}-based model.
-}
-\examples{
-data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model <- rodeo$new(
-  vars=subset(exampleIdentifiers, type=="v"),
-  pars=subset(exampleIdentifiers, type=="p"),
-  funs=subset(exampleIdentifiers, type=="f"),
-  pros=exampleProcesses, stoi=exampleStoichiometry,
-  size=2
-)
-x <- c(kd=5.78e-7, h_do=0.5, s_do_z=2.76,
-  wind=1, depth=2, temp=20, q_in=1, q_ex=1)
-x <- rbind(x, x)
-model$setPars(x)
-print(model$getPars())
-print(model$getPars(asMatrix=TRUE))
 }
 \author{
 \email{david.kneis@tu-dresden.de}
 }
 \seealso{
-The corresponding 'set' method is \code{\link{setPars}}. Use
-  \code{\link{getVars}} to query the values of variables rather than parameters.
+The corresponding 'set' method is \code{\link{setPars}} and examples
+ can be found there. Use \code{\link{getVars}} to query the values of
+ variables rather than parameters.
 }
 

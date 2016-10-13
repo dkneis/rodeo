@@ -21,7 +21,7 @@
 #'
 #' @return A numeric matrix (with column names). There is one column for each
 #'   state variable and process rate. The number of rows equals the number of
-#'   spatial sections, i.e. the result is a single-column matrix in case of a
+#'   spatial boxes, i.e. the result is a single-row matrix in case of a
 #'   zero-dimensional model.
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
@@ -53,20 +53,20 @@ rodeo$set("public", "step",
   if (method == "rk5") {
     res <- .Fortran(private$steppers[["rk5"]]$fncSymb,
       error=as.integer(0),
-      var=as.numeric(private$v),
+      var=as.numeric(private$vars),
       x1=as.double(t0),
       x2=as.double(t0 + h),
       eps=as.double(tol),
       h1=as.double(h),
       hmin=as.double(hmin),
       nmax=as.integer(maxsteps),
-      p=as.numeric(private$p),
-      pro=rep(as.double(0), nrow(private$prosTbl)*private$sections)
+      par=as.numeric(private$pars),
+      pro=rep(as.double(0), nrow(private$prosTbl)*prod(private$dim))
     )
     if (as.logical(res$error))
       stop("integration from t0=",t0," over dt=",dt," using method '",method,"' failed")
     return(matrix(c(res$var, res$pro),
-      ncol=nrow(private$varsTbl)+nrow(private$prosTbl), nrow=private$sections,
+      ncol=nrow(private$varsTbl)+nrow(private$prosTbl), nrow=prod(private$dim),
       dimnames= list(NULL, c(private$varsTbl$name, private$prosTbl$name)))
     )
   } else {

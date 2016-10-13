@@ -98,25 +98,15 @@ The \software{rodeo} package facilitates the implementation of ODE-based models.
 \begin{itemize}
 \item Models are defined using plain tabular text files or spreadsheets. Thus, the model is formulated independent from source code. This facilitates documentation, portability, and re-use.
 \item You are forced to provide the model in stoichiometry matrix notation (see \url{http://en.wikipedia.org/wiki/Petersen_matrix}). Although this is a restriction, it is a very useful one and benefit is almost guaranteed.
-\item Owing to the matrix notation, redundant terms are eliminated from the differential equations. This contributes to comprehensibility and increases computational efficiency. The stoichiometry matrix can also be visualized to better communicate the model to users or non-modelers.
+\item Owing to the matrix notation, redundant terms are largely eliminated from the differential equations. This contributes to comprehensibility and increases computational efficiency. The stoichiometry matrix can also be visualized to better communicate the model to users or non-modelers.
 \item \software{rodeo} provides a code generator which supports \software{R} and \software{Fortran} as target languages. Using compiled \software{Fortran} can speed up numerical integration by 1 or 2 orders of magnitude (compared to plain \software{R}).
 \item Code can be generated for an arbitrary number of sections (e.g. control volumes in a spatially discretized model). This allows even partial differential equations (e.~g. reactive transport problems) to be tackled by means of semi-discretization  (see \url{http://en.wikipedia.org/wiki/Method_of_lines}).
 \end{itemize}
 
 \section{Example problem}
-The functioning of the package is best illustrated by an example. In this document, we consider a continuous flow stirred tank reactor (CFSTR) containing a degradable organic matter (concentration \verb|c_z|) and dissolved oxygen, \verb|c_do| (Fig.~\ref{fig:reactor}). Due to mixing, the reactors contents is spatially homogeneous, hence the concentrations are scalars. Changes in concentrations are triggered by
-\begin{enumerate}
-\item the loads in the reactor's inflow,
-\item aerobic degradation of the organic matter (1st order) which consumes dissolved oxygen,
-\item exchange of oxygen with the atmosphere.
-\end{enumerate}
+The functioning of the package is illustrated with simple model of bacteria growth in a continuous flow stirred tank reactor (CFSTR) also known as chemostat. In is assuemed that the bacteria grow on a single resource (e.~g. a source of organic carbon) which is imported via the reactor's inflow (Fig.~\ref{fig:reactor}). Due to mixing, the reactors contents is spatially homogeneous, hence the density of bacteria as well as the concentration of the substrate are scalars.
 
-Some specific aspects of the model are as follows:
-\begin{itemize}
-\item The dependence of aerobic degradation on available oxygen is described with a Monod term (Michaelis-Menten model).
-\item The rate of oxygen exchange between water and atmosphere is described as an empirical function of water depth and wind speed.
-\item The model does \emph{not} assume steady flow conditions, hence the volume of the reactor is a state variable too.
-\end{itemize}
+Changes in bacteria density are due to (1) resource-limited growth and (2) wash-out from the reactor. The substrate concentration is controlled by (1) the inflow as well as (2) the consumption by bacteria. A classical Monod term was used to model the resource dependency of bacteria growth. For the sake of simplicity, the external forcings (i.~e. flow rate and substrate load) are held constant.
 
 \begin{figure}
 \centering
@@ -124,47 +114,62 @@ Some specific aspects of the model are as follows:
 \caption{Sketch of considered system. \label{fig:reactor}}
 \end{figure}
 
-Using \software{rodeo}, the model can be described using just tabular text files (Tables~\ref{tab:identifiers} -- \ref{tab:stoichiometry}). These files are shipped with the package and can be loaded with \software{R}'s \verb|data| method.
+Using \software{rodeo}, the model can be described using just tabular text files (Tables~\ref{tab:vars} -- \ref{tab:stoi}). These files are shipped with the package and can be loaded with \software{R}'s \verb|data| method.
 
 \begin{table}
-\caption{Declaration of identifiers (data set 'exampleIdentifiers'). The type column indicates whether an item is a state variable (v), parameter (p), or function (f). \label{tab:identifiers}}
-\begin{shaded}
-\begin{small}
-<<showTableIdentifiers, echo=FALSE>>=
+\caption{Declaration of state variables. \label{tab:vars}}
+\begin{shaded}\begin{small}
+<<showTableVars, echo=FALSE>>=
 library(rodeo, quietly=TRUE)
-data(exampleIdentifiers)
-print(format(exampleIdentifiers, justify="right"), row.names=FALSE)
+data(vars)
+print(format(vars, justify="right"), row.names=FALSE)
 @
-\end{small}
-\end{shaded}
+\end{small}\end{shaded}
 \end{table}
 
 \begin{table}
-\caption{Specification of processes (data set 'exampleProcesses'). \label{tab:processes}}
-\begin{shaded}
-\begin{small}
+\caption{Declaration of parameters. \label{tab:pars}}
+\begin{shaded}\begin{small}
+<<showTableVars, echo=FALSE>>=
+library(rodeo, quietly=TRUE)
+data(pars)
+print(format(pars, justify="right"), row.names=FALSE)
+@
+\end{small}\end{shaded}
+\end{table}
+
+\begin{table}
+\caption{Declaration of functions being reference in process rate expressions and/or stoichiometric factor expressions. \label{tab:funs}}
+\begin{shaded}\begin{small}
+<<showTableVars, echo=FALSE>>=
+library(rodeo, quietly=TRUE)
+data(funs)
+print(format(funs, justify="right"), row.names=FALSE)
+@
+\end{small}\end{shaded}
+\end{table}
+
+\begin{table}
+\caption{Specification of processes. \label{tab:pros}}
+\begin{shaded}\begin{small}
 <<showTableProcesses, echo=FALSE>>=
 library(rodeo, quietly=TRUE)
-data(exampleProcesses)
-print(format(exampleProcesses, justify="right"), row.names=FALSE)
+data(pros)
+print(format(pros, justify="left"), row.names=FALSE)
 @
-\end{small}
-\end{shaded}
+\end{small}\end{shaded}
 \end{table}
 
 \begin{table}
-\caption{Specification of stoichiometric factors (data set 'exampleStoichiometry'). \label{tab:stoichiometry}}
-\begin{shaded}
-\begin{small}
+\caption{Specification of stoichiometric factors. \label{tab:stoi}}
+\begin{shaded}\begin{small}
 <<showTableStoichiometry, echo=FALSE>>=
 library(rodeo, quietly=TRUE)
-data(exampleStoichiometry)
-print(format(exampleStoichiometry, justify="right"), row.names=FALSE)
+data(stoi)
+print(format(stoi, justify="left"), row.names=FALSE)
 @
-\end{small}
-\end{shaded}
+\end{small}\end{shaded}
 \end{table}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -181,19 +186,14 @@ We start by loading the package and the example data.
 library(rodeo, quietly=TRUE)
 
 # Load sample data frames (contents shown above)
-data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
+data(vars, pars, pros, funs, stoi)
 @
 
-Then, a new object is created with \verb|new|. This requires us to supply the name of the class, data frames for initialization, as well as the number of sections. Here, we create a zero-dimensional model (single section). 
+Then, a new object is created with \verb|new|. This requires us to supply the name of the class, data frames for initialization, as well as the spatial dimensions. Here, we create a single-box model (one dimension with no subdivision). 
 
-<<initSingleSection, echo=TRUE>>=
-# Instantiate new object
-model <- rodeo$new(vars=subset(exampleIdentifiers,type=="v"),
-  pars=subset(exampleIdentifiers,type=="p"),
-  funs=subset(exampleIdentifiers,type=="f"),
-  pros=exampleProcesses,
-  stoi=exampleStoichiometry,
-  size=1)
+<<initSingleBox, echo=TRUE>>=
+model <- rodeo$new(vars=vars, pars=pars, funs=funs,
+  pros=pros, stoi=stoi, dim=c(1))
 @
 
 To inspect the object's contents, we can use the following:
@@ -208,45 +208,27 @@ print(model$stoichiometry())
 
 \subsection{Defining functions and supplying data}
 
-In order to work with the object, we need to define functions that are referenced in the model's mathematical expressions. This includes the forcings which are functions of a special argument with the reserved name 'time'. See Sect.~\ref{sec:advanced:forcings} for details.
+In order to work with the object, we need to define functions that are referenced in the process rate expressions or stoichiometric factors (i.~e. the ODEs' right hand sides). For non-autonomous models, this includes the definition of forcings which are functions of a special argument with the reserved name 'time'. See Sect.~\ref{sec:advanced:forcings} for details.
 
+For the example, we need just one simple function (see \url{https://en.wikipedia.org/wiki/Monod_equation}).
 <<defNormalFunctions, echo=TRUE, eval=TRUE>>=
-# 'normal' functions
-O2sat <- function(t) {
-  14.652 - 0.41022*t + 0.007991*t^2 - 0.000077774*t^3
-}
-ka <- function(u, d) {
-  (0.728*sqrt(u) - 0.317*u + 0.0372*u^2) / d / 86400
-}
-monod <- function(s,h) {
-  s / (s + h)
-}
+monod <- function(c,h) { c / (c + h) }
 @
 
-<<defForcingFunctions, echo=TRUE, eval=TRUE>>=
-# forcings are functions of special variable 'time'
-c_z_in <- function(seconds) {
-  0.1 * seconds/(7*86400 + seconds)
-}
-c_do_in <- function(seconds) {
-  10.  # taken as constant
-}
-@
+We also need to set the values of parameters and state variables (initial values) using the dedicated methods \verb|setPars| and \verb|setVars|. Since we deal with a single-box model, parameters and initial values can be stored in ordinary vectors.
 
-We also need to set the values of parameters and state variables (initial values) using the dedicated methods \verb|setPars| and \verb|setVars|.
-
-<<dataSingleSection, echo=TRUE, eval=TRUE>>=
-model$setPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76,
- wind=1, depth=2, temp=20, q_in=1, q_ex=1))
-model$setVars(c(c_z=1, c_do=9.022, v=1.e6))
+<<dataSingleBox, echo=TRUE, eval=TRUE>>=
+model$setVars(c(bacs=0.01, subs=0))
+model$setPars(c(mu=0.8, half=0.1, yield= 0.1,
+  vol=1000, flow=50, subs_in=1))
 @
 
 \subsection{Computing the stoichiometry matrix}
 
-Having defined all functions and having set the values of variables and parameters, one can compute the stoichiometric factors. In general, explicitly computing these factors is not necessary, it may be helpful in debugging however. To do so, the \verb|stoichiometry| method needs to be supplied with values of all state variables, parameters, as well as a time value (in the case of non-autonomous models).
+Having defined all functions and having set the values of variables and parameters, one can compute the stoichiometric factors. In general, explicitly computing these factors is not necessary, it may be helpful in debugging however. To do so, the \verb|stoichiometry| method needs to be supplied with the index of the spatial box (only relevant for multi-box models) as well as a time value (in the case of non-autonomous models).
 
 <<showNumericStoi, echo=TRUE, eval=TRUE>>=
-m <- model$stoichiometry(section=1, time=0)
+m <- model$stoichiometry(box=1, time=0)
 print(signif(m, 3))
 @
 
@@ -258,7 +240,7 @@ In order to use the model for simulation, we need to transfer it into source cod
 
 After generating the code, we need to make it executable. In \software{R}, we can use a combination of \verb|eval| and \verb|parse|. Alternatively, the generated code could be loaded with \verb|source| after exporting it to a file (e.g. using \verb|write|). The latter method is needed if one wants to inspect the generated code (or even modify it, which rarely makes sense).
 
-<<generateSingleSectionR, echo=TRUE, eval=TRUE>>==
+<<generateSingleBoxR, echo=TRUE, eval=TRUE>>==
 code <- model$generate(name="derivs",lang="r")
 derivs <- eval(parse(text=code))
 @
@@ -267,12 +249,11 @@ derivs <- eval(parse(text=code))
 
 We are now ready to compute the evolution of the state variables over time by means of numerical integration. Note that the initial values (argument \verb|y| of \verb|deSolve::ode|) and parameters (argument \verb|p|) are set to the output of the model object's dedicated 'get' methods. This is to make sure that the order of values in the two arrays is consistent with the generated code.
 
-<<solveSingleSectionR, echo=TRUE, eval=TRUE, fig=TRUE>>=
+<<solveSingleBoxR, echo=TRUE, eval=TRUE, fig=TRUE>>=
 library(deSolve)
-t <- seq(0, 30*86400, 3600)
-out <- ode(y=model$getVars(), times=t, func=derivs,
+out <- deSolve::ode(y=model$getVars(useNames=TRUE), times=0:96, func=derivs,
   parms=model$getPars())
-layout(matrix(1:9, ncol=3, byrow=TRUE))
+layout(matrix(1:4, ncol=2, byrow=TRUE))
 plot(out, mfrow=NULL)
 layout(1)
 @
@@ -291,38 +272,34 @@ In addition to the dynamics of the state variables, the numerical solver also ou
 
 \subsection{Spatially distributed systems (multi-section models)} \label{sec:advanced:multiSect}
 
-A zero-dimensional case (single reactor) has been considered so far. We will now extend the model for multiple spatial sections, i.~e. for a collection of (isolated) reactors. First, we need to create a model object with the desired dimension. Second, the code needs to be re-generated to reflect the altered dimension. Third, initial values and parameters need to be specified as matrices where each row represents a spatial section. In the example, we initialize every modeled reactor with a different concentration of organic matter.
+A single-box case has been considered so far. We will now extend the model for multiple boxes, i.~e. for a collection of (isolated) reactors. To keep it simple, we use just a few boxes in a single spatial dimension. First, we need to create a model object with the desired dimensions and resolution. Second, the code needs to be re-generated to reflect the altered dimension. Third, initial values and parameters need to be specified as arrays to account for the spatial discretization. For a model with one spatial dimension, we must use two-dimensional arrays, i.~e. matrices. Here, we initialize every modeled reactor with a different bacteria density.
 
-<<initMultiSections, echo=TRUE, eval=TRUE>>=
-# Instantiate new object
-model <- rodeo$new(vars=subset(exampleIdentifiers,type=="v"),
-  pars=subset(exampleIdentifiers,type=="p"),
-  funs=subset(exampleIdentifiers,type=="f"),
-  pros=exampleProcesses,
-  stoi=exampleStoichiometry,
-  size=3)
+<<initMultiBox, echo=TRUE, eval=TRUE>>=
+nBox <- 2
+model <- rodeo$new(vars=vars, pars=pars, funs=funs,
+  pros=pros, stoi=stoi, dim=c(nBox))
 @
-<<generateMultiSectionsR, echo=TRUE, eval=TRUE>>==
+<<generateMultiBoxR, echo=TRUE, eval=TRUE>>==
 code <- model$generate(name="derivs",lang="r")
 derivs <- eval(parse(text=code))
 @
-<<dataMultiSections, echo=TRUE, eval=TRUE>>=
-vars <- cbind(
-  c_z=seq(from=0, to=50, length.out=model$size()),
-  c_do=rep(9.022, model$size()),
-  v=rep(1.e6, model$size()))
-pars <- c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1,
-  depth=2, temp=20, q_in=1, q_ex=1)
-pars <- matrix(rep(pars, model$size()), nrow=model$size(),
-  byrow=TRUE, dimnames=list(NULL, names(pars)))  
-model$setPars(pars)
-model$setVars(vars)
+<<dataMultiBox, echo=TRUE, eval=TRUE>>=
+v <- cbind(
+  bacs= seq(from=0.01, to=0.2, length.out=nBox),
+  subs= rep(0, nBox)
+)
+model$setVars(v)
+p <- c(mu=0.8, half=0.1, yield= 0.1,
+  vol=1000, flow=50, subs_in=1)
+model$setPars(matrix(rep(p, each=nBox), nrow=nBox,
+  dimnames=list(NULL, names(p))))
 @
-<<solveMultiSectionsR, echo=TRUE, eval=TRUE, fig=TRUE, width=6, height=2.5>>=
-out <- ode(y=model$getVars(), times=t, func=derivs,
+<<solveMultiBoxR, echo=TRUE, eval=TRUE, fig=TRUE, width=6, height=5>>=
+out <- ode(y=model$getVars(useNames=TRUE), times=0:96, func=derivs,
   parms=model$getPars())
-layout(matrix(1:model$size(), nrow=1))
-plot(out, which=paste("c_do",1:model$size(),sep="."), mfrow=NULL)
+layout(matrix(1:(model$lenVars()*nBox), nrow=nBox, byrow=TRUE))
+plot(out, which=1:(model$lenVars()*nBox), mfrow=NULL)
+layout(1)
 @
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -366,7 +343,7 @@ In order to make the use of \software{Fortran} as simple as possible, the \softw
 The \verb|compile| method takes as argument the name of a file holding the \software{Fortran} implementation of functions being referenced in the particular model's mathematical expressions (consult Sect.~\ref{sec:fortranFunctions} for guidelines). This can actually be a vector of file names if the source code is split.
 
 <<echo=TRUE, eval=TRUE>>=
-lib <- model$compile(fileFun="functionsCode.f95")
+lib <- model$compile(sources="functionsCode.f95")
 @
 
 The return value of \verb|compile| is a vector of character strings holding the name of the generated library (in element \verb|libName|), the full file path of the library (in element \verb|libFile|) as well as the name of the callable subroutine within that library (in element \verb|libFunc|).
@@ -384,19 +361,16 @@ cat(text)
 
 We are now prepared to load the shared library and run the simulation based on the \software{Fortran} code. Note the additional arguments \verb|dllname|, \verb|initfunc|, and \verb|nout| being passed to the numerical solver (open the help page for \verb|lsoda| to see the documentation for them). Setting a wrong value for \verb|nout| easily makes \software{R} crash.
 
-<<echo=TRUE, eval=TRUE, fig=TRUE, width=6, height=2.5>>=
-<<setDataMultiSect>>
+<<echo=TRUE, eval=TRUE, fig=TRUE, width=6, height=5>>=
+<<dataMultiBox>>
 dyn.load(lib["libFile"])
-out <- ode(y=model$getVars(), times=t, func=lib["libFunc"],
-  parms=model$getPars(), dllname=lib["libName"],
-  initfunc="initmod", nout=model$lenPros()*model$size())
-layout(matrix(1:model$size(), nrow=1))
+out <- ode(y=model$getVars(useNames=TRUE), times=0:96,
+  func=lib["libFunc"], parms=model$getPars(), dllname=lib["libName"],
+  initfunc="initmod", nout=model$lenPros()*prod(model$getDim()))
+layout(matrix(1:(model$lenVars()*nBox), nrow=nBox, byrow=TRUE))
+plot(out, which=1:(model$lenVars()*nBox), mfrow=NULL)
+layout(1)
 dyn.unload(lib["libFile"])
-plot(out, which=paste("c_do",1:model$size(),sep="."), mfrow=NULL)
-@
-
-<<echo=FALSE, eval=TRUE>>=
-# Clean up dll file
 invisible(file.remove(lib["libFile"]))
 @
 
@@ -537,15 +511,13 @@ A graphical representation of the stoichiometry matrix is often a good means to 
 One can use the class method \verb|plotStoichiometry| to visualize the matrix using standard R graphic facilities as demonstrated below. In practice, one needs to fiddle around a bit with the dimensions of the plot and the font size to get an acceptable scaling of symbols and text. Also, it is hardly possible to nicely display row and column names containing special things like sub- or superscripts.
 
 <<echo=TRUE, eval=TRUE, fig=TRUE, width=1.7, height=2.2>>=
-<<setDataSingleSect>>
-model$plotStoichiometry(section=1, time=0, cex=0.3)
+model$plotStoichiometry(box=1, time=0, cex=0.3)
 @
 
 \paragraph{Option 2: TEX}
 The following example generates suitable code for inclusion in \LaTeX{} documents.
 
 <<echo=TRUE, eval=TRUE>>=
-<<setDataSingleSect>>
 signsymbol <- function(x) {
   if (as.numeric(x) > 0) return("\\textcolor{orange}{$\\blacktriangle$}")
   if (as.numeric(x) < 0) return("\\textcolor{cyan}{$\\blacktriangledown$}")
@@ -553,7 +525,7 @@ signsymbol <- function(x) {
 }
 rot90 <- function(x) { paste0("\\rotatebox{90}
   {$",gsub(pattern="*", replacement="\\cdot ", x=x, fixed=TRUE),"$}") }
-m <- model$stoichiometry(section=1, time=0)
+m <- model$stoichiometry(box=1, time=0)
 tbl <- cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE),
   as.data.frame(m))
 tex <- exportDF(x=tbl, tex=TRUE,
@@ -586,7 +558,7 @@ signsymbol <- function(x) {
   if (as.numeric(x) < 0) return("&#9661;")
   return("")
 }
-m <- model$stoichiometry(section=1, time=0)
+m <- model$stoichiometry(box=1, time=0)
 tbl <- cbind(data.frame(process=rownames(m), stringsAsFactors=FALSE),
   as.data.frame(m))
 html <- exportDF(x=tbl, tex=FALSE,
@@ -610,7 +582,7 @@ signsymbol <- function(x) {
   if (as.numeric(x) < 0) return("$\\blacktriangledown$")
   return("")
 }
-stoi_mat <- model$stoichiometry(section=1, time=0)
+stoi_mat <- model$stoichiometry(box=1, time=0)
 stoi_mat <- data.frame(apply(stoi_mat, MARGIN = c(1, 2), signsymbol))
 stoi_mat <- setNames(stoi_mat, paste0("$",     
   model$getVarsTable()$tex[match(colnames(stoi_mat),

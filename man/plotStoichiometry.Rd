@@ -4,9 +4,8 @@
 \alias{plotStoichiometry}
 \title{Plot Qualitative Stoichiometry Matrix}
 \arguments{
-\item{section}{A positive integer representing a spatial section. The values of
-state variables and parameters must have been set using the
-\code{\link{setVars}} and \code{\link{setPars}} methods.}
+\item{box}{A vector of positive integers pointing to a spatial sub-unit of
+the model.}
 
 \item{time}{Time. The value is ignored in the case of autonomous models.}
 
@@ -24,24 +23,19 @@ of stoichiometric factors is displayed as upward and downward pointing
 triangles, optionally colored.
 }
 \note{
-If the stoichiometric factors are mathematical expressions involving
+The values of state variables and parameters must have been set using
+  the \code{\link{setVars}} and \code{\link{setPars}} methods. If the
+  stoichiometric factors are mathematical expressions involving
   function references, these functions must be defined in R (even if the
   numerical computations are based on generated Fortran code).
 }
 \examples{
-data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-model <- rodeo$new(
-  vars=subset(exampleIdentifiers, type=="v"),
-  pars=subset(exampleIdentifiers, type=="p"),
-  funs=subset(exampleIdentifiers, type=="f"),
-  pros=exampleProcesses, stoi=exampleStoichiometry
-)
-c_z_in <- function(time) {0.1}
-c_do_in <- function(time) {8.0}
-model$setVars(c(c_z=1, c_do=9.022, v=1.e6))
-model$setPars(c(kd=5.78e-7, h_do=0.5, s_do_z=2.76, wind=1, depth=2,
-  temp=20, q_in=1, q_ex=1))
-model$plotStoichiometry(section=1, time=0)
+data(vars, pars, funs, pros, stoi)
+model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
+model$setVars(c(bacs=0.1, subs=0.5))
+model$setPars(c(mu=0.8, half=0.1, yield= 0.1, vol=1000, flow=50, subs_in=1))
+monod <- function(c,h) {c/(c+h)}
+model$plotStoichiometry(box=c(1))
 }
 \author{
 \email{david.kneis@tu-dresden.de}

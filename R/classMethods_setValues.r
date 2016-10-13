@@ -1,67 +1,32 @@
 
-checkInputMatrix <- function(x, itemNames, sections, testNumeric=TRUE) {
-  if (!is.matrix(x))
-    stop("expecting 'x' to be a numeric matrix or single-row vector")
-  if (is.null(colnames(x)))
-    stop("'x' is lacking column names")
-  if (nrow(x) != sections)
-    stop("number of rows in 'x' (",nrow(x),") does not match the object's",
-      " number of spatial sections (",sections,")")
-  bad <- itemNames[!(itemNames %in% colnames(x))]
-  if (length(bad) > 0)
-    stop(paste0("'x' does not provide data for the following",
-      " item(s): '",paste(bad,collapse="', '"),"'"))
-  if (testNumeric && !all(is.numeric(x)))
-    stop("non-numeric values detected in 'x'")
-  return(invisible(NULL))
-}
-
-checkInputTabular <- function(x, itemNames, sections, testNumeric=TRUE) {
-  if (!is.data.frame(x))
-    stop("expecting 'x' to be a data frame")
-  required <- c("name", "section", "value")
-  if (!all(required %in% names(x)))
-    stop("'x' must have columns '",paste(required, collapse="', '"),"'")
-  x$section <- as.integer(x$section)
-  if (any((x$section < 1) || (x$section > sections)))
-    stop("section indices in 'x' are in range [",min(x$section),",",max(x$section),
-      "] but they should fall into [1,",sections,"]")
-  x$name <- as.character(x$name)
-  bad <- x$name[!(x$name %in% itemNames)]
-  if (length(bad) > 0)
-    stop(paste0("'x' contains data for unknown item(s): '",
-      paste(bad,collapse="', '"),"'"))
-  if (testNumeric && !all(is.numeric(x$value)))
-    stop("non-numeric data detected in 'value' column of 'x'")
-  return(invisible(NULL))
-}
-
 #' Assign Values to State Variables
 #'
 #' Assign values to state variables of a \code{\link{rodeo}}-based model.
 #'
 #' @name setVars
 #'
-#' @param x A matrix, vector, or data frame holding the data to be assigned.
-#'   The appropriate type of input depends on the value of \code{tabular}. See
-#'   details below.
-#' @param tabular If set to \code{FALSE}, then \code{x} must be a numeric matrix
-#'   (or vector) holding data for \emph{all} items and sections. If \code{TRUE},
-#'   then \code{x} must be a data frame with 3 columns 'name', 'section', and
-#'   'value'. Use this to assign data to selected items and/or sections only.
-#' @param check Logical. By default, several checks are carried out on the
-#'   passed \code{x}. This can be turned off by setting \code{check} to
-#'   \code{FALSE}. May be used to avoid unnecessary checks in repeated calls.
-#' @param testNumeric Logical. Test for numeric values when \code{check} is \code{TRUE}?
+#' @param x A numeric vector or array, depending on the model's spatial
+#'   dimensions. See details below.
 #'
 #' @return \code{NULL} (invisible). The assigned numeric data are stored in the
 #'   object and can be accessed by the \code{\link{getVars}} method.
 #'
-#' @note If \code{tabular} is \code{FALSE}, the matrix passed as \code{x} must
-#'   have column names correspond to the names of state variables. The number of
-#'   rows is expect to match the object's number of spatial sections. In the
-#'   common case of a single spatial section, \code{x} can also be a named
-#'   vector instead of a single-row matrix.
+#' @note For a 0-dimensional model (i.e. a model without spatial resolution),
+#'   \code{x} must be a numeric vector whose length equals the number of state
+#'   variables. The element names of \code{x} must match those returned by the
+#'   object's \code{namesVars} method.
+#'
+#'   For models with a spatial resolution, \code{x} must be a numeric array of
+#'   proper dimensions. The last dimension (cycling slowest) corresponds to the
+#'   variables and the first dimension (cycling fastest) corresponds to the
+#'   models' highest spatial dimension. Thus, \code{dim(x)} must be equal to
+#'   \code{c(rev(obj$getDim()), obj$namesVars())} where \code{obj} is the object
+#'   whose variables are to be assigned. The names of the array's last dimension
+#'   must match the return value of  \code{obj$namesVars()}.
+#'
+#'   In the common 1-dimensional case, this just means that \code{x} must be a
+#'   matrix with column names matching the return value of
+#'   \code{obj$namesVars()} and as many rows as given by \code{obj$getDim()}.
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
@@ -69,37 +34,55 @@ checkInputTabular <- function(x, itemNames, sections, testNumeric=TRUE) {
 #'   \code{\link{setPars}} to assign values to parameters rather than variables.
 #'
 #' @examples
-#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-#' model <- rodeo$new(
-#'   vars=subset(exampleIdentifiers, type=="v"),
-#'   pars=subset(exampleIdentifiers, type=="p"),
-#'   funs=subset(exampleIdentifiers, type=="f"),
-#'   pros=exampleProcesses, stoi=exampleStoichiometry,
-#'   size=2
-#' )
-#' # Set all values at a time by passing a matrix
-#' x <- cbind(c_z=c(1,1), c_do=c(9,9), v=c(1e6,1e6))
-#' model$setVars(x)
-#' print(model$getVars(asMatrix=TRUE))
-#' # Set selected values by passing a data frame
-#' x <- data.frame(name=c("c_z","c_do"), section=c(1,2), value=c(2,11),
-#'   stringsAsFactors=FALSE)
-#' model$setVars(x, tabular=TRUE)
-#' print(model$getVars(asMatrix=TRUE))
+#' data(vars, pars, funs, pros, stoi)
+#' x0 <- c(bacs=0.1, subs=0.5)
+#'
+#' # 0-dimensional model
+#' model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
+#' model$setVars(x0)
+#' print(model$getVars())
+#'
+#' # 1-dimensional model with 3 boxes
+#' nBox <- 3
+#' model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(nBox))
+#' x1 <- matrix(rep(x0, each=nBox), nrow=nBox, ncol=model$lenVars(),
+#'   dimnames=list(NULL, model$namesVars()))
+#' model$setVars(x1)
+#' print(model$getVars())
+#' print(model$getVars(asArray=TRUE))
+#'
+#' # 2-dimensional model with 3 x 4 boxes
+#' model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(3,4))
+#' x2 <- array(rep(x0, each=3*4), dim=c(4,3,model$lenVars()),
+#'   dimnames=list(dim2=NULL, dim1=NULL, variables=model$namesVars()))
+#' model$setVars(x2)
+#' print(model$getVars())
+#' print(model$getVars(asArray=TRUE))
 
-rodeo$set("public", "setVars", function(x, tabular=FALSE, check=TRUE, testNumeric=TRUE) {
-  if (!tabular) {
-    if (is.vector(x))
-      x <- matrix(x, nrow=1, dimnames=list(NULL, names(x)))
-    if (check)
-      checkInputMatrix(x, itemNames=private$varsTbl$name,
-        sections=private$sections, testNumeric=testNumeric)
-    private$v <- x[,private$varsTbl$name, drop=FALSE]
+rodeo$set("public", "setVars", function(x) {
+  # zero-dimensional case
+  if (identical(private$dim, as.integer(1))) {
+    if (is.vector(x) &&
+      identical(length(x), length(private$vars)) &&
+      identical(names(x), private$varsTbl$name)) {
+      private$vars <- as.numeric(x)
+    } else {
+      stop("'x' must be a vector with element names: '",
+        paste(private$varsTbl$name, collapse="', '"),"'")
+    }
+  # one- or multi-dimensional case
   } else {
-    if (check)
-      checkInputTabular(x, itemNames=private$varsTbl$name,
-        sections=private$sections, testNumeric=testNumeric)
-    private$v[(match(x$name, colnames(private$v))-1)*nrow(private$v) + x$section] <- x$value
+    if (is.array(x) &&
+      identical(length(x), length(private$vars)) &&
+      identical(dim(x), c(rev(private$dim), nrow(private$varsTbl))) &&
+      identical(dimnames(x)[[length(dim(x))]], private$varsTbl$name)) {
+      private$vars <- as.numeric(x)
+    } else {
+      stop("'x' must be an array with dimensions [",
+        paste(c(rev(private$dim), nrow(private$varsTbl)), collapse="/"),
+        "] and the names of the last dimension should be: '",
+        paste(private$varsTbl$name, collapse="', '"),"'")
+    }
   }
   return(invisible(NULL))
 })
@@ -110,60 +93,46 @@ rodeo$set("public", "setVars", function(x, tabular=FALSE, check=TRUE, testNumeri
 #'
 #' @name setPars
 #'
-#' @param x A matrix, vector, or data frame holding the data to be assigned.
-#'   The appropriate type of input depends on the value of \code{tabular}. See
-#'   details below.
-#' @param tabular If set to \code{FALSE}, then \code{x} must be a numeric matrix
-#'   (or vector) holding data for \emph{all} items and sections. If \code{TRUE},
-#'   then \code{x} must be a data frame with 3 columns 'name', 'section', and
-#'   'value'. Use this to assign data to selected items and/or sections only.
-#' @param check Logical. By default, several checks are carried out on the
-#'   passed \code{x}. This can be turned off by setting \code{check} to
-#'   \code{FALSE}. May be used to avoid unnecessary checks in repeated calls.
-#' @param testNumeric Logical. Test for numeric values when \code{check} is \code{TRUE}?
+#' @param x A numeric vector or array, depending on the model's spatial
+#'   dimensions. Consult the help page of the sister method
+#'   \code{\link{setVars}} for details on the required input.
 #'
 #' @return \code{NULL} (invisible). The assigned numeric data are stored in the
 #'   object and can be accessed by the \code{\link{getPars}} method.
+#'
+#' @note Look at the notes and examples for the \code{\link{setVars}} method.
+#'   This sister 
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
 #' @seealso The corresponding 'get' method is \code{\link{getPars}}. Use
 #'   \code{\link{setVars}} to assign values to variables rather than parameters.
-#'
-#' @examples
-#' data(exampleIdentifiers, exampleProcesses, exampleStoichiometry)
-#' model <- rodeo$new(
-#'   vars=subset(exampleIdentifiers, type=="v"),
-#'   pars=subset(exampleIdentifiers, type=="p"),
-#'   funs=subset(exampleIdentifiers, type=="f"),
-#'   pros=exampleProcesses, stoi=exampleStoichiometry,
-#'   size=2
-#' )
-#' # Set all values at a time by passing a matrix
-#' x <- c(kd=5.78e-7, h_do=0.5, s_do_z=2.76,
-#'   wind=1, depth=2, temp=20, q_in=1, q_ex=1)
-#' x <- rbind(x, x)
-#' model$setPars(x)
-#' print(model$getPars(asMatrix=TRUE))
-#' # Set selected values by passing a data frame
-#' x <- data.frame(name=c("depth","temp"), section=c(1,2), value=c(1,25),
-#'   stringsAsFactors=FALSE)
-#' model$setPars(x, tabular=TRUE)
-#' print(model$getPars(asMatrix=TRUE))
+#'   Consult the help page of the latter function for examples.
 
-rodeo$set("public", "setPars", function(x, tabular=FALSE, check=TRUE, testNumeric=TRUE) {
-  if (!tabular) {
-    if (is.vector(x))
-      x <- matrix(x, nrow=1, dimnames=list(NULL, names(x)))
-    if (check)
-      checkInputMatrix(x, itemNames=private$parsTbl$name,
-        sections=private$sections, testNumeric=testNumeric)
-    private$p <- x[,private$parsTbl$name, drop=FALSE]
+rodeo$set("public", "setPars", function(x) {
+  # zero-dimensional case
+  if (identical(private$dim, as.integer(1))) {
+    if (is.vector(x) &&
+      identical(length(x), length(private$pars)) &&
+      identical(names(x), private$parsTbl$name)) {
+      private$pars <- as.numeric(x)
+    } else {
+      stop("'x' must be a vector with element names: '",
+        paste(private$parsTbl$name, collapse="', '"),"'")
+    }
+  # one- or multi-dimensional case
   } else {
-    if (check)
-      checkInputTabular(x, itemNames=private$parsTbl$name,
-        sections=private$sections, testNumeric=testNumeric)
-    private$p[(match(x$name, colnames(private$p))-1)*nrow(private$p) + x$section] <- x$value
+    if (is.array(x) &&
+      identical(length(x), length(private$pars)) &&
+      identical(dim(x), c(rev(private$dim), nrow(private$parsTbl))) &&
+      identical(dimnames(x)[[length(dim(x))]], private$parsTbl$name)) {
+      private$pars <- as.numeric(x)
+    } else {
+      stop("'x' must be an array with dimensions [",
+        paste(c(rev(private$dim), nrow(private$parsTbl)), collapse="/"),
+        "] and the names of the last dimension should be: '",
+        paste(private$parsTbl$name, collapse="', '"),"'")
+    }
   }
   return(invisible(NULL))
 })

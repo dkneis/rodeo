@@ -3,7 +3,6 @@
 export(exportDF)
 export(forcingFunctions)
 export(rodeo)
-export(solverInterface)
 export(stoiCheck)
 export(stoiCreate)
 import(R6)
