@@ -54,7 +54,7 @@ rodeo$set("public", "stoichiometry", function(box=NULL, time=0) {
   } else {
     if (length(box) != length(private$dim))
       stop("length of argument 'box' (",length(box),") does not match with",
-        " the model's spatial dimensions (",private$dim,")")
+        " the model's spatial resolution (",private$dim,")")
     box <- as.integer(box)
     if (any(box < 1) || any(box > private$dim))
       stop("elements of vector 'box' must be positive integers not exceeding",
