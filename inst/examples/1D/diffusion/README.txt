@@ -1,0 +1,1 @@
+A model of diffusion in 1 dimension with fixed boundary concentration and a spatially homogeneous initial value. The result of numerical integration is compared to an analytical solution for the mentioned initial and boundary condition. The model specification is contained directly in the R code.

@@ -91,6 +91,7 @@ if (!compile) { # R-based version
 file.remove(fileFun)
 
 # Function providing the analytical solution
+# See e.g. https://en.wikipedia.org/wiki/Fick%27s_laws_of_diffusion
 erfc <- function(x) { 2 * pnorm(x * sqrt(2), lower=FALSE) }
 solAna <- function (x,t,d,cb) { cb * erfc(x / 2 / sqrt(d*t)) }
 
