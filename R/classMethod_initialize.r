@@ -85,27 +85,6 @@ rodeo$set("public", "initialize",
   for (n in c("tex","html"))
     funs[,n] <- if (n %in% names(funs)) as.character(funs[,n]) else funs$name
   private$funsTbl <- as.data.frame(funs, stringsAsFactors=FALSE)
-  # Check tex/html symbols #####################################################
-  all_names <- c(vars$name, pars$name, funs$name)
-  for (n in c("tex","html")) {
-    all_symb <- c(vars[,n], pars[,n], funs[,n])
-    # (a) check for duplicates
-    bad <- unique(all_symb[which(duplicated(all_symb))])
-    if (length(bad) > 0)
-      stop(n," symbols of variables, parameters, and functions",
-        " must be unique; the following ",
-        ifelse(length(bad)>1,"symbols are","symbol is"),
-        " used more than once: '",paste(bad,collapse="', '"),"'")
-    # (b) check for conflicts with item names (avoids errors when names in
-    #     math expressions are replaced by symbols)
-    bad <- all_symb[which((all_symb %in% all_names) & (all_symb != all_names))]
-    if (length(bad) > 0) {
-      stop("the following ",n,ifelse(length(bad)>1," symbols are",
-        "symbol is")," cannot be assiged to the respective item (",
-        "i.e. variable, parameter, or function) because a different ",
-        "item shares the name of the symbol: '",paste(bad,collapse="', '"),"'")
-    }
-  }
   # Set processes ##############################################################
   # Basic checks
   cn <- c("name","unit","description","expression")
@@ -230,6 +209,27 @@ rodeo$set("public", "initialize",
   stoi$variable_tex <- vars$tex[match(stoi$variable, vars$name)]
   stoi$variable_html <- vars$html[match(stoi$variable, vars$name)]
   private$stoiTbl <- as.data.frame(stoi, stringsAsFactors=FALSE)
+  # Check tex/html symbols #####################################################
+  all_names <- c(vars$name, pars$name, funs$name)
+  for (n in c("tex","html")) {
+    all_symb <- c(vars[,n], pars[,n], funs[,n])
+    # (a) check for duplicates
+    bad <- unique(all_symb[which(duplicated(all_symb))])
+    if (length(bad) > 0)
+      stop(n," symbols of variables, parameters, and functions",
+        " must be unique; the following ",
+        ifelse(length(bad)>1,"symbols are","symbol is"),
+        " used more than once: '",paste(bad,collapse="', '"),"'")
+    # (b) check for conflicts with item names (avoids errors when names in
+    #     math expressions are replaced by symbols)
+    bad <- all_symb[which((all_symb %in% all_names) & (all_symb != all_names))]
+    if (length(bad) > 0) {
+      stop("the following ",n,ifelse(length(bad)>1," symbols are",
+        "symbol is")," cannot be assiged to the respective item (",
+        "i.e. variable, parameter, or function) because a different ",
+        "item shares the name of the symbol: '",paste(bad,collapse="', '"),"'")
+    }
+  }
   # Initialize spatial dimensions ##############################################
   dim <- as.integer(dim)
   if ((length(dim) == 0) || any(!is.integer(dim)) || any(dim < 1))

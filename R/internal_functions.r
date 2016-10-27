@@ -11,12 +11,13 @@ checkTbl <- function(tbl, tblName, colNames, nameCol, emptyOK) {
     return(NULL)
   # Handle tables with some contents
   } else {
-    for (n in colNames)
-      tbl[,n] <- as.character(tbl[,n])
     # Check column names
     if (!all(colNames %in% names(tbl)))
       stop(paste0("'",tblName,"' must have columns '",
         paste(colNames,collapse="', '"),"'"))
+    # Convert mandatory columns to character
+    for (n in colNames)
+      tbl[,n] <- as.character(tbl[,n])
     # Check entries in name column
     if (!is.null(nameCol)) {
       if (!(nameCol %in% names(tbl)))
