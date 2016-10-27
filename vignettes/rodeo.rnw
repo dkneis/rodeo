@@ -37,6 +37,9 @@
     linktoc=all % 'all' will create links for everything in the TOC
 }
 
+% Vertiacal spacing between multi-line equations (e.g. in align env.)
+\setlength{\jot}{0.3cm}
+
 %\VignetteIndexEntry{A code generator for ODE-based models in R}
 
 \begin{document}
@@ -47,6 +50,22 @@
 % Turn prompts off in R code
 <<echo=FALSE>>=
 options(continue=" ", prompt=" ")
+@
+
+<<echo=FALSE>>=
+# Puts vertical lines between table columns
+niceTbl <- function(x) {
+  y <- as.data.frame(matrix(NA, ncol=2*ncol(x)-1, nrow=nrow(x)))
+  for (i in 1:ncol(x)) {
+    y[,i*2-1] <- x[,i]
+    names(y)[i*2-1] <- names(x)[i]
+    if (i < ncol(x)) {
+      y[,i*2] <- rep("|",nrow(x))
+      names(y)[i*2] <- "|"
+    }
+  }
+  y
+}
 @
 
 \lstset{basicstyle=\ttfamily\small,
@@ -106,7 +125,7 @@ The \software{rodeo} package facilitates the implementation of ODE-based models.
 \section{Example problem}
 The functioning of the package is illustrated with simple model of bacteria growth in a continuous flow stirred tank reactor (CFSTR) also known as chemostat. In is assuemed that the bacteria grow on a single resource (e.~g. a source of organic carbon) which is imported via the reactor's inflow (Fig.~\ref{fig:reactor}). Due to mixing, the reactors contents is spatially homogeneous, hence the density of bacteria as well as the concentration of the substrate are scalars.
 
-Changes in bacteria density are due to (1) resource-limited growth and (2) wash-out from the reactor. The substrate concentration is controlled by (1) the inflow as well as (2) the consumption by bacteria. A classical Monod term was used to model the resource dependency of bacteria growth. For the sake of simplicity, the external forcings (i.~e. flow rate and substrate load) are held constant.
+Changes in bacteria density are due to (1) resource-limited growth and (2) wash-out from the reactor (inflow is assumed to be sterile). The substrate concentration is controlled by (1) the inflow as well as (2) the consumption by bacteria. A classical Monod term was used to model the resource dependency of bacteria growth. For the sake of simplicity, the external forcings (i.~e. flow rate and substrate load) are held constant and the reactor's volume is a parameter rather than a state variable.
 
 \begin{figure}
 \centering
@@ -114,59 +133,89 @@ Changes in bacteria density are due to (1) resource-limited growth and (2) wash-
 \caption{Sketch of considered system. \label{fig:reactor}}
 \end{figure}
 
-Using \software{rodeo}, the model can be described using just tabular text files (Tables~\ref{tab:vars} -- \ref{tab:stoi}). These files are shipped with the package and can be loaded with \software{R}'s \verb|data| method.
+The governing differential equations are
 
-\begin{table}
+\begin{align*}
+  \frac{d}{d t}bacs = & \textcolor{blue}{mu * \frac{subs}{subs+half} * bacs} + \textcolor{red}{\frac{flow}{vol}} * (0-bacs)\\
+  \frac{d}{d t}subs = & -\frac{1}{yield} * \textcolor{blue}{mu * \frac{subs}{subs+half} * bacs} + \textcolor{red}{\frac{flow}{vol}} * (subs_{in}-subs) \\
+\end{align*}
+
+where redundant terms are displayed in identical colors. When using \software{rodeo}, the equations must be split up into a vector of process rates ($r$) and a matrix of stoichiometric factors ($S$) so that the product of the two yields the vector of the state variables' derivatives with respect to time ($\dot{y}$). Note that
+
+\begin{equation*}
+\dot{y} = r * S
+\end{equation*}
+
+is the same as
+
+\begin{equation*}
+\dot{y} = S^T * r
+\end{equation*}
+
+but in the 1st form, $\dot{y}$ is a row vector whereas it is a column vector in the 2nd form which involves the transpose of $S$. Adopting the first form, the above ODE can be written as
+
+\begin{align*}
+\begingroup
+\renewcommand*{\arraystretch}{2.5}
+  \begin{bmatrix} \dfrac{d}{d t}bacs , \dfrac{d}{d t}subs \end{bmatrix} =
+  \begin{bmatrix} mu * \dfrac{subs}{subs+half} * bacs \\ \dfrac{flow}{vol} \end{bmatrix} *
+  \begin{bmatrix} 1 & -bacs \\ -\dfrac{1}{yield} & subs_{in}-subs \end{bmatrix}
+\endgroup
+\end{align*}
+
+The vector $r$ and the matrix $S$, together with a declaration of all identifiers appearing in the expressions, can be stored in tabular text files (Tables~\ref{tab:vars} -- \ref{tab:stoi}). The shown files are shipped with the package and can be loaded with \software{R}'s \verb|data| method.
+
+\begin{table}[p]
 \caption{Declaration of state variables. \label{tab:vars}}
 \begin{shaded}\begin{small}
 <<showTableVars, echo=FALSE>>=
 library(rodeo, quietly=TRUE)
 data(vars)
-print(format(vars, justify="right"), row.names=FALSE)
+print(format(niceTbl(vars), justify="left"), row.names=FALSE)
 @
 \end{small}\end{shaded}
 \end{table}
 
-\begin{table}
+\begin{table}[p]
 \caption{Declaration of parameters. \label{tab:pars}}
 \begin{shaded}\begin{small}
 <<showTableVars, echo=FALSE>>=
 library(rodeo, quietly=TRUE)
 data(pars)
-print(format(pars, justify="right"), row.names=FALSE)
+print(format(niceTbl(pars), justify="left"), row.names=FALSE)
 @
 \end{small}\end{shaded}
 \end{table}
 
-\begin{table}
+\begin{table}[p]
 \caption{Declaration of functions being reference in process rate expressions and/or stoichiometric factor expressions. \label{tab:funs}}
 \begin{shaded}\begin{small}
 <<showTableVars, echo=FALSE>>=
 library(rodeo, quietly=TRUE)
 data(funs)
-print(format(funs, justify="right"), row.names=FALSE)
+print(format(niceTbl(funs), justify="left"), row.names=FALSE)
 @
 \end{small}\end{shaded}
 \end{table}
 
-\begin{table}
+\begin{table}[p]
 \caption{Specification of processes. \label{tab:pros}}
 \begin{shaded}\begin{small}
 <<showTableProcesses, echo=FALSE>>=
 library(rodeo, quietly=TRUE)
 data(pros)
-print(format(pros, justify="left"), row.names=FALSE)
+print(format(niceTbl(pros), justify="left"), row.names=FALSE)
 @
 \end{small}\end{shaded}
 \end{table}
 
-\begin{table}
-\caption{Specification of stoichiometric factors. \label{tab:stoi}}
+\begin{table}[p]
+\caption{Specification of stoichiometric factors. Here, a data base layout is used instead of an actual matrix layout. \label{tab:stoi}}
 \begin{shaded}\begin{small}
 <<showTableStoichiometry, echo=FALSE>>=
 library(rodeo, quietly=TRUE)
 data(stoi)
-print(format(stoi, justify="left"), row.names=FALSE)
+print(format(niceTbl(stoi), justify="left"), row.names=FALSE)
 @
 \end{small}\end{shaded}
 \end{table}
@@ -180,12 +229,11 @@ print(format(stoi, justify="left"), row.names=FALSE)
 
 \subsection{Creating and inspecting a model object}
 
-We start by loading the package and the example data.
+We start by loading packages and the example data tables whose contents was shown above.
 
 <<loadExampleData, echo=TRUE>>=
-library(rodeo, quietly=TRUE)
-
-# Load sample data frames (contents shown above)
+library(deSolve)
+library(rodeo)
 data(vars, pars, pros, funs, stoi)
 @
 
@@ -275,9 +323,11 @@ In addition to the dynamics of the state variables, the numerical solver also ou
 A single-box case has been considered so far. We will now extend the model for multiple boxes, i.~e. for a collection of (isolated) reactors. To keep it simple, we use just a few boxes in a single spatial dimension. First, we need to create a model object with the desired dimensions and resolution. Second, the code needs to be re-generated to reflect the altered dimension. Third, initial values and parameters need to be specified as arrays to account for the spatial discretization. For a model with one spatial dimension, we must use two-dimensional arrays, i.~e. matrices. Here, we initialize every modeled reactor with a different bacteria density.
 
 <<initMultiBox, echo=TRUE, eval=TRUE>>=
+<<loadExampleData>>
 nBox <- 2
 model <- rodeo$new(vars=vars, pars=pars, funs=funs,
   pros=pros, stoi=stoi, dim=c(nBox))
+<<defNormalFunctions>>
 @
 <<generateMultiBoxR, echo=TRUE, eval=TRUE>>==
 code <- model$generate(name="derivs",lang="r")
@@ -342,7 +392,7 @@ In order to make the use of \software{Fortran} as simple as possible, the \softw
 
 The \verb|compile| method takes as argument the name of a file holding the \software{Fortran} implementation of functions being referenced in the particular model's mathematical expressions (consult Sect.~\ref{sec:fortranFunctions} for guidelines). This can actually be a vector of file names if the source code is split.
 
-<<echo=TRUE, eval=TRUE>>=
+<<compileMultiBox, echo=TRUE, eval=TRUE>>=
 lib <- model$compile(sources="functionsCode.f95")
 @
 
@@ -362,6 +412,8 @@ cat(text)
 We are now prepared to load the shared library and run the simulation based on the \software{Fortran} code. Note the additional arguments \verb|dllname|, \verb|initfunc|, and \verb|nout| being passed to the numerical solver (open the help page for \verb|lsoda| to see the documentation for them). Setting a wrong value for \verb|nout| easily makes \software{R} crash.
 
 <<echo=TRUE, eval=TRUE, fig=TRUE, width=6, height=5>>=
+<<initMultiBox>>
+<<compileMultiBox>>
 <<dataMultiBox>>
 dyn.load(lib["libFile"])
 out <- ode(y=model$getVars(useNames=TRUE), times=0:96,

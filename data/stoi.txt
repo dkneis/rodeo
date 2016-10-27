@@ -1,5 +1,5 @@
 "variable"	"process"	"expression"
 "bacs"	"growth"	"1"
-"bacs"	"renewal"	"-bacs"
+"bacs"	"inout"	"-bacs"
 "subs"	"growth"	"-1 / yield"
-"subs"	"renewal"	"(subs_in - subs)"
+"subs"	"inout"	"(subs_in - subs)"

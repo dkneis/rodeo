@@ -1,6 +1,6 @@
 "name"	"unit"	"description"
 "mu"	"1/hour"	"intrinsic bacteria growth rate"
-"half"	"mg/ml"	"substrate level where bacteria grow at 50% of max. rate"
+"half"	"mg/ml"	"half saturation concentration of substrate"
 "yield"	"cells/mg"	"cells produced per amount of substrate"
 "vol"	"ml"	"volume of reactor"
 "flow"	"ml/hour"	"rate of through-flow"

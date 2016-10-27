@@ -1,3 +1,3 @@
 "name"	"unit"	"description"	"expression"
 growth	"cells/hour"	"bacteria growth"	"mu * monod(subs, half) * bacs"
-renewal	"1/hour"	"water renewal"	"flow/vol"
+inout	"1/hour"	"water in-/outflow"	"flow/vol"
