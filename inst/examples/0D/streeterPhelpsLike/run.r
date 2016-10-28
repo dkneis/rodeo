@@ -64,7 +64,7 @@ if (!compile) { # R-based version
 
   # Integrate
   out <- ode(y=model$getVars(), times=times, func=lib["libFunc"],
-    parms=model$getPars(), dllname=lib["libName"], initfunc="initmod",
+    parms=model$getPars(), dllname=lib["libName"],
     nout=model$lenPros(), outnames=model$namesPros())
 
   # Clean-up

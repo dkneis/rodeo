@@ -51,10 +51,10 @@ rodeo$set("public", "compile", function(sources, target="deSolve") {
     srcFiles <- gsub("\\", "/", srcFiles, fixed=TRUE)
     write(self$generate(name="derivs", lang="f95"), file=srcFiles["derivs"])
     libFunc <- "derivs_wrapped"
-    write(solverInterface(prod(private$dim), "derivs", libFunc), file=srcFiles["wrapper"])
     libFile <- tempfile(pattern="rodeo", tmpdir=tmpdir)
     libName <- basename(libFile)
     libFile <- gsub("\\", "/", paste0(libFile,.Platform$dynlib.ext), fixed=TRUE)
+    write(solverInterface(prod(private$dim), libName, "derivs", libFunc), file=srcFiles["wrapper"])
     wd <- getwd()
     setwd(tmpdir)
     command <- paste0("R CMD SHLIB ",paste(srcFiles, collapse=" "),
@@ -73,7 +73,7 @@ rodeo$set("public", "compile", function(sources, target="deSolve") {
 
 
 # Internal method called by 'compile'
-solverInterface <- function (boxes=1, funcName="derivs", wrapperName="derivs_wrapped") {
+solverInterface <- function (boxes, libName, funcName, wrapperName) {
   paste0("
 ! GENERATED CODE -- YOU PROBABLY DO NOT WANT TO EDIT THIS
 
@@ -83,8 +83,8 @@ module spatial_dimension
   integer, parameter:: ",rodeoConst$genIdent$len["boxes"],"=",boxes,"
 end module
 
-! Generic routine for parameter initialization
-subroutine initmod(extfun)
+! Routine for parameter initialization
+subroutine ",libName,"(extfun)
   use dimensions_and_indices   ! Module is provided by the generated code
   use spatial_dimension
   external extfun
@@ -93,7 +93,7 @@ subroutine initmod(extfun)
   call extfun(",rodeoConst$genIdent$len['pars'],"*",rodeoConst$genIdent$len["boxes"],", par)
 end subroutine
 
-! Generic wrapper around the generated code
+! Wrapper around the generated code
 subroutine ",wrapperName," (neq, t, y, ydot, yout, ip)
   use dimensions_and_indices   ! Module is provided by the generated code
   use spatial_dimension

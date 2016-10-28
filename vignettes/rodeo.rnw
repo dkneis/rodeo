@@ -379,7 +379,7 @@ In order to use the numerical solvers from the packages \url{http://cran.r-proje
 subroutine derivs (neq, t, y, ydot, yout, ip)
 \end{verbatim}
 
-and an additional subroutine for parameter initialization (\verb|initmod|) must to be supplied as well (see the \software{deSolve} vignette \url{http://cran.r-project.org/web/packages/deSolve/vignettes/compiledCode.pdf}, page 6). Consequently, a suitable wrapper code must be written.
+and an additional subroutine for parameter initialization must to be supplied as well (see the \software{deSolve} vignette \url{http://cran.r-project.org/web/packages/deSolve/vignettes/compiledCode.pdf}, page 6). Consequently, a suitable wrapper code must be written.
 
 In order to make the use of \software{Fortran} as simple as possible, the \software{rodeo} package provides a high-level class method \verb|compile| that combines
 
@@ -418,7 +418,7 @@ We are now prepared to load the shared library and run the simulation based on t
 dyn.load(lib["libFile"])
 out <- ode(y=model$getVars(useNames=TRUE), times=0:96,
   func=lib["libFunc"], parms=model$getPars(), dllname=lib["libName"],
-  initfunc="initmod", nout=model$lenPros()*prod(model$getDim()))
+  nout=model$lenPros()*prod(model$getDim()))
 layout(matrix(1:(model$lenVars()*nBox), nrow=nBox, byrow=TRUE))
 plot(out, which=1:(model$lenVars()*nBox), mfrow=NULL)
 layout(1)

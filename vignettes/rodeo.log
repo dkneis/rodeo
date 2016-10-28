@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.1.9)  27 OCT 2016 11:22
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2015.1.9)  28 OCT 2016 17:55
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1353,7 +1353,7 @@ texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/share/texlive/texmf-
 dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/share/texlive/texmf-dist/fo
 nts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texmf/fonts/type1/publ
 ic/cm-super/sfrm1000.pfb>
-Output written on rodeo.pdf (23 pages, 482525 bytes).
+Output written on rodeo.pdf (23 pages, 480090 bytes).
 PDF statistics:
  421 PDF objects out of 1000 (max. 8388607)
  366 compressed objects within 4 object streams
