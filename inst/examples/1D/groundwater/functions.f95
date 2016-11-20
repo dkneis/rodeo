@@ -5,7 +5,7 @@ module functions
   double precision function leak (hAqui, hRiver, hBed, kfBed, thickBed, widthBed, dx)
     double precision, intent(in):: hAqui, hRiver, hBed, kfBed, thickBed, widthBed, dx
     double precision:: wetPerim, leakFact
-    wetPerim = widthBed + 2 * (hRiver - hBed)
+    wetPerim = widthBed + 2 * (hRiver - hBed)    ! rectangular x-section
     leakFact = kfBed / thickBed * wetPerim / dx
     if (hAqui > hBed) then
       leak = leakFact * (hRiver - hAqui)
@@ -16,7 +16,7 @@ module functions
 
   double precision function rch (time)
     double precision, intent(in):: time
-    rch = 0.2d0 / 365d0 / 86400d0
+    rch = 0.2d0 / 365d0  ! 200 mm/year
   end function
 
   double precision function hRiver (time)

@@ -1,4 +1,4 @@
 name	unit	description	expression
-flow	m/s	lateral ground water flow	kf * h / ne / (dx^2) * (left(h) - 2*h + right(h))
-recharge	m/s	ground water recharge	rch(time) / ne
-leakage	m/s	exchange with surface water	leaky * leak(h, hRiver(time), hBed, kfBed, thickBed, widthBed, dx)
+flow	m/day	lateral ground water flow	kf * (h-h0) / ne / (dx^2) * (left(h) - 2*h + right(h))
+recharge	m/day	ground water recharge	rch(time) / ne
+leakage	m/day	exchange with surface water	leaky * leak(h, hRiver(time), hBed, kfBed, thickBed, widthBed, dx)
