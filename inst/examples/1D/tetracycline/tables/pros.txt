@@ -1,0 +1,33 @@
+name	unit	description	expression
+decay_w	g A/m3/d	decay of antibiotic in water	ka_w * A_w
+decay_s	g A/m3/d	decay of antibiotic in sediment	ka_s * A_s
+hydrolysis_w	g C /m3/d	POM hydrolysis in water	kh_w * POM_w
+hydrolysis_s	g C /m3/d	POM hydrolysis in sediment	kh_s * POM_s
+production	g C/m3/d	POM production	P / dw
+settl_S	g C/m2/d	settling of susceptible bacteria	us * fp * S_w
+settl_R	g C/m2/d	settling of resistant bacteria	us * fp * R_w
+settl_A	g C/m2/d	settling of antibiotic	us * A_part(A_w, kd_DOM, kd_TSS, DOM_w, TSS_w)
+settl_POM	g C/m2/d	settling of particulate OM	us * POM_w
+settl_TSS	g DW/m2/d	settling of suspended solids	us * TSS_w
+resusp_S	g C/m2/d	resuspension of susceptible bacteria	ur * S_s
+resusp_R	g C/m2/d	resuspension of resistant bacteria	ur * R_s
+resusp_A	g C/m2/d	resuspension of antibiotic	ur * A_part(A_s, kd_DOM, kd_TSS, DOM_s, TSS_s)
+resusp_POM	g C/m2/d	resuspension of particulate OM	ur * POM_s
+resusp_TSS	g DW/m2/d	resuspension of suspended solids	ur * TSS_s
+diffusion_A	g C/m2/d	diff. sed.-water flux of antibiotic	ud * (A_diss(A_w, kd_DOM, kd_TSS, DOM_w, TSS_w) - por * A_diss(A_s, kd_DOM, kd_TSS, DOM_s, TSS_s))
+diffusion_DOM	g C/m2/d	diff. sed.-water flux of dissolved OM	ud * (DOM_w - por * DOM_s)
+growth_S_w	g C/m3/d	growth of susceptible bacs in water	kg * S_w * DOM_w / (DOM_w + h_DOM) * max(0, 1 - A_free(A_w, kd_DOM, kd_TSS, DOM_w, TSS_w) / Amic)
+growth_S_s	g C/m3/d	growth of susceptible bacs in sediment	kg * S_s * DOM_s / (DOM_s + h_DOM) * max(0, 1 - A_free(A_s, kd_DOM, kd_TSS, DOM_s, TSS_s) / Amic)
+growth_R_w	g C/m3/d	growth of resistant bacs in water	kg * R_w * DOM_w / (DOM_w + h_DOM) * (1 - alpha)
+growth_R_s	g C/m3/d	growth of resistant bacs in sediment	kg * R_s * DOM_s / (DOM_s + h_DOM) * (1 - alpha)
+respiration	1/d	respiration of bacteria	kr
+segregation_w	g C/m3/d	segregational loss in water	ks * R_w
+segregation_s	g C/m3/d	segregational loss in sediment	ks * R_s
+conjugation_w	g C/m3/d	conjugation in water	kc * S_w * R_w
+conjugation_s	g C/m3/d	conjugation in sediment	kc * S_s * R_s
+transport_S	g C/m3/d	transport of susceptible bacteria	1 / V * (Q_in * (S_in - S_w) + Q * (left(S_w) - S_w))
+transport_R	g C/m3/d	transport of resistant bacteria	1 / V * (Q_in * (R_in - R_w) + Q * (left(R_w) - R_w))
+transport_A	g C/m3/d	transport of antibiotic	1 / V * (Q_in * (A_in - A_w) + Q * (left(A_w) - A_w))
+transport_DOM	g C/m3/d	transport of dissolved OM	1 / V * (Q_in * (DOM_in - DOM_w) + Q * (left(DOM_w) - DOM_w))
+transport_POM	g C/m3/d	transport of particulate OM	1 / V * (Q_in * (POM_in - POM_w) + Q * (left(POM_w) - POM_w))
+transport_TSS	g DW/m3/d	transport of suspended solids	1 / V * (Q_in * (TSS_in - TSS_w) + Q * (left(TSS_w) - TSS_w))

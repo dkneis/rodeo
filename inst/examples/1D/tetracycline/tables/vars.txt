@@ -1,0 +1,13 @@
+name	unit	description	initial
+S_w	g C/m3	susceptible bacteria in water	0.18
+S_s	g C/m3	susceptible bacteria in sediment	1.8
+R_w	g C/m3	resistant bacteria in water	0.02
+R_s	g C/m3	resistant bacteria in sediment	8
+POM_w	g C/m3	particulate OM in water	10
+POM_s	g C/m3	particulate OM in sediment	75
+TSS_w	g DW/m3	total suspended solids in water	16
+TSS_s	g DW/m3	total suspended solids in sediment	160
+A_w	g/m3	total antibiotic concentration in water	0.002
+A_s	g/m3	total antibiotic concentration in sediment	0.02
+DOM_w	g C/m3	dissolved OM in water	3.2
+DOM_s	g C/m3	dissolved OM in sediment	32

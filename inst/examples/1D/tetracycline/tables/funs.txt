@@ -1,0 +1,5 @@
+name	unit	description
+A_part	mol/m3	concentration of antibiotic; particulate fraction
+A_diss	mol/m3	concentration of antibiotic; freely dissolved and sorbed to dissolved matter
+A_free	mol/m3	concentration of antibiotic; freely dissolved
+max	-	maximum of arguments
