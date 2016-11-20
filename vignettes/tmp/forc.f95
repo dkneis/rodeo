@@ -9,7 +9,7 @@ contains
 
   function temp (time) result (res)
   double precision, intent(in):: time
-  character(len=256), parameter:: file='meteo.txt'
+  character(len=256), parameter:: file='tmp/meteo.txt'
   character(len=256), parameter:: col='temp'
   integer, parameter:: lweight= -1
   logical, save:: firstCall= .TRUE.
@@ -22,7 +22,7 @@ contains
 end function
   function humid (time) result (res)
   double precision, intent(in):: time
-  character(len=256), parameter:: file='meteo.txt'
+  character(len=256), parameter:: file='tmp/meteo.txt'
   character(len=256), parameter:: col='humid'
   integer, parameter:: lweight= -1
   logical, save:: firstCall= .TRUE.
