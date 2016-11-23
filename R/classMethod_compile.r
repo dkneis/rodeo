@@ -8,8 +8,8 @@
 #' @param sources Name(s) of fortran source file(s) where a module with the
 #'   fixed name 'functions' is implemented. This module must contain all
 #'   user-defined functions referenced in process rates or
-#'   stoichiometric factors. Can be the name of a single file or, if the
-#'   Fortran code is split over several dependent files, a vector of file names.
+#'   stoichiometric factors. Can be \code{NULL}, the name of a single file, or
+#'   a vector of file names if the Fortran code is split over several files.
 #' @param target Name of a target 'environment' for which the library is
 #'   compiled. Currently, 'deSolve' is the only supported value.
 
@@ -42,10 +42,10 @@
 #' lib <- model$compile(sources="functionsCode.f95")
 #' }
 
-rodeo$set("public", "compile", function(sources, target="deSolve") {
+rodeo$set("public", "compile", function(sources=NULL, target="deSolve") {
   tmpdir <- gsub(pattern="\\", replacement="/", x=tempdir(), fixed=TRUE)
   if (identical(target, "deSolve")) {
-    srcFiles <- c(funcs=normalizePath(sources),
+    srcFiles <- c(funcs=if (is.null(sources)) "" else normalizePath(sources),
       derivs= tempfile(pattern="rodeo", tmpdir=tmpdir, fileext=".f95"),
       wrapper= tempfile(pattern="rodeo", tmpdir=tmpdir, fileext=".f95"))
     srcFiles <- gsub("\\", "/", srcFiles, fixed=TRUE)

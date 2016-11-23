@@ -7,8 +7,8 @@
 \item{sources}{Name(s) of fortran source file(s) where a module with the
 fixed name 'functions' is implemented. This module must contain all
 user-defined functions referenced in process rates or
-stoichiometric factors. Can be the name of a single file or, if the
-Fortran code is split over several dependent files, a vector of file names.}
+stoichiometric factors. Can be \code{NULL}, the name of a single file, or
+a vector of file names if the Fortran code is split over several files.}
 
 \item{target}{Name of a target 'environment' for which the library is
 compiled. Currently, 'deSolve' is the only supported value.}
