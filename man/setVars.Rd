@@ -34,7 +34,7 @@ For a 0-dimensional model (i.e. a model without spatial resolution),
 }
 \examples{
 data(vars, pars, funs, pros, stoi)
-x0 <- c(bacs=0.1, subs=0.5)
+x0 <- c(bac=0.1, sub=0.5)
 
 # 0-dimensional model
 model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))

@@ -73,8 +73,8 @@
 #' model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
 #'
 #' # Parameters, initial values
-#' model$setPars(c(mu=0.8, half=0.1, yield= 0.1, vol=1000, flow=50, subs_in=1))
-#' model$setVars(c(bacs=0.01, subs=0))
+#' model$setPars(c(mu=0.8, half=0.1, yield= 0.1, vol=1000, flow=50, sub_in=1))
+#' model$setVars(c(bac=0.01, sub=0))
 #'
 #' # Implementation of functions declared in 'funs'
 #' monod <- function(c,h) {c/(c+h)}
