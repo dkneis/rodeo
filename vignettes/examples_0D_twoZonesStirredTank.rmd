@@ -1,0 +1,71 @@
+
+```{r, cache=FALSE, echo=FALSE}
+# Set work folder
+knitr::opts_knit$set(root.dir="examples/0D/twoZonesStirredTank")
+```
+
+#### Problem description
+
+The model simulates the dynamics of bacteria in a continuous-flow system which is subdivided into two tanks. The main tank is directly connected with the system's in- and outflow. The second tank is connected to the main tank but it does not receive external inflow (see figure below and subsequent tables for a declaration of symbols). Both tanks are assumed to be perfectly mixed. The model accounts for import/export of bacteria and substrate into/from the two tanks. Growth of bacteria in the two tanks is limited by substrate availability according to a [Monod function](https://en.wikipedia.org/wiki/Monod_equation).
+
+![](examples/0D/twoZonesStirredTank/fig/system.png)
+
+Instead of simulating the system's dynamics, we analyze steady-state concentrations of bacteria for different choices of the model's parameters. The parameters whose (combined) effect is examined are:
+
+1. the relative volume of the sub-tank in relation to the system's total volume (parameter `fS`),
+
+2. the intensity of exchange between the two tanks (parameter `qS`),
+
+3. the growth rate of bacteria (controlled by parameter `mu`).
+
+This kind of sensitivity analysis can be used to gain insight into the fundamental impact of transient storage on bacteria densities. A corresponding real-world systems would be a river section (main tank) that exchanges water with either a lateral pond or the pore water of the hyporheic zone (sub-tanks). Note that, in this model, the sub-tank allocates a *fraction* of the system's total volume. This is (at least partly) in contrast to the mentioned real systems, where the *total volume increases* with increasing thickness of the hyporheic zone or the size of a lateral pond.
+
+The `runsteady` method from the [`rootSolve`](http://cran.r-project.org/package=rootSolve) package is employed for steady-state computation. Thus, we just perform integration over a time period a sufficient length. While this is not the most efficient strategy it comes with the advantage of guaranteed convergence independent of the assumed initial state.
+
+#### Tabular model definition
+
+The model's state variables, parameters, and functions are declared below, followed by the speficition of process rates and stoichiometric factors.
+
+<div class='htmlTableBackground'>
+```{r, echo=FALSE, results='asis', comment=''}
+rd <- function(f) {read.table(f ,sep="\t", header=TRUE)}
+knitr::kable(rd("vars.txt"), caption="Declaration of state variables (file 'vars.txt').")
+knitr::kable(rd("pars.txt"), caption="Declaration of parameters (file 'pars.txt').")
+#knitr::kable(rd("funs.txt"), caption="Declaration of functions (file 'funs.txt').")
+knitr::kable(rd("pros.txt"), caption="Definition of process rates (file 'pros.txt').")
+knitr::kable(rd("stoi.txt"), caption="Definition of stoichiometric factors (file 'stoi.txt').")
+```
+</div>
+
+#### Implementation of functions
+
+For this model, no functions need to be implemented.
+
+#### R code to run the model
+
+A `rodeo`-based implementation and application of the model is demonstrated by the following R code. It makes use of the tables displayed above.
+
+```{r cache=FALSE, echo=FALSE}
+knitr::read_chunk("xecute.r")
+```
+
+```{r ref.label='twoZonesStirredTank', echo=TRUE, eval=FALSE}
+```
+
+#### Model output
+
+The output from the above code is displayed below. Each individual plot illustrates how the concentration of bacteria depends on the relative volume of the sub-tank (x-axis) and the flow rate in the pipes connecting the two tanks (y-axis). The left column shows results for the main tank, the right column refers to the sub-tank  Each row in the layout corresponds to a specific growth rate (increasing from top to bottom row).
+
+Note that each row has its own color scale. If the variable `commonScale` is `TRUE` in the code above, all scales are identical, allowing colors to be compared between *all* individual plots. If it is `FALSE` (which may be desired when to displaying results for very different growth rates) one can only compare colors in a *row*.
+
+The figures clearly demonstrate the build-up of higher bacterial concentrations in the sub-tank sheltered from direct flushing. The difference between the to tanks is especially large when the bacteria's growth rate constant is low, making the population more susceptible to flushing losses. In consequence, we would expect a rapid rise in the bacteria load at the system's outflow if the exchange of water between the two tanks (parameter `flowS`) was suddenly increased.
+
+Interestingly, the figures also suggests that a sub-division of the system (i.e. the existance of the sub-tank) can, in some circumstances, increase the main tank's steady-state biomass compared to a single-tank set-up (biomass for the latter is found at the point of origin in each plot). Thus, for certain configurations, the existance of the sub-tank boost the bacteria load in the system's effluent even under steady flow conditions.
+
+```{r ref.label='twoZonesStirredTank', echo=FALSE, eval=TRUE, fig.height=8}
+```
+
+```{r, cache=FALSE, echo=FALSE}
+# Reset work folder
+knitr::opts_knit$set(root.dir=NULL)
+```

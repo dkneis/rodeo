@@ -1,0 +1,4 @@
+name	unit	description	expression
+flow	m/day	ground water flow	kf * (h-h0) / ne / (dx^2) * (left(h) - 2*h + right(h))
+recharge	m/day	recharge	rch(time) / ne
+leakage	m/day	exch. with river	leaky * leak(h, hRiv(time), hBed, kfBed, tBed, wBed, dx)

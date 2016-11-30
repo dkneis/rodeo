@@ -1,0 +1,5 @@
+name	unit	description
+xWat	mol/m3	conc. of x in water column
+xSed	mol/m3 bulk	conc. of x in sediment
+sWat	mol/m3	conc. of s in water column
+sSed	mol/m3 liquid	conc. of s in pore water

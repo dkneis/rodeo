@@ -1,0 +1,11 @@
+name	unit	description
+kWat	1/d	decay constant in water
+kSed	1/d	decay constant in sediment
+kDif	m2/d	diffusion coefficient
+hDif	m	diffusion distance
+por	-	porosity of sediment
+uSet	m/d	effective settling velocity
+zWat	m	depth of water column
+zSed	m	thickness of sediment layer
+vol	m3	volume of water body
+s_x	mol/mol	stoichiometric ratio s:x

@@ -1,0 +1,6 @@
+name	unit	description
+u	m/s	advection velocity
+d	m2/s	dispersion coefficient
+dx	m	length of sub-section
+leftmost	none	0/1 mask to select leftmost sub-section
+rightmost	none	0/1 mask to select rightmost sub-section

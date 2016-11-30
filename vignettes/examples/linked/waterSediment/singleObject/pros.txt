@@ -1,0 +1,6 @@
+name	unit	description	expression
+flow	m3/d	flow through water column	q(time)/vol
+sett	mol/m2/d	settling of x	uSet * xWat
+diff	mol/m2/d	diffusion at w/s interf.	kDif/hDif * por * (sSed-sWat)
+degrWat	mol/m3/d	degrad. of x in water	kWat * xWat
+degrSed	mol/m3/d	degrad. of x in sediment	kSed * xSed

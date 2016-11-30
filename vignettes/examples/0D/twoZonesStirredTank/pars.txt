@@ -1,0 +1,10 @@
+name	unit	description
+vol	ml	Total volume (main tank + sub-tank)
+fS	-	Fraction of total volume assigned to sub-tank
+qM	ml/hour	External in-/outflow to/from main tank
+qS	ml/hour	Flow rate in sub-tank branch
+bX	mg/ml	Concentration of bacteria in external inflow to main tank
+sX	mg/ml	Concentration of substrate in external inflow to main tank
+mu	1/hour	Growth rate constant of bacteria
+yield	mg/mg	Yield coef. (bacteria produced per amount of substrate)
+half	mg/ml	Half saturation conc. of sustrate for bacteria growth

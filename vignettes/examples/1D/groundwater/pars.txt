@@ -1,0 +1,10 @@
+name	unit	description
+dx	m	lateral discretizaton
+kf	m/day	hydraulic conductivity
+ne	-	effective porosity
+h0	m	elevation of aquifer base
+hBed	m	river bottom elevation
+wBed	m	width of river (rectangular x-section)
+kfBed	m/day	hydraulic conductivity of river bottom layer
+tBed	m	thickness of river bottom layer
+leaky	-	1 for leaky and 0 for normal cells

@@ -1,0 +1,44 @@
+
+```{r, cache=FALSE, echo=FALSE}
+# Set work folder
+knitr::opts_knit$set(root.dir="examples/1D/diffusion")
+```
+
+#### Problem description
+
+This model simulates diffusion into a material driven by a constant known concentration at a boundary (see figure below). The initial concentration of transported substance is zero in the entire model domain. The latter is subdivided into layers of equal thickness (semi-discretization) and the dispersion term for each layer is approximated by a central finite difference.
+
+![](examples/1D/diffusion/fig/diffusion.png)
+
+The source code below computes the concentrations in all layers for selected time points by means of numerical integration. The results are visually compared to analytical solutions for the same initial and boundary conditions.
+
+#### Tabular model definition
+
+The model specification is contained directly in the R code below.
+
+#### Implementation of functions
+
+For this model, no functions need to be implemented.
+
+#### R code to run the model
+
+A `rodeo`-based implementation and application of the model is demonstrated by the following R code.
+
+```{r cache=FALSE, echo=FALSE}
+knitr::read_chunk("xecute.r")
+```
+
+```{r ref.label='diffusion', echo=TRUE, eval=FALSE}
+```
+
+#### Model output
+
+The output from the above code is shown below. The boundary where a constant external concentration was imposed is marked by the vertical line at station 0.
+
+```{r ref.label='diffusion', echo=FALSE, eval=TRUE}
+```
+
+```{r, cache=FALSE, echo=FALSE}
+# Reset work folder
+knitr::opts_knit$set(root.dir=NULL)
+```

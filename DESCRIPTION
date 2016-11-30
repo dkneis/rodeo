@@ -14,5 +14,8 @@ Description: Provides an R6 class and several utility methods to
 License: GPL (>= 2)
 Imports:
     R6,
-    deSolve
+    deSolve,
+    rootSolve
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr
 RoxygenNote: 5.0.1

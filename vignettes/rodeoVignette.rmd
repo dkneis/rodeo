@@ -1,22 +1,41 @@
 ---
-title: "Vignette for R package `rodeo`"
+title: 'rodeo: Basic Usage and Sample Applications'
 author: "david.kneis @ tu-dresden.de"
-date: '2016-11-18'
+date: '2016-11-26'
 output:
+  pdf_document:
+    fig_caption: no
+    includes:
+      in_header: preamble-latex.tex
+    number_sections: yes
+    toc: yes
+    toc_depth: 3
   html_document:
     number_sections: yes
     toc: yes
-  pdf_document:
-    number_sections: yes
-    toc: yes
+    toc_depth: 3
+bibliography: references.bib
+vignette: |
+  %VignetteIndexEntry{rodeo: Basic Usage and Sample Applications} %VignetteEngine{knitr::rmarkdown} %VignetteEncoding{UTF-8}
 ---
 
-```{r, echo=FALSE}
-library(rodeo)
-library("captioner")
-fig <- captioner(prefix="Fig.")
-tab <- captioner(prefix="Tab.")
+```{r echo=FALSE}
+options(width=120) 
+library(xtable)
+options(xtable.caption.placement = 'top',
+        xtable.include.rownames = FALSE,
+        xtable.comment = FALSE,
+        xtable.booktabs = TRUE
+  )
 ```
+
+<style>
+  .htmlTableBackground table {
+    background-color:#F3F4E3;
+    font-family: monospace;
+    font-size: 90%;
+  }
+</style>
 
 # Main features of `rodeo`
 
@@ -32,18 +51,18 @@ The `rodeo` package facilitates the implementation of ODE-based models in R. Suc
 
 # Example ODE system
 
-In the subsequent sections, the package's functioning is illustrated with simple model of bacteria growth in a continuous flow stirred tank reactor (figure below). It is assumed that the bacteria grow on a single resource (e. g. a source of organic carbon) which is imported via the reactor's inflow. Due to mixing, the reactors contents is spatially homogeneous, hence the density of bacteria as well as the concentration of the substrate are scalars.
+In the subsequent sections, the package's functioning is illustrated with a simple model of bacteria growth in a continuous flow stirred tank reactor (figure below). It is assumed that the bacteria grow on a single resource (e. g. a source of organic carbon) which is imported via the reactor's inflow. Due to mixing, the reactors contents is spatially homogeneous, hence the density of bacteria as well as the concentration of the substrate are scalars.
 
-<img src="fig/reactor.png" alt="fig/reactor.png" style="width: 400px;"/>
+![](fig/reactor.png)
 
 
 Changes in bacteria density are due to (1) resource-limited growth and (2) wash-out from the reactor (inflow is assumed to be sterile). The substrate concentration is controlled by (1) the inflow as well as (2) the consumption by bacteria. A classical Monod term was used to model the resource dependency of bacteria growth. For the sake of simplicity, the external forcings (i. e. flow rate and substrate load) are held constant and the reactor's volume is a parameter rather than a state variable.
 
 The governing differential equations are
 
-$$ \frac{d}{d t}bacs = \color{blue}{mu * \frac{subs}{subs+half} * bacs} + \color{red}{\frac{flow}{vol}} * (0-bacs) $$
+$$ \frac{d}{d t}bac = \color{blue}{mu * \frac{sub}{sub+half} * bac} + \color{red}{\frac{flow}{vol}} * (0-bac) $$
 
-$$ \frac{d}{d t}subs = -\frac{1}{yield} * \color{blue}{mu * \frac{subs}{subs+half} * bacs} + \color{red}{\frac{flow}{vol}} * (subs_{in}-subs) $$
+$$ \frac{d}{d t}sub = -\frac{1}{yield} * \color{blue}{mu * \frac{sub}{sub+half} * bac} + \color{red}{\frac{flow}{vol}} * (sub_{in}-sub) $$
 
 
 where redundant terms are displayed in identical colors (all identifiers are explained in tables below). For use with `rodeo`, the equations must be split up into a vector of process rates ($r$) and a matrix of stoichiometric factors ($S$) so that the product of the two yields the vector of the state variables' derivatives with respect to time ($\dot{y}$). Note that
@@ -61,16 +80,16 @@ $$
 but in the first form, $\dot{y}$ is a row vector whereas it is a column vector in the second form which involves the transpose of $S$. Adopting the first form, the above set of ODE can be written as
 
 $$
-\begin{bmatrix} \dfrac{d}{d t}bacs , \dfrac{d}{d t}subs \end{bmatrix} =
-\begin{bmatrix} mu * \dfrac{subs}{subs+half} * bacs \\ \dfrac{flow}{vol} \end{bmatrix} *
-\begin{bmatrix} 1 & -bacs \\ -\dfrac{1}{yield} & subs_{in}-subs \end{bmatrix}
+\begin{bmatrix} \dfrac{d}{d t}bac , \dfrac{d}{d t}sub \end{bmatrix} =
+\begin{bmatrix} mu * \dfrac{sub}{sub+half} * bac \\ \dfrac{flow}{vol} \end{bmatrix} *
+\begin{bmatrix} 1 & -bac \\ -\dfrac{1}{yield} & sub_{in}-sub \end{bmatrix}
 $$
 
 The vector $r$ and the matrix $S$, together with a declaration of all identifiers appearing in the expressions, can conveniently be stored in tables, i.e. R data frames. Appropriate data frames are shipped with the package and can be loaded with the R function `data`. Their contents is displayed below:
 
-
-
+<div class='htmlTableBackground'>
 ```{r, echo=FALSE}
+library(rodeo)
 data(vars, pars, funs, pros, stoi)
 knitr::kable(vars, caption="Data set `vars`: Declaration of state variables.")
 knitr::kable(pars, caption="Data set `pars`: Declaration of parameters.")
@@ -78,12 +97,13 @@ knitr::kable(funs, caption="Data set `funs`: Declaration of functions referenced
 knitr::kable(pros, caption="Data set `pros`: Definition of process rates.")
 knitr::kable(stoi, caption="Data set `stoi`: Definition of stoichiometric factors providing the relation between processes and state variables. Note the (optional) use of a tabular layout instead of the more common matrix layout.")
 ```
+</div>
 
 # Basic use
 
 ## Creating a `rodeo` model object
 
-We start by loading packages and the example data tables whose contents was shown in the above Tables.
+We start by loading packages and the example data tables whose contents was shown in the above tables.
 
 ```{r loadExampleData, echo=TRUE}
 library(deSolve)
@@ -91,7 +111,7 @@ library(rodeo)
 data(vars, pars, pros, funs, stoi)
 ```
 
-Then, a new object is created with the `new` method of the R6 class system. This requires us to supply the name of the class, data frames for initialization, as well as the spatial dimensions. Here, we create a single-box model (one dimension with no subdivision). contents. 
+Then, a new object is created with the `new` method of the R6 class system. This requires us to supply the name of the class, data frames for initialization, as well as the spatial dimensions. Here, we create a single-box model (one dimension with no subdivision).
 
 ```{r initSingleBox, echo=TRUE}
 model <- rodeo$new(vars=vars, pars=pars, funs=funs,
@@ -118,8 +138,8 @@ monod <- function(c, h) { c / (c + h) }
 We also need to assign values to parameters and state variables (initial values) using the dedicated class methods `setPars` and `setVars`. Since we deal with a single-box model, parameters and initial values can be stored in ordinary *named* vectors.
 
 ```{r dataSingleBox, echo=TRUE, eval=TRUE}
-model$setVars(c(bacs=0.01, subs=0))
-model$setPars(c(mu=0.8, half=0.1, yield= 0.1, vol=1000, flow=50, subs_in=1))
+model$setVars(c(bac=0.01, sub=0))
+model$setPars(c(mu=0.8, half=0.1, yield= 0.1, vol=1000, flow=50, sub_in=1))
 ```
 
 ## Computing the stoichiometry matrix
@@ -164,11 +184,11 @@ The graphical output of the above code is displayed below (top row: state variab
 
 # Advanced topics
 
-## Multi-box models (spatial discretization)
+## Multi-box models (spatial discretization) {#multi-box}
 
 A single-box model has been considered so far. We will now extend the model for multiple boxes, i. e. we model a set of reactors. To keep it simple, we consider just two boxes and we assume that the dynamics in the reactors is independent of each other (like in an experiment with two replicates).
 
-First, we need to create a model object with the desired dimensions and resolution.
+First, we need to create a model object with the desired number of boxes in the respective dimensions. In this example, we deal with just one dimension. 
 
 ```{r ref.label='loadExampleData', echo=TRUE, eval=TRUE}
 ```
@@ -178,7 +198,7 @@ model <- rodeo$new(vars=vars, pars=pars, funs=funs,
   pros=pros, stoi=stoi, dim=c(nBox))
 ```
 
- Second, the code needs to be re-generated to reflect the altered dimension.
+ Second, the code needs to be re-generated to reflect the altered number of boxes.
  
 ```{r generateMultiBoxR, echo=TRUE, eval=TRUE}
 code <- model$generate(name="derivs",lang="r")
@@ -187,12 +207,12 @@ derivs <- eval(parse(text=code))
 ```{r ref.label='defNormalFunctions', echo=TRUE, eval=TRUE}
 ```
 
- Third, initial values and parameters need to be specified as arrays (instead of vectors) to account for the spatial discretization. For a model with one spatial dimension, we must use two-dimensional arrays, i.~e. matrices. Here, we initialize every modeled reactor with a different bacteria density. The parameter values are identical for all reactors.
+Third, initial values and parameters need to be specified as arrays now (instead of vectors) to account for the spatial discretization. For a model with one spatial dimension, we must use two-dimensional arrays, i. e. matrices. Here, we initialize every modeled reactor with a different bacteria density but parameter values are kept identical for all reactors.
  
 ```{r dataMultiBox, echo=TRUE, eval=TRUE}
-v <- cbind(bacs= seq(from=0.01, to=0.2, length.out=nBox), subs= rep(0, nBox))
+v <- cbind(bac= seq(from=0.01, to=0.2, length.out=nBox), sub= rep(0, nBox))
 model$setVars(v)
-p <- c(mu=0.8, half=0.1, yield= 0.1, vol=1000, flow=50, subs_in=1)
+p <- c(mu=0.8, half=0.1, yield= 0.1, vol=1000, flow=50, sub_in=1)
 p <- matrix(rep(p, each=nBox), nrow=nBox, dimnames=list(NULL, names(p)))
 model$setPars(p)
 ```
@@ -210,6 +230,8 @@ In the graphical output of the above code, the state variables are organized in 
 
 ```{r ref.label='solveMultiBoxR', echo=FALSE, eval=TRUE}
 ```
+
+Note the convention regarding the storage of state variables in multi-box models. Generally, the values of neighboring boxes of a *particular* state variable are stored in the respective vector as neighboring elements. For example, in a 1-dimensional model with 3 boxes and two state variables A and B, the layout of the states vector is A.1, A.2, A.3, B.1, B.2, B.3 (instead of A.1, B.1, A.2, ...). This convention applies to the output of the numerical solvers as well, i. e. the columns of the output matrix returned from the [`deSolve`](http://cran.r-project.org/package=deSolve) integrators follows the described layout.
 
 ## Maximizing performance through Fortran {#fortranGeneration}
 
@@ -235,7 +257,7 @@ To make the use of Fortran as simple as possible, `rodeo` provides a high-level 
 lib <- model$compile(sources="fortran/functionsCode.f95")
 ```
 
-The `compile` method takes as argument the name of a file holding the Fortran implementation of functions being referenced in the particular model's mathematical expressions. This argument can actually be a vector if the source code is split across several files. Consult the section on [Fortran functions](#fortranFunctions) for coding guidelines.
+The `compile` method takes as argument the name of a file holding the Fortran implementation of functions being referenced in the particular model's mathematical expressions. This argument can actually be a vector if the source code is split across several files. Consult the section on [Fortran functions](#fortranFunctions) for coding guidelines and take a look at the [collection of examples](#examples).
 
 The return value of `compile` is a named vector of character strings holding the name of the generated shared library (in element `libName`), the full file path of the library (in element `libFile`) as well as the name of the callable subroutine within that library (in element `libFunc`). The library must be loaded and unloaded with `dyn.load` and `dyn.unload`, respectively.
 
@@ -279,11 +301,11 @@ The output of the above code is displayed below. It should be identical to the a
 
 In general, there are two options for dealing with time-variable forcings:
 
-**functions-of-time:** In this approach one needs to define the forcings as functions of a single argument representing time. In `rodeo` this argument must have the reserved name `time`. Use of this approach is most convenient if the forcings are easily described as parametric functions of time (e.g. seasonal change of solar radiation). It can also be used with tabulated time series data, but this requires some extra coding. In any case, it is essential for restrict the integration step size of the solver (e.g. using the `hmax` argument of `deSolve::lsoda`) so that short-term variations in the forcings cannot be 'missed'.
+**Functions-of-time:** For this approach one needs to define the forcings as functions of a formal argument that represents time. In `rodeo`, the actual argument must have the reserved name `time`. The approach is handy if the forcings can be approximated by parametric functions (like the seasonal cycle of extra-terrestrial solar radiation, for example). It can also be used with tabulated time series data, but this requires some extra coding. In any case, it is essential to restrict the integration step size of the solver (e.g. using the `hmax` argument of `deSolve::lsoda`) so that short-term variations in the forcings cannot be 'missed'.
  
-**stop-and-go:** In this approach forcings are implemented as normal parameters. To allow for their variation in time, the ODE solver is interrupted every time when the forcing data change. The solver is then re-started with the updated parameters (i.e. forcing data) using the states computed in the previous call as initial values. Hence, the calls to the ODE solver must be embedded within a time-loop. With this approach, setting a limit on the solver's integration step size (through argument `hmax`) is not required since the solver is interrupted at the 'critical times' anyway.
+**Stop-and-go:** For this approach forcings are implemented as normal parameters. To allow for their variation in time, the ODE solver is interrupted every time when the forcing data change. The solver is then re-started with the updated parameters (i.e. forcing data) using the states output from the previous call as initial values. Hence, the calls to the ODE solver must be embedded within a loop over time. With this approach, setting a limit on the solver's integration step size (through argument `hmax`) is not required since the solver is interrupted at the 'critical times' anyway.
 
-In real-world applications, the 'stop-and-go' approach is often simpler to use and the overhead due to interruption and re-start of the solvers seems to be rather small. It also facilitates the generation of useful traceback information in case of exceptions (e.g. due to corrupt time series data).
+In real-world applications, the 'stop-and-go' approach is often simpler to use and the overhead due to interruption and re-start of the solvers seems to be rather small. It also facilitates the generation of useful trace-back information in case of exceptions (e.g. due to corrupt time series data).
 
 The remainder of this section demonstrates how the 'functions-of-time' approach can be used in Fortran-based models. It is  assumed that information on forcings is stored in delimited text files. Such files can be created, for example, with any spreadsheet software, data base system, or R. Assume that we have time series of two meteorological variables exported to a text file 'meteo.txt':
 
@@ -306,11 +328,11 @@ write(x=code, file="tmp/forc.f95")
 
 In order to use the generated code, it is necessary to
 
-1. write it to disk (e.~g. using `write` as shown above),
+1. write it to disk (e. g. using `write` as shown above),
 
 2. declare all forcings as functions in `rodeo`'s respective input table,
 
-3. insert the statement `use forcings` at the top (e.~g. line 2) of the Fortran module `'functions'`,
+3. insert the statement `use forcings` at the top (e. g. line 2) of the Fortran module `'functions'`,
 
 4. pass the generated file to the `compile` method along with all other Fortran source files.
 
@@ -318,7 +340,7 @@ The following Fortran code demonstrates how the user-defined forcings can be tes
 
 `gfortran <generated_module_file> <file_with_program> -o test`
 
-Note that the subroutines `rwarn` and `rexit` are available automatically if a shared library is build with the `compile` class method (or directly with `R CMD SHLIB`), i. e. these subroutines must not be defined then.
+Note that the subroutines `rwarn` and `rexit` are available automatically if a shared library is build with the `compile` class method (or directly with `R CMD SHLIB`), i. e. they shouldn't be defined by the user for normal applications of `rodeo`.
 
 ```{r eval=TRUE, echo=FALSE, comment=''}
 text <- readLines("fortran/fortranForcingsTest.f95", n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
@@ -360,7 +382,7 @@ Alternatively, a markdown compatible version can be generated and used with the 
 knitr::kable(model$getVarsTable()[,c("name","unit","description")])
 ```
 
-produces the result below.
+produces the result:
 
 ```{r ref.label='exportMarkdown', echo=FALSE, eval=TRUE, comment=''}
 ```
@@ -441,7 +463,7 @@ To test this, one needs to write the contents of the variable `html` to a text f
 
 #### Markdown documents
 
-A markdown compatible version can be generated with the `kable`function from package `knitr`.
+A markdown compatible version can be generated with the `kable` function from package `knitr`.
 
 ```{r stoiMarkdown, echo=TRUE, eval=FALSE}
 signsymbol <- function(x) {
@@ -468,14 +490,21 @@ x <- rbind(
  c("Portability across programs and operating systems", "+", "(-)"),
  c("Suitability for version control", "+", "-"),
  c("Editing with regular expressions", "+", "-"),
- c("Syntax highlight", "+", "-"),
- c("Display with proper alignment", "-", "+")  
+ c("Syntax highlight for expressions", "(+)", "-"),
+ c("Display table with proper alignment of columns", "-", "+"),
+ c("View multiple tables at a time", "+", "(-)") 
 )
 colnames(x) <- c("Feature","Delimited text","Spreadsheet")
 knitr::kable(as.data.frame(x))
 ```
 
 Practice has shown that it is a good compromise to store the tabular data in delimited text files and to open them either in a spreadsheet program or editor, depending on the particular task. Note that the conventional 'csv' format is not recommended since mathematical expressions involving multi-argument functions and text descriptions may contain commas (hence, they need to be quoted). Using TAB-delimited text is probably the best option. It can be copied-and-pasted between text and spreadsheet files. Modern editors can highlight TAB-characters making them distinguishable from ordinary blanks.
+
+## Checking the model formulation
+
+Model outputs can be wrong for many reasons, including inadequate process equations, bad inputs, and  numerical problems. Thus, minimizing the number of spots where mistakes/errors can hide is important.
+
+One of the few simple means to check the consistency of environmental models is to analyze balances of mass, matter, and/or energy. This can often be accomplished without actual model simulations, just by analyzing the row sums of the stoichiometry matrix. The `rodeo` package provides a method `stoiCheck` to facilitate this and the companion method `stoiCreate` can help to set-up consistent stoichiometric matrices.
 
 ## Writing `rodeo`-compatible Fortran functions {#fortranFunctions}
 
@@ -500,7 +529,7 @@ It is a good habit to always put `implicit none` in the first line of the functi
 
 In `Fortran`, identifier names are not case-sensitive (as opposed to R). This applies to the name of the function itself as well as to the names of arguments and local variables or parameters. Using uppercase names for constants is a widespread habit.
 
-Note: It is actually sufficient to put a single `implicit none` statement at the beginning of the module `'functions'` (see example in the above section on [Fortran code generation](#fortranGeneration)). Repetition of `implicit none` statements in the individual functions don't do any harm, however. 
+Note: It is actually sufficient to put a single `implicit none` statement at the beginning of the module `'functions'` (see example in the above section on [Fortran code generation](#fortranGeneration)). Repetition of `implicit none` statements in the individual functions doesn't do any harm, however. 
 
 ### Common Fortran pitfalls
 
@@ -543,4 +572,60 @@ a = term1 + term2 + &
 
 ### More information on Fortran
 
-The examples given in the section on [Fortran code generation](#fortranGeneration) may serve as a starting point. The [Fortran wiki](http://fortranwiki.org/fortran/show/HomePage) is a good source of additional information, providing links to standard documents, books, etc.
+The code contained in the section on [Fortran code generation](#fortranGeneration) or the [gallery of examples](#examples) may serve as a starting point. The [Fortran wiki](http://fortranwiki.org/fortran/show/HomePage) is a good source of additional information, also providing links to standard documents, books, etc.
+
+## Multi-object models
+
+Real-world applications often require the simulation of multiple interacting compartments. In some cases it may still be possible to handle those systems with a single set of ODE and to properly set up the Jacobian matrix. In many cases, however, it will be easier to work with separate ODE models (one for each compartment) and to allow for inter-model communication at an adequate frequency. The concept of 'linked sub-models' can be used with `rodeo` and it is also promoted by the OpenMI initiative [@Gregersen2007]. The downsides of the approach are
+
+- a loss of computational efficiency, mainly because the ODE solver needs to re-start frequently,
+
+- a potential loss in accuracy owing to time-step wise decoupling of the equations.
+
+The second aspect is particularly important and, for serious applications, the impact of the chosen frequency of inter-model communication needs to be understood. In general, a more accurate solution can be expected if the frequency of communication is increased.
+
+In spite of the mentioned drawbacks, the concept of linked sub-models remains attractive because
+
+- a modular system is easier to develop, debug, document, and re-use,
+
+- one can link `rodeo`-objects with any 'foreign' model objects, which opens the possibility to couple ODE and non-ODE models.
+
+A simple test case demonstrating the linkage of two `rodeo`-objects can be found in a [dedicated example section](#examples-multiObject). Note that those parts of `rodeo` targeted at model coupling (e. g. the class method `step`) are under development and details of the implementation may change in the future.
+
+# Further examples {#examples}
+
+## Single-box models
+
+### Streeter-Phelps like model
+```{r child='examples_0D_streeterPhelpsLike.rmd'}
+```
+
+### Bacteria in a 2-zones stirred tank
+```{r child='examples_0D_twoZonesStirredTank.rmd'}
+```
+
+## One-dimensional models
+
+### Diffusion
+```{r child='examples_1D_diffusion.rmd'}
+```
+
+### Advective-dispersive transport
+```{r child='examples_1D_advectionDispersion.rmd'}
+```
+
+### Ground water flow
+```{r child='examples_1D_groundwater.rmd'}
+```
+
+### Antibiotic resistant bacteria in a river
+```{r child='examples_1D_tetracycline.rmd'}
+```
+
+## Multi-object models {#examples-multiObject}
+
+### Water-sediment interaction
+```{r child='examples_linked_waterSediment.rmd'}
+```
+
+# References

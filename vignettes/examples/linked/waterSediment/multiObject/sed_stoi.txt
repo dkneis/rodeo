@@ -1,0 +1,4 @@
+process	xSed	sSed
+sett	1/zSed	NA
+diff	NA	-1/zSed/por
+degrSed	-1	s_x/por

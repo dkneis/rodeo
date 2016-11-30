@@ -1,0 +1,11 @@
+name	unit	description	expression
+bLoadX2M	mg/hour	Bacteria import to main tank	qM * bX
+bLoadM2X	mg/hour	Bacteria export from main tank	qM * bM
+bLoadM2S	mg/hour	Bacteria import to sub-tank	qS * bM
+bLoadS2M	mg/hour	Bacteria export from sub-tank	qS * bS
+sLoadX2M	mg/hour	Substrate import to main tank	qM * sX
+sLoadM2X	mg/hour	Substrate export from main tank	qM * sM
+sLoadM2S	mg/hour	Substrate import to sub-tank	qS * sM
+sLoadS2M	mg/hour	Substrate export from sub-tank	qS * sS
+bGrowthM	mg/ml/hour	Bacteria gowth in main tank	mu * sM/(sM+half) * bM
+bGrowthS	mg/ml/hour	Bacteria growth in sub-tank	mu * sS/(sS+half) * bS

@@ -1,0 +1,3 @@
+name	unit	description	expression
+degradation	mg/l/d	Decay rate	kd * OM
+reaeration	mg/l/d	Re-aeration rate	ka * (DOsat(temp)-DO)

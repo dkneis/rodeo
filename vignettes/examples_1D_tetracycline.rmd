@@ -1,0 +1,159 @@
+---
+output: html_document
+---
+
+```{r, cache=FALSE, echo=FALSE}
+# Set work folder
+knitr::opts_knit$set(root.dir="examples/1D/tetracycline")
+```
+
+#### Problem description
+
+This section demonstrates the *re-implementation* of an existing model originally published by @Hellweger2011. It considers the fate of E. coli bacteria in a stream loaded with the antibiotic Tetracycline. The model covers both the (moving) water column and the (fixed) bottom sediments. In contrast to the original implementation of @Hellweger2011, the tanks-in-series concept (see Figure below) was adopted to simulate longitudinal transport in the water column. The key idea of this concept is to represent a river reach by a cascade of fully-mixed tanks whose number ($n$) is adjusted to mimic the relative magnitude of advection and longitudinal dispersion. This is expressed by the relation $n = \frac{Pe}{2}+1$ where $Pe$ is the dimensionless Peclet number. The latter is related to the cross-section average velocity $u_L$, the reach length $L$, and the longitudinal dispersion coefficient $D_L$ according to $Pe = \frac{u_L \cdot L}{D_L}$ [@Elgeti1996].
+
+![](examples/1D/tetracycline/fig/tanksInSeries.png)
+
+The tanks-in-series concept comes with two constraints: First, it is inefficient when applied to systems with negligible dispersion (consider the case $D_L \rightarrow 0$ in the just mentioned relation). Second, depending on the solver, the Courant criterion must be obeyed when chosing the maximum integration time step $\Delta t$ which should be $\Delta t \le \frac{L}{n \cdot u_L}$. Note that the term $L/{u_L}$ can be expanded with the cross-section area to yield the quotient of storage volume and flow rate, being the usual definition of a mixed tank's residence time.
+
+#### Tabular model definition
+
+The model's state variables comprise the concentrations of 12 components listed in the table below. Each component in the water column (suffix `_w`) has its counterpart in the sediment (suffix `_s`). With regard to bacteria, two strains of E. coli are distinguished: a Tetracycline resistant strain and a susceptible one.
+
+<div class='htmlTableBackground'>
+```{r, echo=FALSE, results='asis', comment=''}
+rd <- function(f) {read.table(f ,sep="\t", header=TRUE)}
+knitr::kable(rd("vars.txt"), caption="Declaration of state variables (file 'vars.txt').")
+```
+</div>
+
+The values displayed in the rightmost column of the above table are used as initial values in the model application. Concentrations are generally specified as mass per bulk volume in units of mg/L. The mass of total suspended solids is quantified as dry weight; masses of biogenic organic matter, including bacteria, are expressed on a Carbon basis. For E. coli, biomass can be converted into cell numbers using a factor of roughly $1 \cdot 10^{-13}$ g Carbon / cell.
+
+This conversion is based on information from the [bionumbers data base](http://bionumbers.hms.harvard.edu/bionumber.aspx?&id=103010) reporting a value of 7e+9 Carbon atoms per E. coli cell. Taking into account the Avogadro constant (about 6e23 atoms/mol) and the molar mass of Carbon (12 g/mol), one obtains 7e+9 / 6e23 * 12 = 1.4e-13 g Carbon / cell.  An alternative estimate (@Hellweger2011, supplement page S12) is based on dry weight of E. coli (180e-15 g/cell) and an approximate ratio of 0.5 g Carbon /g dry weight. The corresponding estimate is 180e-15 * 0.5 = 0.9e-13 g Carbon / cell.
+
+The state variables' dynamics are controlled by a variety of processes specified in tabular form below.
+
+<div class='htmlTableBackground'>
+```{r, echo=FALSE, results='asis', comment=''}
+x <- read.table("pros.txt" ,sep="\t", header=TRUE)
+capt <- "Definition of process rates (file 'pros.txt')"
+if (knitr::opts_knit$get("rmarkdown.pandoc.to") == "latex") {
+  x <- cbind(id=1:nrow(x), x)
+  print(xtable::xtable(x[,c("id", "name","unit","description")],
+    caption=paste0(capt, "; first columns.")),
+    type="latex", tabular.environment="longtable", floating=FALSE)
+  print(xtable::xtable(x[,c("id","expression")],
+    caption=paste0(capt, "; further columns."),
+    align=c("l","l","p{15cm}")),
+    type="latex", tabular.environment="longtable", floating=FALSE)
+} else {
+  knitr::kable(x, caption=paste0(capt,"."))
+}
+```
+</div>
+
+Besides the physical phenomena of advection and dispersion, the list of processes includes growth and respiration losses of bacteria, as well as gene transfer between the two strains of E. coli. Particularly, the model describes the horizontal transfer of Tetracycline resistance through the exchange of plasmids (conjugation) as well as the potential loss of the plasmid during cell division (segregational loss). While carriage of the resistance genes is clearly advantageous under exposure to the antibiotic, the synthesis of plasmids also has side effects to the cell, e. g. in the form of physiological costs. This phenomenon is described as a reduction of the growth rate of the Tetracycline-resistant E. coli strain but evolutionary reduction of plasmid costs [@Lenski1998] is neglected.
+
+Tetracycline undergoes photolytic decay [@Wammer2011] which is modeled as a first-order process. The antibiotic is also known to bind to organic and inorganic matter in relevant percentages [@Tolls2001]. Hence, sorption effects must be included in the model to obtain realistic estimates of the freely available Tetracycline concentration to which the bacteriostatic effect is attributed [@Chen2015]. As in many bio-geo-chemical codes, it is assumed that sorption equilibria arise instantaneously. As this leads to a set of algebraic equations rather than ODE, sorption is not explicitly listed in the above table of processes. 
+
+The stoichiometric factors linking the processes with the state variables' derivatives are provided in matrix format below.
+
+<div class='htmlTableBackground'>
+```{r, echo=FALSE, results='asis', comment=''}
+x <- read.table("stoi.txt" ,sep="\t", header=TRUE)
+capt <- "Stoichiometric factors (file 'stoi.txt')"
+if (knitr::opts_knit$get("rmarkdown.pandoc.to") == "latex") {
+  col <- 1 + round((ncol(x)-1)/2)
+  print(xtable::xtable(x[,c(1, 2:col)],
+    caption=paste0(capt, "; first columns.")),
+    type="latex", tabular.environment="longtable", floating=FALSE)
+  print(xtable::xtable(x[,c(1,(col+1):ncol(x))],
+    caption=paste0(capt, "; further columns.")),
+    type="latex", tabular.environment="longtable", floating=FALSE)
+} else {
+  knitr::kable(x, caption=paste0(capt,"."))
+}
+```
+</div>
+
+The model specification is completed by the declaration of parameters and functions that appear in the process rate expressions (Tables below). Table numbers appearing in column 'references' refer to the supplement of the @Hellweger2011 paper.
+
+<div class='htmlTableBackground'>
+```{r, echo=FALSE, results='asis', comment=''}
+rd <- function(f) {read.table(f ,sep="\t", header=TRUE)}
+knitr::kable(rd("pars.txt"), caption="Declaration of parameters (file 'pars.txt').")
+knitr::kable(rd("funs.txt"), caption="Declaration of functions (file 'funs.txt').")
+```
+</div>
+
+#### Implementation of functions
+
+For computational efficiency, the source code is generated in Fortran, hence, the functions need to be implemented in Fortran as well (source code shown below). They return the different fractions of the antibiotic (particulate, dissolved, and freely dissolved) in the presence of two sorbents (DOM, TSS) assuming linear sorption isothermes. The underlying equations can be found in the supplement of @Hellweger2011, number S2-S4.
+
+```{r echo=FALSE, eval=TRUE, comment=''}
+f <- "functions.f95"
+text <- readLines(f, n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
+cat(paste(text,"\n"))
+```
+
+#### R code with corresponding graphical outputs
+
+The following code section instantiates a `rodeo` object using the tabular data from above and it produces the required Fortran library. Note that basic properties of the simulated system, namely the number of tanks, are defined at the top of the listing.
+
+After object creation and code generation, the state variables are initialized using the numbers from the table displayed above (column 'initial'). Likewise, the values of parameters are taken column 'default' of the respective table. Note that some parameters are set to `NA`, i.e. they are initially undefined. Those values are either computed from the system's physical properties or from mass balance considerations according to supplement S 3.3.c of @Hellweger2011.
+
+```{r cache=FALSE, echo=FALSE}
+knitr::read_chunk("xecute.r")
+```
+
+```{r ref.label='tetracycline_init', echo=TRUE, eval=TRUE}
+```
+
+The following code section creates a graphical representation of the stochiometry matrix. Positive (negative) stoichiometric factors are indicated by upward (downward) oriented triangles. The stoichiometric factors for transport processes are displayed as circles since their sign is generally variable as it depends on spatial gradients.
+
+```{r ref.label='tetracycline_stoi', echo=TRUE, eval=FALSE}
+```
+
+```{r ref.label='tetracycline_stoi', echo=FALSE, eval=TRUE, fig.width=6, fig.height=7}
+```
+
+The next code section demonstrates how a steady-state solution can be obtained by a call to method `steady.1D` from package [`rootSolve`](http://cran.r-project.org/package=rootSolve). This specific solver accounts for the banded structure of the Jacobian matrix resulting from the tanks-in-series approach taking into account the layout of the vector of state variables (explained in the section on [multi-box models](#multi-box)). Plotting was restricted to the bacteria concentrations in the water column and sediment, respectively.
+
+```{r ref.label='tetracycline_steady', echo=TRUE, eval=FALSE}
+```
+
+The above code outputs the steady-state longitudinal profiles of E. Coli displayed below. The graphs indicate elevated concentrations in the sediment as compared to the water column. Predominance of the resistant strain in sediments is explained by increased antibiotic levels in the dark. Growth conditions for the susceptible strain improve along the flow path due to photolysis of Tetracycline in the water column and subsequent dilution of pore water concentrations.
+
+```{r ref.label='tetracycline_steady', echo=FALSE, eval=TRUE, fig.width=6, fig.height=3.5}
+```
+
+In the next code section, a dynamic solution is obtained using the default integration method from [`deSolve`](http://cran.r-project.org/package=deSolve). As in the steady-state computation above, the solver is informed on the structure of the Jacobian to speed up numerical integration.
+
+Graphical output is generated for a single state variable only, displayed right after the code listing. The plot just illustrates how the computed concentration of susceptibe bacteria in the water column (state variable `S_w`) drifts away from the guessed initial state.
+
+```{r ref.label='tetracycline_dynamic', echo=TRUE, eval=TRUE, fig.width=6, fig.height=3.5}
+```
+
+The code below performs a global sensitivity analysis to test the impact of parameter values on a specific quantity of interest, namely the proportion of resistant bacteria after passage of the reach. The four selected parameters were:
+
+1. the constant to control gene transfer by conjugation, `kc`,
+
+2.  the rate constant of segregational loss, `ks`,
+
+3. the plasmid costs, `alpha`,
+
+4. the upstream concentration of Tetracycline, `A_in`.
+
+```{r ref.label='tetracycline_sensitivity', echo=TRUE, eval=FALSE}
+```
+
+Thanks to the Fortran-based model implementation, a reasonable section of the parameter space can be explored within acceptable times. On a recent machine (3 GHz CPU, 8 GB memory) a single steady-state run takes less than 50 ms. This opens up the possibility for more demanding analysis like, for example, Bayesian parameter estimation or more exhaustive sensitivity analyses.
+
+The graphics created by the above listing (see below) illustrate the effect of the four varied parameters on the model output. The analyzed output variable is the percentage of suspended E. coli at the downstream end of the reach being resistant to Tetracycline. The sensitivity with respect to the rate constants of conjugation (`kc`, x-axis) and segregational loss (`ks`, y-axis) is displayed in the individual plots. The input concentration of Tetracycline (`A_in`) increases from the top to the bottom panel; plasmid costs (`alpha`) increase from left to right column. The figure clearly illustrates that Tetracycline resistance is promoted by high conjugation rates, low segregational losses, marginal plasmid costs, and, of course, increased levels of the antibiotic.
+
+```{r ref.label='tetracycline_sensitivity', echo=FALSE, eval=TRUE, fig.width=7, fig.height=4}
+```
+
+```{r, cache=FALSE, echo=FALSE}
+# Reset work folder
+knitr::opts_knit$set(root.dir=NULL)
+```

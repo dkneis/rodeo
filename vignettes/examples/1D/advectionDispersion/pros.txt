@@ -1,0 +1,6 @@
+name	unit	description	expression
+adv	mol/m3/s	advection	u/dx * (left(c)-c)
+advL	mol/m3/s	advection over upstr. boundary	u/dx * (cUp(time)-c)
+dis	mol/m3/s	dispersion	d/(dx^2) * (left(c) - 2*c + right(c))
+disL	mol/m3/s	disp. over upstr. boundary	d/dx * (cUp(time) - c)
+disR	mol/m3/s	disp. over downstr. boundary	d/dx * (cDn(time) - c)

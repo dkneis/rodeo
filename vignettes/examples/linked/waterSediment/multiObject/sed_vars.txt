@@ -1,0 +1,3 @@
+name	unit	description
+xSed	mol/m3 bulk	conc. of x in sediment
+sSed	mol/m3 liquid	conc. of s in pore water

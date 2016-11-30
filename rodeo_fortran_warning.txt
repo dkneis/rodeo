@@ -1,0 +1,32 @@
+
+Hier
+
+http://cnlart.web.cern.ch/cnlart/222/node36.html
+
+Gibt es diesen Abschnitt
+
+Initialization of components
+
+Fortran 95 allows us to specify that any object of a derived type is given a default initial value for a component. The value is specified when the component is declared as part of the type definition. If the component is not a pointer, this is done in the usual way. If the component is a pointer, the only initialization allowed is to NULL(). Initialization does not have to apply to all components of a given derived type:
+
+ TYPE node
+    REAL                :: value = 0.0
+    INTEGER                index
+    TYPE(node), POINTER :: next => NULL()
+ END TYPE node
+
+Nach meiner Info erlaubt neueres Fortran (2008) eine Initialisierung mit etwas
+anderem als NULL - also das, was ich im generierten Code mache. Hier
+
+http://fortranwiki.org/fortran/show/Fortran+2008+status
+
+sieht man aber, dass die Umsetzung in den Compilern verschieden ist (Zeile
+'Pointer initialization'). Der oracle compiler kann es nicht.
+
+Fazit:
+Ich müsste den generierten Code so erzeugen, dass zunächst auf NULL
+initialisiert wird und dann erst ein target zugewiesen wird. Bin mir gerade
+nicht sicher, ob das gut ist. Ich will ja die pointer nur 1 x initialisieren
+und nicht etwa in jedem Aufruf der Ableitungs-Routine.
+
+

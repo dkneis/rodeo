@@ -1,0 +1,11 @@
+process	bM	bS	sM	sS
+bLoadX2M	1/(vol*(1-fS))			
+bLoadM2X	-1/(vol*(1-fS))			
+bLoadM2S	-1/(vol*(1-fS))	1/(vol*fS)		
+bLoadS2M	1/(vol*(1-fS))	-1/(vol*fS)		
+sLoadX2M			1/(vol*(1-fS))	
+sLoadM2X			-1/(vol*(1-fS))	
+sLoadM2S			-1/(vol*(1-fS))	1/(vol*fS)
+sLoadS2M			1/(vol*(1-fS))	-1/(vol*fS)
+bGrowthM	1		-1/yield	
+bGrowthS		1		-1/yield

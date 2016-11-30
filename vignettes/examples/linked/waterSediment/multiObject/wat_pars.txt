@@ -1,0 +1,7 @@
+name	unit	description
+kWat	1/d	decay constant in water
+uSet	m/d	effective settling velocity
+zWat	m	depth of water column
+vol	m3	volume of water body
+s_x	mol/mol	stoichiometric ratio s:x
+flux_s	mol/m2/d	flux of s accross s/w interface

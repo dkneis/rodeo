@@ -1,0 +1,5 @@
+name	unit	description
+kd	1/day	Degradation rate constant
+ka	1/day	Re-aeration rate constant
+s	mass ratio	g DO consumed per g OM
+temp	celsius	Temperature

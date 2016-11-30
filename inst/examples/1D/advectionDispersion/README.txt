@@ -1,1 +1,0 @@
-The model simulates the transport of a conservative tracer along a river reach assuming steady-uniform flow (i.e. constant flow rate, uniform cross-section). The result of numerical integration is (visually) compared to a classic analytical solution of the advection-dispersion equation.

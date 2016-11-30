@@ -1,0 +1,5 @@
+name	unit	description
+bM	mg/ml	Bacteria concentration in main tank
+bS	mg/ml	Bacteria concentration in sub-tank
+sM	mg/ml	Substrate concentration in main tank
+sS	mg/ml	Substrate concentration in sub-tank

@@ -1,0 +1,9 @@
+name	unit	description
+kSed	1/d	decay constant in sediment
+kDif	m2/d	diffusion coefficient
+hDif	m	diffusion distance
+por	-	porosity of sediment
+zSed	m	thickness of sediment layer
+s_x	mol/mol	stoichiometric ratio s:x
+flux_x	mol x/m2/d	flux of x across s/w interface
+sWat	mol/m3	concentration of s in overlying water

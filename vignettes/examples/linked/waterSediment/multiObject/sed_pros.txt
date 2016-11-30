@@ -1,0 +1,4 @@
+name	unit	description	expression
+sett	mol/m2/d	settling of x	flux_x
+diff	mol/m2/d	diffusion at w/s interf.	kDif/hDif * por * (sSed-sWat)
+degrSed	mol/m3/d	degrad. of x in sediment	kSed * xSed

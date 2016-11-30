@@ -1,0 +1,66 @@
+---
+output: pdf_document
+---
+
+```{r, cache=FALSE, echo=FALSE}
+# Set work folder
+knitr::opts_knit$set(root.dir="examples/1D/advectionDispersion")
+```
+
+#### Problem description
+
+The model simulates the transport of a conservative tracer along a river reach assuming steady-uniform flow, i.e. constant flow rate and uniform cross-section (see figure below). The tracer is injected somewhere in the middle of the reach and instantaneous mixing over the cross-section is assumed. 
+
+![](examples/1D/advectionDispersion/fig/reach.png)
+
+For the advection term, a backward finite difference scheme is used. The dispersion term is approximated by central finite differences. The dispersion coefficient is corrected for the effect of numerical dispersion.
+
+To verify the result of numerical integration, outputs are visually compared to a classic analytical solution of the one-dimensional advection-dispersion equation.
+
+#### Tabular model definition
+
+The model's state variables, parameters, and functions are declared below, followed by the speficition of process rates and stoichiometric factors.
+
+<div class='htmlTableBackground'>
+```{r, echo=FALSE, results='asis', comment=''}
+rd <- function(f) {read.table(f,sep="\t", header=TRUE)}
+knitr::kable(rd("vars.txt"), caption="Declaration of state variables (file 'vars.txt').")
+knitr::kable(rd("pars.txt"), caption="Declaration of parameters (file 'pars.txt').")
+knitr::kable(rd("funs.txt"), caption="Declaration of functions (file 'funs.txt').")
+knitr::kable(rd("pros.txt"), caption="Definition of process rates (file 'pros.txt').")
+knitr::kable(rd("stoi.txt"), caption="Definition of stoichiometric factors (file 'stoi.txt').")
+```
+</div>
+
+#### Implementation of functions
+
+The contents of a file 'functions.f95' implementing a Fortran module 'functions' is shown below. The module contains all non-intrinsic functions appearing in the process rate expressions or stoichiometric factors.
+
+```{r echo=FALSE, eval=TRUE, comment=''}
+f <- "functions.f95"
+text <- readLines(f, n=-1L, ok=TRUE, warn=TRUE, encoding="unknown", skipNul=FALSE)
+cat(paste(text,"\n"))
+```
+
+#### R code to run the model
+
+A `rodeo`-based implementation and application of the model is demonstrated by the following R code. It makes use of the tables and function code displayed above.
+
+```{r cache=FALSE, echo=FALSE}
+knitr::read_chunk("xecute.r")
+```
+
+```{r ref.label='advectionDispersion', echo=TRUE, eval=FALSE}
+```
+
+#### Model output
+
+The output from the above code is shown below. The location of tracer input is marked by the dashed vertical line.
+
+```{r ref.label='advectionDispersion', echo=FALSE, eval=TRUE}
+```
+
+```{r, cache=FALSE, echo=FALSE}
+# Reset work folder
+knitr::opts_knit$set(root.dir=NULL)
+```

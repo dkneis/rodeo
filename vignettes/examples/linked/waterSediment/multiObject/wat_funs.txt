@@ -1,0 +1,4 @@
+name	unit	description
+q	m3/d	flow rate
+xInf	mM	concentration of x in inflow
+sInf	mM	concentration of s in inflow

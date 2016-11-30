@@ -1,0 +1,6 @@
+process	variable	expression
+adv	c	1
+advL	c	leftmost
+dis	c	1
+disL	c	leftmost
+disR	c	rightmost

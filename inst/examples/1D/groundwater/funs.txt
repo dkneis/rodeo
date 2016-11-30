@@ -1,4 +1,0 @@
-name	unit	description
-leak	m/day	exchange flow between river and aquifer
-hRiver	m	river water surface elevation
-rch	m/day	recharge rate

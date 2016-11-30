@@ -1,0 +1,6 @@
+process	xWat	xSed	sWat	sSed
+flow	(xInf(time)-xWat)	NA	(sInf(time)-sWat)	NA
+sett	-1/zWat	1/zSed	NA	NA
+diff	NA	NA	1/zWat	-1/zSed/por
+degrWat	-1	NA	s_x	NA
+degrSed	NA	-1	NA	s_x/por
