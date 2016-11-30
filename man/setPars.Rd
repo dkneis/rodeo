@@ -17,7 +17,6 @@ Assign values to parameters of a \code{\link{rodeo}}-based model.
 }
 \note{
 Look at the notes and examples for the \code{\link{setVars}} method.
-  This sister
 }
 \author{
 \email{david.kneis@tu-dresden.de}

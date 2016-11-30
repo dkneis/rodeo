@@ -101,7 +101,6 @@ rodeo$set("public", "setVars", function(x) {
 #'   object and can be accessed by the \code{\link{getPars}} method.
 #'
 #' @note Look at the notes and examples for the \code{\link{setVars}} method.
-#'   This sister 
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
