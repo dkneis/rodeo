@@ -252,7 +252,7 @@ stoiCreate <- function(reactions, eval=FALSE, env=globalenv(),
 #'   elements' names must appear as row names. The elements of the matrix
 #'   specify how much of an element is contained in a certain amount of a
 #'   compound. Typically, these are molar ratios. If one works with mass ratios
-#'   (Heaven forbid!), the information in \code{stoi} must be based on mass
+#'   (not being a good idea), the information in \code{stoi} must be based on mass
 #'   concentrations as well.
 #'   The elements of \code{comp} are treated as mathematical expressions. Any
 #'   variables, functions, or operators needed to evaluate those expressions
