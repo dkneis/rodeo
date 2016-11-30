@@ -65,10 +65,7 @@ rodeo$set("public", "step",
     )
     if (as.logical(res$error))
       stop("integration from t0=",t0," over dt=",dt," using method '",method,"' failed")
-    return(matrix(c(res$var, res$pro),
-      ncol=nrow(private$varsTbl)+nrow(private$prosTbl), nrow=prod(private$dim),
-      dimnames= list(NULL, c(private$varsTbl$name, private$prosTbl$name)))
-    )
+    return(c(res$var, res$pro))
   } else {
     stop("integration method '",method,"' not implemented")
   }
