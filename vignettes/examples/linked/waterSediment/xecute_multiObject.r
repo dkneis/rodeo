@@ -105,7 +105,8 @@ advance <- function(objects, t0, t1, models, internal, lib, check) {
   # Update parameters affected by coupling
   lapply(setNames(objects, objects),
     function(obj) {models[[obj]]$setPars(
-    updatePars(models[[obj]]$getPars(useNames=TRUE), out, links[links[,"tarObj"]==obj,,drop=FALSE]))})
+    updatePars(models[[obj]]$getPars(useNames=TRUE), out,
+      links[links[,"tarObj"]==obj,,drop=FALSE]))})
   # Re-initialize state variables 
   lapply(setNames(objects, objects),
     function(obj) {models[[obj]]$setVars(out[[obj]][models[[obj]]$namesVars()])})
