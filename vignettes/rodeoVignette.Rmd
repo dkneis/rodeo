@@ -1,5 +1,5 @@
 ---
-title: 'rodeo: Usage and Sample Applications'
+title: 'R package rodeo: Basic Use and Sample Applications'
 author: "david.kneis @ tu-dresden.de"
 date: '2016-11-26'
 output:
@@ -12,7 +12,7 @@ output:
     toc_depth: 3
 bibliography: references.bib
 vignette: >
-  %\VignetteIndexEntry{rodeo: Usage and Sample Applications}
+  %\VignetteIndexEntry{R package rodeo: Basic Use and Sample Applications}
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
