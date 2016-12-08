@@ -12,7 +12,8 @@ Data frame with mandatory columns 'name', 'unit', 'description'.}
 system. Data frame with the same mandatory columns as \code{vars}.}
 
 \item{funs}{Declaration of functions being referenced in the ODE
-system. Data frame with the same mandatory columns as \code{vars}.}
+system. Data frame with the same mandatory columns as \code{vars} or
+\code{NULL} if no function calls are present at the ODEs' right-hand sides.}
 
 \item{pros}{Declaration of process rates. Data frame with mandatory columns
 'name', 'unit', 'description', 'expression'.}

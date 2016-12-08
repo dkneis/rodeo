@@ -11,7 +11,8 @@
 #' @param pars Declaration of parameters (i.e. constants) appearing in the ODE
 #'   system. Data frame with the same mandatory columns as \code{vars}.
 #' @param funs Declaration of functions being referenced in the ODE
-#'   system. Data frame with the same mandatory columns as \code{vars}.
+#'   system. Data frame with the same mandatory columns as \code{vars} or
+#'   \code{NULL} if no function calls are present at the ODEs' right-hand sides.
 #' @param pros Declaration of process rates. Data frame with mandatory columns
 #'   'name', 'unit', 'description', 'expression'.
 #' @param stoi Declaration of stoichiometric factors. A data frame with
@@ -78,6 +79,8 @@ rodeo$set("public", "initialize",
     pars[,n] <- if (n %in% names(pars)) as.character(pars[,n]) else pars$name
   private$parsTbl <- as.data.frame(pars, stringsAsFactors=FALSE)
   # Set functions ##############################################################
+  if (is.null(funs))
+    funs <- data.frame(name=character(0), unit=character(0), description=character(0))
   cn <- c("name","unit","description")
   checkTbl(tbl=funs, tblName="funs", colNames=cn, nameCol="name", emptyOK=TRUE)
   for (n in cn)
