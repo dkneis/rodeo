@@ -1,5 +1,0 @@
-"variable"	"process"	"expression"
-"bac"	"growth"	"1"
-"bac"	"inout"	"-bac"
-"sub"	"growth"	"-1 / yield"
-"sub"	"inout"	"(sub_in - sub)"
