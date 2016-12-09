@@ -48,7 +48,7 @@ dyn.load(lib["libFile"])
 solNum <- ode(y=model$getVars(), times=times, func=lib["libFunc"],
   parms=model$getPars(), dllname=lib["libName"],
   nout=model$lenPros()*prod(model$getDim()),
-  jactype="bandint", bandup=1, banddown=1)
+  jactype="bandint", bandup=1, banddown=1, atol=1e-9)
 
 # Clean-up
 dyn.unload(lib["libFile"])
