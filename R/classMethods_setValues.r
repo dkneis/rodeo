@@ -14,7 +14,8 @@
 #' @note For a 0-dimensional model (i.e. a model without spatial resolution),
 #'   \code{x} must be a numeric vector whose length equals the number of state
 #'   variables. The element names of \code{x} must match those returned by the
-#'   object's \code{namesVars} method.
+#'   object's \code{namesVars} method. See the examples for how to bring the
+#'   vector elements into required order.
 #'
 #'   For models with a spatial resolution, \code{x} must be a numeric array of
 #'   proper dimensions. The last dimension (cycling slowest) corresponds to the
@@ -42,6 +43,10 @@
 #' model$setVars(x0)
 #' print(model$getVars())
 #'
+#' # How to sort vector elements
+#' x0 <- c(sub=0.5, bac=0.1)              # doesn't match order of variables
+#' model$setVars(x0[model$namesVars()])
+#'
 #' # 1-dimensional model with 3 boxes
 #' nBox <- 3
 #' model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(nBox))
@@ -58,6 +63,7 @@
 #' model$setVars(x2)
 #' print(model$getVars())
 #' print(model$getVars(asArray=TRUE))
+
 
 rodeo$set("public", "setVars", function(x) {
   # zero-dimensional case
