@@ -23,8 +23,8 @@ pars <- data.frame(matrix(c(
     "leftmost",  "-",       "0/1 mask to select boundary layer"
   ), ncol=3, byrow=TRUE, dimnames=list(NULL, c("name", "unit", "description"))))
 funs <- data.frame(name=character(0), unit=character(0), description=character(0))
-# Note: Boundary value is imposed on leftmost cell directly, by omitting
-#       diffusion coefficient/length
+# Note: Boundary value is imposed on leftmost cell directly, by omitting a
+#       factor before the difference term
 pros <- data.frame(stringsAsFactors=FALSE,
   name="diff", unit="mol/m3/s", description="diffusion", expression=
   "d/(dx^2) * (left(c) - 2*c + right(c)) + leftmost * (cb - c)")
