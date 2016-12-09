@@ -208,7 +208,7 @@ stoiCreate <- function(reactions, eval=FALSE, env=globalenv(),
   if (!is.environment(env) && !is.list(env))
     stop("'env' must be an environment or list")
   # examine stoichiometry of individual reactions
-  x <- sapply(reactions, stoiBuildSingle, toRight=toRight, toLeft=toLeft)
+  x <- sapply(reactions, stoiBuildSingle, toRight=toRight, toLeft=toLeft, simplify=FALSE)
   # adjust reaction names (important for reversible reactions)
   for (i in 1:length(x))
     rownames(x[[i]]) <- paste0(names(x)[i], rownames(x[[i]]))
