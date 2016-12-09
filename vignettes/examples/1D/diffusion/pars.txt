@@ -1,0 +1,5 @@
+name	unit	description
+d	m2/s	diffusion coefficient
+dx	m	thickness of layer
+cb	mol/m3	boundary concentration
+leftmost	none	0/1 mask to select layer with contact to boundary

@@ -13,26 +13,12 @@ times <- c(0,1,6,14,30,89)*86400     # times of interest (seconds)
 library("deSolve")
 library("rodeo")
 
-# Specification of the model
-vars <- data.frame(stringsAsFactors=FALSE,
-  name="c", unit="mol/m3", description="concentration")
-pars <- data.frame(matrix(c(
-    "d",         "m2/s",    "diffusion coefficient",
-    "dx",        "m",       "thickness of layers",
-    "cb",        "mol/m3",  "boundary concentration",
-    "leftmost",  "-",       "0/1 mask to select boundary layer"
-  ), ncol=3, byrow=TRUE, dimnames=list(NULL, c("name", "unit", "description"))))
-funs <- data.frame(name=character(0), unit=character(0), description=character(0))
-# Note: Boundary value is imposed on leftmost cell directly, by omitting a
-#       factor before the difference term
-pros <- data.frame(stringsAsFactors=FALSE,
-  name="diff", unit="mol/m3/s", description="diffusion", expression=
-  "d/(dx^2) * (left(c) - 2*c + right(c)) + leftmost * (cb - c)")
-stoi <- matrix(1, ncol=1, nrow=1, dimnames=list("diff","c"))
-
 # Initialize rodeo object
-model <- rodeo$new(vars=vars, pars=pars, funs=funs, pros=pros, stoi=stoi,
-  asMatrix=TRUE, dim=(nCells))
+rd <- function(f, ...) {read.table(file=f,
+  header=TRUE, sep="\t", stringsAsFactors=FALSE, ...) }
+model <- rodeo$new(vars=rd("vars.txt"), pars=rd("pars.txt"), funs=NULL,
+  pros=rd("pros.txt"), stoi=as.matrix(rd("stoi.txt", row.names="process")),
+  asMatrix=TRUE, dim=c(nCells))
 
 # Assign initial values and parameters
 model$setVars(cbind(c=rep(0, nCells)))
@@ -65,11 +51,10 @@ layout(matrix(1:(nc*nr), ncol=nc, byrow=TRUE))
 par(mar=c(4,4,1,1))
 for (t in times) {
   plot(c(0,nCells*dx), c(0,cb), type="n", xlab="Station (m)", ylab="mol/m3")
-  # Numeric solution (stair steps of cell-average); graph shifted by 1/2 dx
-  # because whole 1st layer was set to boundary value
+  # Numeric solution (stair steps of cell-average)
   stations <- seq(from=0, by=dx, length.out=nCells+1)
   concs <- solNum[solNum[,1]==t, paste0("c.",1:nCells)]
-  lines(stations-dx/2, c(concs,concs[length(concs)]), type="s", col="steelblue4")
+  lines(stations, c(concs,concs[length(concs)]), type="s", col="steelblue4")
   # Analytical solution (for center of cells)
   stations <- seq(from=dx/2, to=(nCells*dx)-dx/2, by=dx)
   concs <- solAna(x=stations, t=t, d=d, cb=cb)

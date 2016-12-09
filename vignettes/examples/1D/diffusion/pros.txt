@@ -1,0 +1,3 @@
+name	unit	description	expression
+diffCnt	mol/m3/s	diffusion between layers	d/(dx^2) * (left(c) - 2*c + right(c))
+diffBnd	mol/m3/s	diffusion accross boundary	leftmost * 2 * d/(dx^2) * (cb - c)

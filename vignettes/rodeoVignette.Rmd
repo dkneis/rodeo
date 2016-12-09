@@ -759,7 +759,17 @@ The source code below computes the concentrations in all layers for selected tim
 
 #### Tabular model definition
 
-The model specification is contained directly in the R code below.
+The model's state variables and parameters are declared below, followed by the speficition of process rates and stoichiometric factors.
+
+<div class='htmlTableBackground'>
+```{r, echo=FALSE, results='asis', comment=''}
+rd <- function(f) {read.table(f ,sep="\t", header=TRUE)}
+knitr::kable(rd("vars.txt"), caption="Declaration of state variables (file 'vars.txt').")
+knitr::kable(rd("pars.txt"), caption="Declaration of parameters (file 'pars.txt').")
+knitr::kable(rd("pros.txt"), caption="Definition of process rates (file 'pros.txt').")
+knitr::kable(rd("stoi.txt"), caption="Definition of stoichiometric factors (file 'stoi.txt').")
+```
+</div>
 
 #### Implementation of functions
 
