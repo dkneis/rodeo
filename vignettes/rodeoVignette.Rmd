@@ -70,28 +70,28 @@ Changes in bacteria density are due to (1) resource-limited growth and (2) wash-
 
 The governing differential equations are
 
-$$ \frac{d}{d t}bac = \color{blue}{mu * \frac{sub}{sub+half} * bac} + \color{red}{\frac{flow}{vol}} * (0-bac) $$
+$$ \frac{d}{d t}bac = \color{blue}{mu \cdot \frac{sub}{sub+half} \cdot bac} + \color{red}{\frac{flow}{vol}} \cdot (0-bac) $$
 
-$$ \frac{d}{d t}sub = -\frac{1}{yield} * \color{blue}{mu * \frac{sub}{sub+half} * bac} + \color{red}{\frac{flow}{vol}} * (sub_{in}-sub) $$
+$$ \frac{d}{d t}sub = -\frac{1}{yield} \cdot \color{blue}{mu \cdot \frac{sub}{sub+half} \cdot bac} + \color{red}{\frac{flow}{vol}} \cdot (sub_{in}-sub) $$
 
 
 where redundant terms are displayed in identical colors (all identifiers are explained in tables below). For use with `rodeo`, the equations must be split up into a vector of process rates ($r$) and a matrix of stoichiometric factors ($S$) so that the product of the two yields the vector of the state variables' derivatives with respect to time ($\dot{y}$). Note that
 
 $$
-\dot{y} = r * S
+\dot{y} = r \cdot S
 $$
 
 is the same as
 
 $$
-\dot{y} = S^T * r
+\dot{y} = S^T \cdot r
 $$
 
 but in the first form, $\dot{y}$ is a row vector whereas it is a column vector in the second form which involves the transpose of $S$. Adopting the first form, the above set of ODE can be written as
 
 $$
 \begin{bmatrix} \dfrac{d}{d t}bac , \dfrac{d}{d t}sub \end{bmatrix} =
-\begin{bmatrix} mu * \dfrac{sub}{sub+half} * bac \\ \dfrac{flow}{vol} \end{bmatrix} *
+\begin{bmatrix} mu \cdot \dfrac{sub}{sub+half} \cdot bac \\ \dfrac{flow}{vol} \end{bmatrix} \cdot
 \begin{bmatrix} 1 & -bac \\ -\dfrac{1}{yield} & sub_{in}-sub \end{bmatrix}
 $$
 
