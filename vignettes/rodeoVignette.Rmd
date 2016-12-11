@@ -1,7 +1,7 @@
 ---
 title: 'R package rodeo: Basic Use and Sample Applications'
 author: "david.kneis @ tu-dresden.de"
-date: '2016-11-26'
+date: '2016-12-11'
 output:
   rmarkdown::pdf_document:
     fig_caption: no
@@ -21,6 +21,7 @@ vignette: >
     number_sections: yes
     toc: yes
     toc_depth: 3
+    toc_float: true
 -->
 
 ```{r, echo=FALSE}
@@ -59,7 +60,9 @@ The `rodeo` package facilitates the implementation of ODE-based models in R. Suc
 
 - Code can be generated for an arbitrary number of computational boxes (e. g. control volumes in a spatially discretized model). This allows even partial differential equations (e. g. reactive transport problems) to be tackled after appropriate semi-discretization. The latter strategy is known as the [method-of-lines](http://en.wikipedia.org/wiki/Method_of_lines).
 
-# Example ODE system
+# Basic use
+
+## Example ODE system {#exampleODE}
 
 In the subsequent sections, the package's functioning is illustrated with a simple model of bacteria growth in a continuous flow stirred tank reactor (figure below). It is assumed that the bacteria grow on a single resource (e. g. a source of organic carbon) which is imported via the reactor's inflow. Due to mixing, the reactors contents is spatially homogeneous, hence the density of bacteria as well as the concentration of the substrate are scalars.
 
@@ -109,13 +112,12 @@ knitr::kable(stoi, caption="Data set `stoi`: Definition of stoichiometric factor
 ```
 </div>
 
-# Basic use
-
 ## Creating a `rodeo` model object
 
 We start by loading packages and the example data tables whose contents was shown in the above tables.
 
 ```{r loadExampleData, echo=TRUE}
+rm(list=ls())     # Initial clean-up
 library(deSolve)
 library(rodeo)
 data(vars, pars, pros, funs, stoi)
@@ -167,14 +169,14 @@ The stoichiometry matrix is also a good means to communicate a model because it 
 
 In order to use the model for simulation, we need to generate source code to be passed to numerical solvers. Specifically, the generated function code shall return the derivatives of the state variables with respect to time plus additional diagnostic information (here: the process rates).
 
-After generating the code, we need to make it executable. In R, we can use a combination of `eval` and `parse`. Alternatively, the generated code could be exported to a file using `write` and then loaded with `source`. The latter method allows for inspection of the generated code which may be helpful in debugging.
+In this example, R code is generated (Fortran code generation is described [elsewhere](#fortranGeneration)). To make the R code executable, a combination of `eval` and `parse` is used. Alternatively, the generated code could be exported to a file using `write` and then loaded with `source`. The latter method allows for inspection of the generated code which may be helpful in debugging.
 
 ```{r generateSingleBoxR, echo=TRUE, eval=TRUE}
 code <- model$generate(name="derivs",lang="r")
 derivs <- eval(parse(text=code))
 ```
 
-## Solving the ODE system
+## Numerical integration
 
 We are now ready to compute the evolution of the state variables over time by means of numerical integration. Note that the initial values (argument `y` of `deSolve::ode`) and parameters (argument `p`) are set to the output of the model object's `getVars` and `getPars` methods, respectively. This is to make sure that the order of values in the two arrays is consistent with the generated code.
 
@@ -182,9 +184,7 @@ We are now ready to compute the evolution of the state variables over time by me
 out <- deSolve::ode(y=model$getVars(useNames=TRUE), times=0:96,
   func=derivs, parms=model$getPars())
 colnames(out) <- c("time", model$namesVars(), model$namesPros())
-layout(matrix(1:4, nrow=2, byrow=TRUE))
-plot(out, mfrow=NULL)  # plot method for 'deSolve' objects
-layout(1)
+plot(out)  # plot method for 'deSolve' objects
 ```
 
 The graphical output of the above code is displayed below (top row: state variables, bottom row: process rates).
@@ -194,21 +194,38 @@ The graphical output of the above code is displayed below (top row: state variab
 
 # Advanced topics
 
-## Multi-box models (spatial discretization) {#multi-box}
+## Multi-box models {#multi-box}
 
-A single-box model has been considered so far. We will now extend the model for multiple boxes, i. e. we model a set of reactors. To keep it simple, we consider just two boxes and we assume that the dynamics in the reactors is independent of each other (like in an experiment with two replicates).
+### Characteristics and use of multi-box models
 
-First, we need to create a model object with the desired number of boxes in the respective dimensions. In this example, we deal with just one dimension. 
+Imagine a multi-box model like a vector of ODE models. In case of the [example considered so far](#exampleODE), a multi-box model would simulate bacteria growth in series of tanks (whereas the single-box version describes just a single tank). The important point is that, in a multi-box model, the ODE system to be solved is the same in each box (but parameters can vary from box to box). This distinguishes *multi-box* models from *multi-object* models introduced in [a later section](#multiObjectModels).
+
+For multi-box models, there must be a convention regarding the layout of arrays used to store the values of variables, parameters, and process rates. In conjunction with the method-of-lines, it is desireable to (1) store the values of a particular variable, parameter, or rate in a contiguous array section and (2) store the data of neighboring boxes as neighboring array elements. For example, in a 1-dimensional multi-box model with 3 boxes and two state variables A and B, the layout of the states vector is A.1, A.2, A.3, B.1, B.2, B.3 (instead of A.1, B.1, A.2, ...). Thus, the index of the box varies faster than the index of the variable. Note that the same convention automatically applies to the output of the numerical solvers, i. e. the columns of the output matrix returned from the [`deSolve`](http://cran.r-project.org/package=deSolve) methods are ordered as just described.
+
+There are two main areas of use for multi-box models:
+
+1. They can be used, for example, to model an array of experiments, where the individual  experiments different in parameters or initial values. In such a case the boxes **do not interact**, i.e. the dynamics in a particular box is from the dynamics in the other boxes.
+
+2. Multi-box models can also be used to represent ODE systems originating from semi-discretization of partial differential equations. This approach, better known as the [method-of-lines](http://en.wikipedia.org/wiki/Method_of_lines) (MOL), is applicable to reactive transport problems, for example. In such a case, neighboring boxes do **interact** with each other.
+
+Examples for these two cases are provided below.
+
+### Non-interacting boxes
+
+This example applies the [bacteria growth model](#exampleODE) to two tanks, the latter being *independent* of each other. We start from a clean environment.
 
 ```{r ref.label='loadExampleData', echo=TRUE, eval=TRUE}
 ```
+
+First of all, we need to create a model object with the appropriate number of dimensions and the desired number of boxes in each dimension. These values are specified in the `dim` argument of `rodeo`'s initialization method. Here, we request the creation of two boxes in the first and only dimension.
+
 ```{r initMultiBox, echo=TRUE, eval=TRUE}
 nBox <- 2
 model <- rodeo$new(vars=vars, pars=pars, funs=funs,
   pros=pros, stoi=stoi, dim=c(nBox))
 ```
 
- Second, the code needs to be re-generated to reflect the altered number of boxes.
+Second, the code needs to be re-generated to reflect the altered number of boxes.
  
 ```{r generateMultiBoxR, echo=TRUE, eval=TRUE}
 code <- model$generate(name="derivs",lang="r")
@@ -217,31 +234,122 @@ derivs <- eval(parse(text=code))
 ```{r ref.label='defNormalFunctions', echo=TRUE, eval=TRUE}
 ```
 
-Third, initial values and parameters need to be specified as arrays now (instead of vectors) to account for the spatial discretization. For a model with one spatial dimension, we must use two-dimensional arrays, i. e. matrices. Here, we initialize every modeled reactor with a different bacteria density but parameter values are kept identical for all reactors.
+Third, initial values and parameters need to be specified as arrays now (instead of vectors) because the values can vary from box to box. For a multi-box model with a single spatial dimension, we must use matrices (being two-dimensional arrays) whose column names represent the names of variables or parameters, respectively. The matrix row with index $i$ provides the respective values for the model's $i$-th box.
+
+In this example, the two reactors only differ in their storage capacity (parameter `vol`). All other parameters and the initial concentrations of substrate and bacteria are kept identical.
  
 ```{r dataMultiBox, echo=TRUE, eval=TRUE}
-v <- cbind(bac= seq(from=0.01, to=0.2, length.out=nBox), sub= rep(0, nBox))
+rp <- function (x) {rep(x, nBox)}    # For convenient replication
+v <- cbind(bac=rp(0.01), sub=rp(0))
 model$setVars(v)
-p <- c(mu=0.8, half=0.1, yield= 0.1, vol=1000, flow=50, sub_in=1)
-p <- matrix(rep(p, each=nBox), nrow=nBox, dimnames=list(NULL, names(p)))
+p <- cbind(mu=rp(0.8), half=rp(0.1), yield= rp(0.1),
+  vol=c(300, 1000), flow=rp(50), sub_in=rp(1))
 model$setPars(p)
 ```
 
 Finally, the integration method is called as usual.
 
-```{r solveMultiBoxR, echo=TRUE, eval=FALSE, results='hide'}
-out <- ode(y=model$getVars(useNames=TRUE), times=0:96, func=derivs, parms=model$getPars())
-layout(matrix(1:(model$lenVars()*nBox), nrow=nBox, byrow=TRUE))
-plot(out, which=1:(model$lenVars()*nBox), mfrow=NULL)
+```{r solveMultiBoxR, echo=TRUE, eval=TRUE}
+out <- ode(y=model$getVars(useNames=TRUE), times=0:120, func=derivs, parms=model$getPars())
+```
+
+The dynamics of the state variables in all boxes are conveniently plotted with `matplot`. Note that the box index is appended to the state variables' names and the two parts are separated by a period. For example, the bacteria density in the first box is found in column 'bac.1' of the matrix `out`.
+
+```{r plotMultiBox, echo=TRUE, eval=TRUE, fig.show='hold', fig.height=4}
+layout(matrix(1:model$lenVars(), nrow=1))
+for (vn in model$namesVars()) {
+  matplot(out[,"time"], out[,paste(vn, 1:nBox, sep=".")],
+    type="l", xlab="time", ylab=vn, lty=1:nBox, col=1:nBox)
+  legend("right", bty="n", lty=1:nBox, col=1:nBox, legend=paste("box",1:nBox))
+}
 layout(1)
 ```
 
-In the graphical output of the above code, the state variables are organized in rows, and each column refers to a spatial box (see suffix in figure titles).
+### Interacting boxes
 
-```{r ref.label='solveMultiBoxR', echo=FALSE, eval=TRUE}
+In this context, *interaction* means that the state variables' derivatives in a box $i$ depend on the state of another box $k$. This is typically the case if advection or diffusion-like processes are simulated because fluxes between boxes (e.g. of mass or heat) are driven by spatial gradients.
+
+`rodeo`'s support for interactions between boxes is currently limited to models with a single dimension (1D models). Also, interaction is possible between *adjacent* boxes only (but not between, e.g., boxes $i$ and $i+2$).
+
+The key to the simulation of interactions is that each box can query the values of state variables (or parameters) in the adjacent boxes. This functionality is implemented through the pseudo-functions 'left' and 'right'. These can be used in the mathematical expressions forming the ODE's right hand sides. The functions do what their names say. For example, if 'x' is a state variable, the expression `x - left(x)` yields the difference between the value in the current box (index $i$) and the value in adjacent box $i-1$. Likewise, `x - right(x)` is used to calculate the difference between the current box (index $i$) and box $i+1$.
+
+The two pseudo-functions must behave specially at the model's boundaries. In other words, it has to be defined what `left(x)` returns for the leftmost box (index $1$) and what `right(x)` returns for the box with the highest index. The convention is simple: If the index would go out of bounds, the functions return the respective value for the current cell. See the table below for clarification.
+
+```{r echo=FALSE}
+x <- rbind(
+ c("1", "x.1", "x.2"),
+ c("2", "x.1", "x.3"),
+ c("3", "x.2", "x.4"),
+ c("4", "x.3", "x.5"),
+ c("5 (highest index)", "x.4", "x.5")
+)
+colnames(x) <- c("Box index","left(x) returns","right(x) returns")
+knitr::kable(as.data.frame(x, check.names=FALSE))
 ```
 
-Note the convention regarding the storage of state variables in multi-box models. Generally, the values of neighboring boxes of a *particular* state variable are stored in the respective vector as neighboring elements. For example, in a 1-dimensional model with 3 boxes and two state variables A and B, the layout of the states vector is A.1, A.2, A.3, B.1, B.2, B.3 (instead of A.1, B.1, A.2, ...). This convention applies to the output of the numerical solvers as well, i. e. the columns of the output matrix returned from the [`deSolve`](http://cran.r-project.org/package=deSolve) integrators follows the described layout.
+This behaviour of 'left' and 'right' at the models boundaries is often convenient. Consider, for example, a model of advective transport using the backward finite-difference approximation `u/dx * (left(c) - c)` ('u': velocity, 'c': concentration, 'dx': box width). For the leftmost box, the whole term equates to zero since both `c` and `left(c)` point to the concentration in box $1$.
+
+Imposing boundary conditions on the leftmost box (index $1$) and the righmost box (highest index) is fairly simple. First, the required term(s) are simply added to the process rate expressions. Second, the term(s) are multiplied with a mask parameters that take a value of 1 at the desired boundary and 0 elsewhere. In the just mentioned advection example, a resonable formulation could be
+
+`u/dx * (left(c) - c) + leftmost(2 * u/dx * (cUp - c))`
+
+where `cUp` is the concentration just upstream of the model domain, and `leftmost` is the mask parameter being set to one for the leftmost box and zero for all other boxes.
+
+Interaction between boxes is demonstrated with a minimum example. It extends the above 'no-interaction' example case by introduction of a diffusive flux of substrate between the two tanks.
+
+The original model is first loaded and then extended for the new process.
+
+```{r ref.label='loadExampleData', echo=TRUE, eval=TRUE}
+```
+
+```{r alterExampleData, echo=TRUE, eval=TRUE}
+pars <- rbind(pars,
+  c(name="d", unit="1/hour", description="diffusion parameter")
+)
+pros <- rbind(pros,
+  c(name="diffSub", unit="mg/ml/hour", description="diffusion of substrate",
+    expression="d * ((left(sub)-sub) + (right(sub)-sub))")
+)
+stoi <- rbind(stoi,
+  c(variable="sub", process="diffSub", expression="1")
+)
+```
+
+The following code sections are the same as for the 'no-interaction' case.
+
+```{r ref.label='initMultiBox', echo=TRUE, eval=TRUE}
+```
+
+```{r ref.label='generateMultiBoxR', echo=TRUE, eval=TRUE}
+```
+
+```{r ref.label='defNormalFunctions', echo=TRUE, eval=TRUE}
+```
+
+A value must be assigned to the newly introduced diffusion parameter `d` as well.
+
+```{r dataMultiBoxInteracting, echo=TRUE, eval=TRUE}
+rp <- function (x) {rep(x, nBox)}    # For convenient replication
+v <- cbind(bac=rp(0.01), sub=rp(0))
+model$setVars(v)
+p <- cbind(mu=rp(0.8), half=rp(0.1), yield= rp(0.1),
+  vol=c(300, 1000), flow=rp(50), sub_in=rp(1),
+  d=rp(.75))                          # Added diffusion parameter
+model$setPars(p)
+```
+
+The code for integration and plotting is the same as for the 'no-interaction' case. 
+
+```{r ref.label='solveMultiBoxR', echo=TRUE, eval=TRUE}
+```
+
+```{r ref.label='plotMultiBox', echo=TRUE, eval=FALSE}
+```
+
+The output of the above code is displayed below. The effect of substrate diffusion is cleary visible in the output.
+
+```{r ref.label='plotMultiBox', echo=FALSE, eval=TRUE, fig.height=4}
+```
 
 ## Maximizing performance through Fortran {#fortranGeneration}
 
@@ -280,7 +388,7 @@ text <- paste(text,"\n")
 cat(text)
 ```
 
-The complete code to run the model from the previous section using Fortran-based code is given below. Note the additional arguments `dllname` and `nout` being passed to the numerical solver (for details consult the `deSolve` help page for method `lsoda`). It is especially important to pass the correct value to `nout`: In case of `rodeo`-based models, this must be the number of processes multiplied with the total number of boxes. Disregard of this may trigger segmentation faults that make R crash.
+The complete code to run the 'no-interactions' model from a previous section using Fortran-based code is given below. Note the additional arguments `dllname` and `nout` being passed to the numerical solver (for details consult the `deSolve` help page for method `lsoda`). It is especially important to pass the correct value to `nout`: In case of `rodeo`-based models, this must be the number of processes multiplied with the total number of boxes. Disregard of this may trigger segmentation faults that make R crash.
 
 ```{r ref.label='loadExampleData', echo=TRUE, eval=TRUE}
 ```
@@ -290,21 +398,21 @@ The complete code to run the model from the previous section using Fortran-based
 ```
 ```{r ref.label='compileMultiBox', echo=TRUE, eval=TRUE}
 ```
-```{r solveMultiBoxF, echo=TRUE, eval=FALSE}
+```{r solveMultiBoxF, echo=TRUE, eval=TRUE}
 dyn.load(lib["libFile"])
-out <- ode(y=model$getVars(useNames=TRUE), times=0:96,
+out <- ode(y=model$getVars(useNames=TRUE), times=0:120,
   func=lib["libFunc"], parms=model$getPars(), dllname=lib["libName"],
   nout=model$lenPros()*prod(model$getDim()))
-layout(matrix(1:(model$lenVars()*nBox), nrow=nBox, byrow=TRUE))
-plot(out, which=1:(model$lenVars()*nBox), mfrow=NULL)
-layout(1)
 dyn.unload(lib["libFile"])
 invisible(file.remove(lib["libFile"]))
 ```
 
-The output of the above code is displayed below. It should be identical to the above output from the R-based code.
+```{r ref.label='plotMultiBox', echo=TRUE, eval=FALSE}
+```
 
-```{r ref.label='solveMultiBoxF', echo=FALSE, eval=TRUE}
+The output of the above code is displayed below. It should be identical to the above output from the corresponding R-code based model.
+
+```{r ref.label='plotMultiBox', echo=FALSE, eval=TRUE, fig.height=4}
 ```
 
 ## Forcing functions (time-varying parameters) {#forcings}
@@ -514,9 +622,39 @@ Practice has shown that it is a good compromise to store the tabular data in del
 
 ## Checking the model formulation
 
-Model outputs can be wrong for many reasons, including inadequate process equations, bad inputs, and  numerical problems. Thus, minimizing the number of spots where mistakes/errors can hide is important.
+Model outputs can be wrong for many reasons, including inadequate process equations, bad inputs, and numerical problems. Therefore, minimizing the number of spots where mistakes/errors can hide is important.
 
-One of the few simple means to check the consistency of environmental models is to analyze balances of mass, matter, and/or energy. This can often be accomplished without actual model simulations, just by analyzing the row sums of the stoichiometry matrix. The `rodeo` package provides a method `stoiCheck` to facilitate this and the companion method `stoiCreate` can help to set-up consistent stoichiometric matrices.
+A simple and efficient means to check the consistency of environmental models is to analyze balances of mass, matter, and/or energy. This can often be accomplished without actual model simulations, just by analyzing the row sums of the stoichiometry matrix.
+
+As an example, consider a model for the oxidation of glucose
+
+$$\mathrm{C_{6}H_{12}O_{6} + 6 O_{2} \rightarrow 6 CO_{2} + 6 H_{2}O}$$
+
+If this was the only process in the model, the single-row stoichiometry matrix would be
+
+```{r, stoiCreate, echo=FALSE}
+reac <- c(oxidation="C6H12O6 + 6 * O2 -> 6 * CO2 + 6 * H2O")
+stoiMat <- stoiCreate(reactions=reac)
+print(stoiMat)
+```
+
+which is easily created manually. To automatically create a stoichiometrix matrix from a set of reaction equations `rodeo` provides a (non-class) function `stoiCreate`. To obtain the avove result, one would use
+
+```{r, ref.label='stoiCreate', echo=TRUE, eval=FALSE}
+```
+
+The rows of the stoichiometry matrix can be checked for conservation of mass with respect to an arbitrary set of elements. This is done by calling `stoiCheck` on the stoichiometry matrix. As a second argument, the function requires a matrix specifiying the composition of all state variables (i.e. reactants and products) with respect to the elements of interest (see below). Note that, in this example, the elemental composition is obvious from the reaction equation and the composition matrix could in fact be extracted from the latter. But this is not the case in general (e. g. if 'glucose' was used instead of the identifier 'C6H12O6').
+
+```{r}
+compMat <- rbind(
+  Hdyrogen= c(C6H12O6= 12, O2=0, CO2=0, H2O=2),
+  Oxygen=   c(C6H12O6= 6,  O2=2, CO2=2, H2O=1),
+  Carbon=   c(C6H12O6= 6,  O2=0, CO2=1, H2O=0)
+)
+stoiCheck(stoiMat, compMat)
+```
+
+Zero elements in the output matrix of `stoiCheck` indicate that the mass balance for the respective element and process is closed. Note that the application of `stoiCheck` is *not* limited to chemical reaction models. It could also be used, for example, to check mass balances of Carbon and nutrients in ecological lake models. Then, however, some of the return values will be non-zero because, typically, CO$\mathrm{2}$ and N$\mathrm{2}$ released into (or taken up from) the atmosphere are not explicitly modeled.
 
 ## Writing `rodeo`-compatible Fortran functions {#fortranFunctions}
 
@@ -586,7 +724,7 @@ a = term1 + term2 + &
 
 The code contained in the section on [Fortran code generation](#fortranGeneration) or the [gallery of examples](#examples) may serve as a starting point. The [Fortran wiki](http://fortranwiki.org/fortran/show/HomePage) is a good source of additional information, also providing links to standard documents, books, etc.
 
-## Multi-object models
+## Multi-object models {#multiObjectModels}
 
 Real-world applications often require the simulation of multiple interacting compartments. In some cases it may still be possible to handle those systems with a single set of ODE and to properly set up the Jacobian matrix. In many cases, however, it will be easier to work with separate ODE models (one for each compartment) and to allow for inter-model communication at an adequate frequency. The concept of 'linked sub-models' can be used with `rodeo` and it is also promoted by the OpenMI initiative [@Gregersen2007]. The downsides of the approach are
 
