@@ -1,7 +1,7 @@
 #' Create Fortran Library
 #'
-#' Create a Fortran library for use with numerical methods from packages
-#' \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}.
+#' Creates and loads a Fortran library for use with numerical methods from
+#' package \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}.
 #'
 #' @name compile
 #'
@@ -12,22 +12,18 @@
 #'   a vector of file names if the Fortran code is split over several files.
 #' @param target Name of a target 'environment' for which the library is
 #'   compiled. Currently, 'deSolve' is the only supported value.
-
 #'
-#' @return A vector of character strings with named elements as follows:
-#' \itemize{
-#'   \item{\code{libFile}} File path of the created library. Needs to be
-#'     passed to, e.g., \code{\link[base]{dyn.load}}. The library is generally
-#'     created in the folder returned by \code{\link[base]{tempdir}}.
-#'   \item{\code{libName}} The pure library name, which is the base name of
-#'     \code{libFile} with the platform specific extension stripped. This name
-#'     has to be supplied as the \code{dllname} argument of the solver methods
-#'     in \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}.
-#'   \item{\code{libFunc}} Name of the method contained in the built library
-#'     which computes the derivatives. This name has to be supplied as the
-#'     \code{func} argument of the solver methods
-#'     in \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}}.
-#' }
+#' @return \code{invisible(NULL)}
+#'
+#' @note The name of the generated library as well as the name
+#'   of the function to compute the derivatives are stored in the object.
+#'   These names can be queried with \code{\link{libName}} and
+#'   \code{\link{libFunc}}, respectively.
+#'
+#' The library is generally created in the folder returned by
+#' \code{\link[base]{tempdir}} and it is loaded with \code{\link[base]{dyn.load}}.
+#' It is automatically unloaded with \code{\link[base]{dyn.unload}} when the
+#' object's \code{\link{finalize}} method is called.
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
@@ -39,7 +35,7 @@
 #' # This would trigger compilation assuming that 'functionsCode.f95' contains
 #' # a Fortran implementation of all functions; see vignette for full example
 #' \dontrun{
-#' lib <- model$compile(sources="functionsCode.f95")
+#' model$compile(sources="functionsCode.f95")
 #' }
 
 rodeo$set("public", "compile", function(sources=NULL, target="deSolve") {
@@ -65,10 +61,21 @@ rodeo$set("public", "compile", function(sources=NULL, target="deSolve") {
     }
     invisible(file.remove(list.files(path=tmpdir, pattern=".+[.]mod$")))
     setwd(wd)
-    return(c(libFile=libFile, libName=libName, libFunc=libFunc))
+
+    # Load library
+    dyn.load(libFile)
+    if (!is.loaded(libFunc, PACKAGE=libName)) {
+  #    print(getLoadedDLLs())
+      stop("failed to load fortran subroutine '",libFunc,"' (library '",libName,"')")
+    }
+
+    # Save names for use with the query methods and the finalize method
+    private$lib <- c(file=libFile, name=libName, func=libFunc)
+
   } else {
     stop("target not supported")
   }
+  return(invisible(NULL))
 })
 
 

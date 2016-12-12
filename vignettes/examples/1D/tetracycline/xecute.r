@@ -28,8 +28,7 @@ model <- rodeo$new(vars=rd("vars.txt"), pars=rd("pars.txt"), funs=rd("funs.txt")
   asMatrix=TRUE, dim=c(nTanks))
 
 # Generate code, compile into shared library, load library
-lib <- model$compile(sources="functions.f95")
-dyn.load(lib["libFile"])
+model$compile(sources="functions.f95")
 
 # Assign initial values
 vars <- matrix(rep(as.numeric(model$getVarsTable()$initial), each=nTanks),
@@ -95,9 +94,9 @@ rm(m)
 ## @knitr tetracycline_steady
 
 # Estimate steady-state
-std <- rootSolve::steady.1D(y=model$getVars(), time=NULL, func=lib["libFunc"],
+std <- rootSolve::steady.1D(y=model$getVars(), time=NULL, func=model$libFunc(),
   parms=model$getPars(), nspec=model$lenVars(), dimens=nTanks, positive=TRUE,
-  dllname=lib["libName"], nout=model$lenPros()*nTanks)
+  dllname=model$libName(), nout=model$lenPros()*nTanks)
 if (!attr(std, which="steady", exact=TRUE))
   stop("Steady-state run failed.")
 names(std$y) <- names(model$getVars())
@@ -121,8 +120,8 @@ for (i in 1:length(domains)) {
 
 # Dynamic simulation
 times <- seq(0, 7, 1/48)                              # requested output times
-dyn <- deSolve::ode(y=model$getVars(), times=times, func=lib["libFunc"],
-  parms=model$getPars(), NLVL=nTanks, dllname=lib["libName"],
+dyn <- deSolve::ode(y=model$getVars(), times=times, func=model$libFunc(),
+  parms=model$getPars(), NLVL=nTanks, dllname=model$libName(),
   hmax=dt_max, nout=model$lenPros()*nTanks,
   jactype="bandint", bandup=1, banddown=1)
 if (attr(dyn, which="istate", exact=TRUE)[1] != 2)
@@ -152,9 +151,9 @@ testSets <- expand.grid(testList)
 f <- function(set, y0) {
   p <- model$getPars(asArray=TRUE)  
   p[,names(set)] <- rep(as.numeric(set), each=nTanks) # update parameters
-  out <- rootSolve::steady.1D(y=y0, time=NULL, func=lib["libFunc"],
+  out <- rootSolve::steady.1D(y=y0, time=NULL, func=model$libFunc(),
     parms=p, nspec=model$lenVars(), dimens=nTanks, positive=TRUE,
-    dllname=lib["libName"], nout=model$lenPros()*nTanks)
+    dllname=model$libName(), nout=model$lenPros()*nTanks)
   if (attr(out, which="steady", exact=TRUE)) {        # solution found?
     names(out$y) <- names(model$getVars())
     down_S_w <- out$y[paste0("S_w",".",nTanks)]       # bacteria concentrations
@@ -199,8 +198,4 @@ legend("left", bty="n", title="% resistant", fill=colors,
   legend=paste0(breaks[-length(breaks)]*100," - ", breaks[-1]*100))
 layout(1)
 par(mar=omar)
-
-# Clean-up
-dyn.unload(lib["libFile"])
-invisible(file.remove(lib["libFile"]))
 

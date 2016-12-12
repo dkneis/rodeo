@@ -50,10 +50,8 @@ if (internal) {
   for (obj in objects)
     models[[obj]]$initStepper(fileFun="functions.f95", method="rk5")
 } else {
-  lib <- list()
   for (obj in objects) {
-    lib[[obj]] <- models[[obj]]$compile("functions.f95")
-    dyn.load(lib[[obj]]["libFile"])
+    models[[obj]]$compile("functions.f95")
   }
 }
 
@@ -81,13 +79,13 @@ updatePars <- function (objPar, outAll, links) {
 }
 
 # Wrapper for integration methods
-integr <- function(obj, t0, t1, models, internal, lib, check) {
+integr <- function(obj, t0, t1, models, internal, check) {
   if (internal) {
     tmp <- models[[obj]]$step(t0, h=t1-t0, check=check)
   } else {
     tmp <- deSolve::ode(y=models[[obj]]$getVars(), times=c(t0, t1),
-      func=lib[[obj]]["libFunc"], parms=models[[obj]]$getPars(),
-      dllname=lib[[obj]]["libName"],
+      func=models[[obj]]$libFunc(), parms=models[[obj]]$getPars(),
+      dllname=models[[obj]]$libName(),
       nout=models[[obj]]$lenPros())
     tmp <- tmp[2,2:ncol(tmp)]
   }
@@ -96,11 +94,11 @@ integr <- function(obj, t0, t1, models, internal, lib, check) {
 }
 
 # Function to simulate coupled models over a single time step
-advance <- function(objects, t0, t1, models, internal, lib, check) {
+advance <- function(objects, t0, t1, models, internal, check) {
   out <- list()
   # Call integrator
   out <- lapply(objects, integr, t0=t0, t1=t1, models=models, internal=internal,
-    lib=lib, check=check)
+    check=check)
   names(out) <- objects
   # Update parameters affected by coupling
   lapply(setNames(objects, objects),
@@ -118,7 +116,7 @@ system.time({
 for (i in 1:(length(times)-1)) {
   # Simulate
   out <- advance(objects=objects, t0=times[i], t1=times[i+1],
-    models=models, internal=internal, lib=lib, check=(i==1))
+    models=models, internal=internal, check=(i==1))
   # Store outputs as a matrix
   if (i == 1) {
     res <- lapply(setNames(objects, objects),
@@ -129,14 +127,6 @@ for (i in 1:(length(times)-1)) {
   }
 }
 })
-
-# Clean-up
-if (!internal) {
-  for (obj in objects) {
-    dyn.unload(lib[[obj]]["libFile"])
-    invisible(file.remove(lib[[obj]]["libFile"]))
-  }
-}
 
 # Plot
 out <- c(time= times[2:length(times)])

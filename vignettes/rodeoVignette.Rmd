@@ -363,21 +363,23 @@ code <- model$generate(name="derivs",lang="f95")    # not required for typical u
 
 to generate a function that computes the state variables' derivatives in Fortran. However, the interface of the generated function is optimized for universality. In order to use the generated code with the numerical solvers from [`deSolve`](http://cran.r-project.org/package=deSolve) or [`rootSolve`](http://cran.r-project.org/package=rootSolve), a specialized wrapper is required.
 
-To make the use of Fortran as simple as possible, `rodeo` provides a high-level class method `compile` which  combines
+To make the use of Fortran as simple as possible, `rodeo` provides a high-level class method `compile` which combines
 
 1. generation of the basic Fortran code via the `generate` method (see above),
 
 2. generation of the required wrapper for compatibility with `deSolve` and `rootSolve`,
 
-3. compilation of all Fortran sources into a shared library (based on the command `R CMD SHLIB`)
+3. compilation of all Fortran sources into a shared library (based on the command `R CMD SHLIB`),
+
+4. loading of the library
 
 ```{r compileMultiBox, echo=TRUE, eval=FALSE}
-lib <- model$compile(sources="vignetteData/fortran/functionsCode.f95")
+model$compile(sources="vignetteData/fortran/functionsCode.f95")
 ```
 
 The `compile` method takes as argument the name of a file holding the Fortran implementation of functions being referenced in the particular model's mathematical expressions. This argument can actually be a vector if the source code is split across several files. Consult the section on [Fortran functions](#fortranFunctions) for coding guidelines and take a look at the [collection of examples](#examples).
 
-The return value of `compile` is a named vector of character strings holding the name of the generated shared library (in element `libName`), the full file path of the library (in element `libFile`) as well as the name of the callable subroutine within that library (in element `libFunc`). The library must be loaded and unloaded with `dyn.load` and `dyn.unload`, respectively.
+The created library is automatically loaded with `dyn.load` and unloaded with `dyn.unload` when the object is garbage collected. The name of the created library and the name of the derivatives function contained therein are stored in the `rodeo` object internally. These names can be queried with the method `libName()` and `libFunc()`, respectively.
 
 A suitable Fortran implementation of the functions used in the example (contents of file 'fortran/functionsCode.f95') is shown below. Note that all the functions are collected in a single Fortran module with implicit typing turned off. The name of this module must be `'functions'` and it cannot be changed. Note that a Fortran module can import other modules which helps to structure more complex source codes. Also note that the user-supplied source files need to reside in directories with write-access to allow the creation of intermediate files during compilation.
 
@@ -399,12 +401,9 @@ The complete code to run the 'no-interactions' model from a previous section usi
 ```{r ref.label='compileMultiBox', echo=TRUE, eval=TRUE}
 ```
 ```{r solveMultiBoxF, echo=TRUE, eval=TRUE}
-dyn.load(lib["libFile"])
 out <- ode(y=model$getVars(useNames=TRUE), times=0:120,
-  func=lib["libFunc"], parms=model$getPars(), dllname=lib["libName"],
+  func=model$libFunc(), parms=model$getPars(), dllname=model$libName(),
   nout=model$lenPros()*prod(model$getDim()))
-dyn.unload(lib["libFile"])
-invisible(file.remove(lib["libFile"]))
 ```
 
 ```{r ref.label='plotMultiBox', echo=TRUE, eval=FALSE}

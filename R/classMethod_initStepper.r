@@ -135,8 +135,8 @@ rodeo$set("public", "initStepper",
   if (!is.loaded(private$steppers[[method]]$fncName,
     PACKAGE=private$steppers[[method]]$libName)) {
 #    print(getLoadedDLLs())
-    stop("fortran subroutine '",private$steppers[[method]]$fncName,
-      "' (library '", private$steppers[[method]]$libName,"') not loaded")
+    stop("failed to load fortran subroutine '",private$steppers[[method]]$fncName,
+      "' (library '", private$steppers[[method]]$libName,"')")
   }
 
   # Register symbol

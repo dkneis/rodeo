@@ -27,18 +27,13 @@ model$setPars(cbind(d=d, dx=dx,cb=cb,
 ))
 
 # Generate code, compile into shared library, load library
-lib <- model$compile(NULL)              
-dyn.load(lib["libFile"])
+model$compile(NULL)              
 
 # Numeric solution
-solNum <- ode(y=model$getVars(), times=times, func=lib["libFunc"],
-  parms=model$getPars(), dllname=lib["libName"],
+solNum <- ode(y=model$getVars(), times=times, func=model$libFunc(),
+  parms=model$getPars(), dllname=model$libName(),
   nout=model$lenPros()*prod(model$getDim()),
   jactype="bandint", bandup=1, banddown=1)
-
-# Clean-up
-dyn.unload(lib["libFile"])
-invisible(file.remove(lib["libFile"]))
 
 # Function providing the analytical solution
 erfc <- function(x) { 2 * pnorm(x * sqrt(2), lower=FALSE) }

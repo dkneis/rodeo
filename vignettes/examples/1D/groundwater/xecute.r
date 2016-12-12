@@ -26,18 +26,13 @@ model$setPars(cbind( dx=rep(dx, nx), kf=rep(5., nx), ne=rep(0.17, nx),
   tBed=rep(0.1, nx), leaky=c(1, rep(0, nx-1)) ))
 
 # Generate code, compile into shared library, load library
-lib <- model$compile(fileFun)              
-dyn.load(lib["libFile"])
+model$compile(fileFun)              
 
 # Integrate
-out <- deSolve::ode(y=model$getVars(), times=times, func=lib["libFunc"],
-  parms=model$getPars(), dllname=lib["libName"],
+out <- deSolve::ode(y=model$getVars(), times=times, func=model$libFunc(),
+  parms=model$getPars(), dllname=model$libName(),
   nout=model$lenPros()*prod(model$getDim()),
   jactype="bandint", bandup=1, banddown=1)
-
-# Clean-up
-dyn.unload(lib["libFile"])
-invisible(file.remove(lib["libFile"]))
 
 # Plot results
 filled.contour(x=out[,"time"]/365.25, y=(1:nx)*dx-dx/2,

@@ -244,14 +244,5 @@ rodeo$set("public", "initialize",
   private$vars <- rep(NA, nrow(vars)*prod(dim))
   private$pars <- rep(NA, nrow(pars)*prod(dim))
   # Register finalizer (unloads stepper libs)
-  unld <- function(x) {
-    if (length(x$steppers) > 0) {
-      for (n in names(x$steppers)) {
-        if (file.exists(x$steppers[[n]]$libFile))
-          dyn.unload(x$steppers[[n]]$libFile)
-      }
-    }
-  }
-  reg.finalizer(self, unld, onexit=TRUE)
 })
 

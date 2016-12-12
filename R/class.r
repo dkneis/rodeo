@@ -100,6 +100,7 @@ rodeo <- R6Class("rodeo",
     dim=integer(0),
     vars=numeric(0),
     pars=numeric(0),
+    lib=character(0),
     steppers=list()
   )
 )

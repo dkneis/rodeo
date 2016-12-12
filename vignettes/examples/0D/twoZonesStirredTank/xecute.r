@@ -29,8 +29,7 @@ model$setVars(vars)
 model$setPars(pars)
 
 # Generate code, compile into shared library, load library
-lib <- model$compile(NULL)
-dyn.load(lib["libFile"])
+model$compile(NULL)
 
 # Function to return the steady-state solution for specific parameters
 f <- function(x) {
@@ -38,7 +37,7 @@ f <- function(x) {
   testPars[names(sensList)] <- x[names(sensList)]
   model$setPars(testPars)
   st <- rootSolve::runsteady(y=model$getVars(), times=c(0, Inf),
-    func=lib["libFunc"], parms=model$getPars(), dllname=lib["libName"],
+    func=model$libFunc(), parms=model$getPars(), dllname=model$libName(),
     nout=model$lenPros(), outnames=model$namesPros())
   if (!attr(st, "steady"))
     st$y <- rep(NA, length(st$y))
@@ -84,8 +83,4 @@ for (mu in MU) {
     legend=paste(br[-length(br)],br[-1],sep="-"))
 }
 layout(1)
-
-# Clean-up
-dyn.unload(lib["libFile"])
-invisible(file.remove(lib["libFile"]))
 

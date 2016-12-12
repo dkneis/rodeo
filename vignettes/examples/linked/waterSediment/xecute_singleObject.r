@@ -24,16 +24,11 @@ model$setVars(vars)
 model$setPars(pars)
 
 # Generate code, compile into shared library, load library
-lib <- model$compile("functions.f95")              
-dyn.load(lib["libFile"])
+model$compile("functions.f95")              
 
 # Integrate
-out <- ode(y=model$getVars(), times=times, func=lib["libFunc"], parms=model$getPars(),
-  dllname=lib["libName"], nout=model$lenPros(), outnames=model$namesPros())
-
-# Clean-up
-dyn.unload(lib["libFile"])
-invisible(file.remove(lib["libFile"]))
+out <- ode(y=model$getVars(), times=times, func=model$libFunc(), parms=model$getPars(),
+  dllname=model$libName(), nout=model$lenPros(), outnames=model$namesPros())
 
 # Plot method for deSolve objects
 plot(out)
