@@ -619,11 +619,48 @@ knitr::kable(as.data.frame(x))
 
 Practice has shown that it is a good compromise to store the tabular data in delimited text files and to open them either in a spreadsheet program or editor, depending on the particular task. Note that the conventional 'csv' format is not recommended since mathematical expressions involving multi-argument functions and text descriptions may contain commas (hence, they need to be quoted). Using TAB-delimited text is probably the best option. It can be copied-and-pasted between text and spreadsheet files. Modern editors can highlight TAB-characters making them distinguishable from ordinary blanks.
 
-## Checking the model formulation
+## Stoichiometric matrices
 
-Model outputs can be wrong for many reasons, including inadequate process equations, bad inputs, and numerical problems. Therefore, minimizing the number of spots where mistakes/errors can hide is important.
+### What should go in the matrix?
 
-A simple and efficient means to check the consistency of environmental models is to analyze balances of mass, matter, and/or energy. This can often be accomplished without actual model simulations, just by analyzing the row sums of the stoichiometry matrix.
+When setting up the input tables for a `rodeo`-based model, the developer must make a choice on what part of the ODE's right hand side should go in the process rates and what terms should appear as stoichiometric factors. Also, there is often a possibility to split up a process into sub-processes. A minimum guideline could be as follows:
+
+- Process rates and stoichiometric factors should carry meaningful physical units to make them easy to interpret.
+
+- Stoichiometric factors are best kept simple at the expense of more complex process rate expressions. This avoids redundant evaluation of identical terms in multiple ODE. Also, a more compact stoichiometry matrix is easier to present or print.
+
+-  Preference should be given to the most comprehensible implementation unless the advantage of a more obscure alternative has been proven and such optimization is actually needed.
+
+Typically, this leads to a design where the stoichiometric factors do not contain references to state variables.
+
+### Automatic creation
+
+As an example, consider the model presented on the wikipedia page for the [Petersen matrix](https://en.wikipedia.org/wiki/Petersen_matrix).
+
+$$ \mathrm{A + 2 B \rightarrow S} $$
+$$ \mathrm{E + S \leftrightharpoons ES} $$
+$$ \mathrm{ES \rightarrow E + P} $$
+
+The corresponding stoichiometry matrix is
+
+```{r, stoiCreate, echo=FALSE}
+reactions <- c(
+  formationS= "A + 2 * B -> S",
+  equilibrES= "E + S <-> ES",
+  decomposES= "ES -> E + P"
+)
+stoiMat <- stoiCreate(reactions, eval=TRUE, toRight="_fward", toLeft="_bward")
+print(stoiMat)
+```
+
+Although the matrix is simple, creating it manually easily introduces mistakes. `rodeo` provides a (non-class) function `stoiCreate` to automatically create a stoichiometrix matrix from a set of reaction equations. To obtain the above result, one would use
+
+```{r, ref.label='stoiCreate', echo=TRUE, eval=FALSE}
+```
+
+### Model verification based on row sums
+
+Model outputs can be wrong for many reasons, including inadequate process equations, bad inputs, and numerical problems. Therefore, minimizing the number of spots where mistakes/errors can hide is important. A simple and efficient means to check the consistency of environmental models is to analyze balances of mass, matter, and/or energy. This can often be accomplished without actual model simulations, just by analyzing the row sums of the stoichiometry matrix.
 
 As an example, consider a model for the oxidation of glucose
 
@@ -631,18 +668,13 @@ $$\mathrm{C_{6}H_{12}O_{6} + 6 O_{2} \rightarrow 6 CO_{2} + 6 H_{2}O}$$
 
 If this was the only process in the model, the single-row stoichiometry matrix would be
 
-```{r, stoiCreate, echo=FALSE}
+```{r}
 reac <- c(oxidation="C6H12O6 + 6 * O2 -> 6 * CO2 + 6 * H2O")
 stoiMat <- stoiCreate(reactions=reac)
 print(stoiMat)
 ```
 
-which is easily created manually. To automatically create a stoichiometrix matrix from a set of reaction equations `rodeo` provides a (non-class) function `stoiCreate`. To obtain the avove result, one would use
-
-```{r, ref.label='stoiCreate', echo=TRUE, eval=FALSE}
-```
-
-The rows of the stoichiometry matrix can be checked for conservation of mass with respect to an arbitrary set of elements. This is done by calling `stoiCheck` on the stoichiometry matrix. As a second argument, the function requires a matrix specifiying the composition of all state variables (i.e. reactants and products) with respect to the elements of interest (see below). Note that, in this example, the elemental composition is obvious from the reaction equation and the composition matrix could in fact be extracted from the latter. But this is not the case in general (e. g. if 'glucose' was used instead of the identifier 'C6H12O6').
+The rows of the stoichiometry matrix can be checked for conservation of mass with respect to an arbitrary set of elements. This is done by calling `stoiCheck` on the stoichiometry matrix. As its second argument, this function requires a matrix specifiying the composition of all state variables (i.e. reactants and products) with respect to the elements of interest (see below). Note that, in this example, the elemental composition is obvious from the reaction equation and the composition matrix could in fact be extracted from the latter. But this is not the case in general (e. g. if 'glucose' was used instead of the identifier 'C6H12O6').
 
 ```{r}
 compMat <- rbind(
@@ -653,7 +685,7 @@ compMat <- rbind(
 stoiCheck(stoiMat, compMat)
 ```
 
-Zero elements in the output matrix of `stoiCheck` indicate that the mass balance for the respective element and process is closed. Note that the application of `stoiCheck` is *not* limited to chemical reaction models. It could also be used, for example, to check mass balances of Carbon and nutrients in ecological lake models. Then, however, some of the return values will be non-zero because, typically, CO$\mathrm{2}$ and N$\mathrm{2}$ released into (or taken up from) the atmosphere are not explicitly modeled.
+Zero elements in the output matrix of `stoiCheck` indicate that the mass balance for the respective element and process is closed. Note that the application of `stoiCheck` is *not* limited to chemical reaction models. It could also be used, for example, to check mass balances of Carbon and nutrients in ecological lake models. Then, however, some of the return values will be non-zero because, typically, CO$\mathrm{_2}$ and N$\mathrm{_2}$ released into (or taken up from) the atmosphere are not explicitly modeled.
 
 ## Writing `rodeo`-compatible Fortran functions {#fortranFunctions}
 
