@@ -19,10 +19,8 @@
 #' @param check Logical. Can be used to avoid repeated checks of arguments. This
 #'   may increase performance in repeated calls.
 #'
-#' @return A numeric matrix (with column names). There is one column for each
-#'   state variable and process rate. The number of rows equals the number of
-#'   spatial boxes, i.e. the result is a single-row matrix in case of a
-#'   zero-dimensional model.
+#' @return A named numeric vector holding the values of state variables and
+#'   process rates in all boxes.
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
@@ -65,7 +63,8 @@ rodeo$set("public", "step",
     )
     if (as.logical(res$error))
       stop("integration from t0=",t0," over dt=",dt," using method '",method,"' failed")
-    return(c(res$var, res$pro))
+    return(setNames(c(res$var, res$pro),
+      c(elNames(private$varsTbl$name,private$dim), elNames(private$prosTbl$name,private$dim))))
   } else {
     stop("integration method '",method,"' not implemented")
   }
