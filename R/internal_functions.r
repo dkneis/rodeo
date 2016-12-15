@@ -42,6 +42,22 @@ checkTbl <- function(tbl, tblName, colNames, nameCol, emptyOK) {
   return(NULL)
 }
 
+# Construct names for vector elements
+# items: vector of strings (e.g. names of state variables)
+# dims: dimensions vector
+elNames <- function(items, dims) {
+  if (sum(dims) == 1) {
+    n <- items
+  } else {
+    # Note: In the output of expand.grid, the first factor varies fastest
+    nameParts <- expand.grid(lapply(dims[length(dims):1], function(x){1:x}))
+    nameParts <- nameParts[,ncol(nameParts):1]
+    nameParts <- cbind(rep(items, each=prod(dims)), nameParts)
+    n <- apply(nameParts, 1, paste, collapse=".")
+  }
+  n
+}
+
 # Extract identifiers from a mathematical expression (given as a string)
 extractIdentifiers <- function(expr, dropDuplicates=TRUE) {
   tmp <- gregexpr(pattern=rodeoConst$identifierPatterns$core,text=expr)[[1]]

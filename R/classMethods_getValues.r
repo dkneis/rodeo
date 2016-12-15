@@ -1,17 +1,4 @@
 
-# Helper function to construct names for vector elements
-elNames <- function(items, dims) {
-  if (sum(dims) == 1) {
-    elNames <- items
-  } else {
-    # Note: In the output of expand.grid, the first factor varies fastest
-    nameParts <- expand.grid(lapply(dims[length(dims):1], function(x){1:x}))
-    nameParts <- nameParts[,ncol(nameParts):1]
-    nameParts <- cbind(rep(items, each=prod(dims)), nameParts)
-    elNames <- apply(nameParts, 1, paste, collapse=".")
-  }
-}
-
 #' Query Values of State Variables
 #'
 #' Query values of state variables of a \code{\link{rodeo}}-based model.
