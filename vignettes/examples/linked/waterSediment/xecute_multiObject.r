@@ -85,11 +85,10 @@ integr <- function(obj, t0, t1, models, internal, check) {
   } else {
     tmp <- deSolve::ode(y=models[[obj]]$getVars(), times=c(t0, t1),
       func=models[[obj]]$libFunc(), parms=models[[obj]]$getPars(),
-      dllname=models[[obj]]$libName(),
+      dllname=models[[obj]]$libName(), outnames=models[[obj]]$namesPros(),
       nout=models[[obj]]$lenPros())
     tmp <- tmp[2,2:ncol(tmp)]
   }
-  names(tmp) <- c(models[[obj]]$namesVars(), models[[obj]]$namesPros())
   tmp
 }
 
