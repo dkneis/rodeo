@@ -3,7 +3,7 @@ Type: Package
 NeedsCompilation: yes
 Title: A Code Generator for ODE-Based Models
 Version: 0.7
-Date: 2016-11-23
+Date: 2016-12-17
 Author: David Kneis <david.kneis@tu-dresden.de>
 Maintainer: David Kneis <david.kneis@tu-dresden.de>
 Description: Provides an R6 class and several utility methods to
