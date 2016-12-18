@@ -22,6 +22,9 @@
 #' @return A named numeric vector holding the values of state variables and
 #'   process rates in all boxes.
 #'
+#' @note This method can only be used after a call to \code{\link{initStepper}}
+#'   has been made.
+#'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
 #' @seealso Use \code{\link[deSolve]{deSolve}} for advanced solvers with more

@@ -48,7 +48,7 @@ for (obj in objects) {
 # Generate and load Fortran library for selected integrator
 if (internal) {
   for (obj in objects)
-    models[[obj]]$initStepper(fileFun="functions.f95", method="rk5")
+    models[[obj]]$initStepper("functions.f95", method="rk5")
 } else {
   for (obj in objects) {
     models[[obj]]$compile("functions.f95")

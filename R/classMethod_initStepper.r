@@ -1,12 +1,38 @@
 
+#' Initialize Internal ODE Solver
+#'
+#' Initializes \code{rodeo}'s built-in ODE solver. This method must be called
+#' prior to using \code{\link{step}}.
+#'
+#' @name initStepper
+#'
+#' @param sources Name(s) of fortran source file(s) where a module with the
+#'   fixed name 'functions' is implemented. This module must contain all
+#'   user-defined functions referenced in process rates or
+#'   stoichiometric factors. Can be \code{NULL}, the name of a single file, or
+#'   a vector of file names if the Fortran code is split over several files.
+#' @param method Name of a the solver. Currently, 'rk5' is the only supported
+#'   value (Runge-Kutta method of Cash and Karp).
+#'
+#' @return \code{invisible(NULL)}
+#'
+#' @note After this method was called, \code{\link{step}} can be used to
+#'   perform the integration.
+#'
+#' @author \email{david.kneis@@tu-dresden.de}
+#'
+#' @seealso To perform integration with the solvers from package
+#'   \code{\link[deSolve]{deSolve}} use \code{\link{compile}} instead of this
+#'   method.
+
 rodeo$set("public", "initStepper",
-  function(fileFun, method="rk5")
+  function(sources, method="rk5")
 {
 
   # Required files to build the library
   srcFiles <- c(
     integrators= system.file('fortran/integrators.f95',package='rodeo'),
-    funcs= normalizePath(fileFun),
+    funcs= normalizePath(sources),
     derivs= paste0(tempfile(),".f95"),
     wrapper= paste0(tempfile(),".f95")
   )
