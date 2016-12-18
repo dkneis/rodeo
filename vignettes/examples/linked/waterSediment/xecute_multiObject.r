@@ -33,7 +33,7 @@ links <- rbind(
 library("rodeo")
 library("deSolve")
 
-# Initialize list of rodeo objects
+# Create list of rodeo objects
 rd <- function(dir,f, ...) {read.table(file=paste0("multiObject/",obj,"_",f),
   sep="\t", header=TRUE, ...)}
 models <- list()
@@ -55,22 +55,20 @@ if (internal) {
   }
 }
 
-# Set initial parameters and states
-invisible(lapply(setNames(objects, objects),
-  function(obj) {models[[obj]]$setVars(vars[[obj]])}))
-invisible(lapply(setNames(objects, objects),
-  function(obj) {models[[obj]]$setPars(pars[[obj]])}))
+# Set initial parameters and initial values
+invisible(lapply(objects, function(obj) {models[[obj]]$setVars(vars[[obj]])}))
+invisible(lapply(objects, function(obj) {models[[obj]]$setPars(pars[[obj]])}))
 
 # Function to update parameters of a particular object using the linkage table
 # Inputs: 
 #   objPar: Parameters of a particular target object (numeric vector)
-#   outAll:  States and process rates of all objects (list of numeric vectors)
-#   links:   Object linkage table (matrix of type character)
-# Returns: objPar after updating of values
-updatePars <- function (objPar, outAll, links) {
+#   src:    States and process rates of all objects (list of numeric vectors)
+#   links:  Object linkage table (matrix of type character)
+# Returns:  objPar after updating of values
+updatePars <- function (objPar, src, links) {
   if (nrow(links) > 0) {
     f <- function(i) {
-      objPar[links[i,"tarPar"]] <<- outAll[[links[i,"srcObj"]]][links[i,"srcItem"]]
+      objPar[links[i,"tarPar"]] <<- src[[links[i,"srcObj"]]][links[i,"srcItem"]]
       NULL
     }
     lapply(1:nrow(links), f)
@@ -92,47 +90,31 @@ integr <- function(obj, t0, t1, models, internal, check) {
   tmp
 }
 
-# Function to simulate coupled models over a single time step
-advance <- function(objects, t0, t1, models, internal, check) {
-  out <- list()
+# Simulate coupled models over a single time step
+advance <- function(i, times, objects, models, internal) {
   # Call integrator
-  out <- lapply(objects, integr, t0=t0, t1=t1, models=models, internal=internal,
-    check=check)
-  names(out) <- objects
+  out <- sapply(objects, integr, t0=times[i], t1=times[i+1], models=models,
+    internal=internal, check=(i==1), simplify=FALSE)
   # Update parameters affected by coupling
-  lapply(setNames(objects, objects),
-    function(obj) {models[[obj]]$setPars(
+  lapply(objects, function(obj)
+    {models[[obj]]$setPars(
     updatePars(models[[obj]]$getPars(useNames=TRUE), out,
       links[links[,"tarObj"]==obj,,drop=FALSE]))})
   # Re-initialize state variables 
-  lapply(setNames(objects, objects),
-    function(obj) {models[[obj]]$setVars(out[[obj]][models[[obj]]$namesVars()])})
-  return(out)
+  lapply(objects, function(obj)
+    {models[[obj]]$setVars(out[[obj]][models[[obj]]$namesVars()])})
+  # Return all outputs in a single vector
+  unlist(out)
 }
 
-# Loop over time steps
+# Solve for all time steps
 system.time({
-for (i in 1:(length(times)-1)) {
-  # Simulate
-  out <- advance(objects=objects, t0=times[i], t1=times[i+1],
-    models=models, internal=internal, check=(i==1))
-  # Store outputs as a matrix
-  if (i == 1) {
-    res <- lapply(setNames(objects, objects),
-      function(obj) {out[[obj]]})
-  } else {
-    res <- lapply(setNames(objects, objects),
-      function(obj) {rbind(res[[obj]], out[[obj]])})    
-  }
-}
+  out <- t(sapply(1:(length(times)-1), advance, times=times, objects=objects,
+    models=models, internal=internal))
 })
 
 # Plot
-out <- c(time= times[2:length(times)])
-for (obj in objects) {
-  colnames(res[[obj]]) <- paste(obj, colnames(res[[obj]]), sep=".")
-  out <- cbind(out, res[[obj]])
-}
+out <- cbind(time= times[2:length(times)], out)
 class(out) <- "deSolve"
 plot(out, mfrow=c(4,3))
 
