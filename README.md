@@ -25,19 +25,12 @@ The package currently provides a single R6 class named just like the package (``
   - generate a stoichiometry matrix from a set of reaction equations.
   - validate a stoichiometry matrix (mass balance check).
 
-The [package vignette](https://github.com/dkneis/rodeo/blob/master/vignettes/rodeo.pdf) provides further details.
+The [package vignette](https://github.com/dkneis/rodeo/blob/master/vignettes/rodeoVignette.pdf) provides further details.
 
 Requirements and installation
 ---------------------------------------------
 
 A current installation of R is required. In order to work with ``rodeo`` in high-performance mode, one needs the tools to compile Fortran 2008 code (compiler, make utilities, etc.). These tools are typically available by default on Linux systems. Users of other systems should have a look at the [Rtools](https://cran.r-project.org/bin/windows/Rtools/).
-
-The release version should be available on CRAN and can be installed as usual:
-```
-# Install and load release version
-install.packages("rodeo")
-library("rodeo")
-```
 
 The development version of the package can be installed directly from the github repository as shown below. For this, the ``devtools`` package is required.
 
@@ -48,7 +41,10 @@ install_github("dkneis/rodeo")
 library("rodeo")
 ```
 
-Examples
----------------------------------------------
+The release version should be available on CRAN and can be installed as usual (see below). Note that the release version may lag behind the development version in terms of functionality.
 
-Basic examples illustrating the functionality can be downloaded from the [developers github page](https://dkneis.github.io).
+```
+# Install and load release version
+install.packages("rodeo")
+library("rodeo")
+```
