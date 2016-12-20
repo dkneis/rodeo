@@ -50,7 +50,17 @@ options(xtable.caption.placement = 'top',
 
 # Main features of `rodeo`
 
-The `rodeo` package facilitates the implementation of ODE-based models in R. Such models describe the dynamics of a set of state variables by simultaneously integrating the corresponding differential equations. The package is particularly useful in conjunction with the R packages [`deSolve`](http://cran.r-project.org/package=deSolve) and [`rootSolve`](http://cran.r-project.org/package=rootSolve). The latter provide numerical solvers for initial-value problems and steady-state estimation. The advantages from using `rodeo` are:
+The `rodeo` package facilitates the implementation of ODE-based models in R. Such models describe the dynamics of a system with a set simultaneously differential equations. The package is particularly useful in conjunction with the R packages [`deSolve`](http://cran.r-project.org/package=deSolve) and [`rootSolve`](http://cran.r-project.org/package=rootSolve) providing numerical solvers for initial-value problems and steady-state estimation. The functionality of `rodeo` is summarized in the following figure. 
+
+![](vignetteData/fig/overview.png)
+
+1: Instantiation of a `rodeo` object from a table-based model specification.
+2: Assignment of numeric data through the object's `set` methods.
+3: Automatic code generation and compilation / interpretation.
+4: Access to numeric data through the object's `get` methods.
+5: Access to functions.
+
+The specific advantages from using `rodeo` are:
 
 - The model is formulated independent from source code to facilitate portability, re-usability, and documentation. Specifically, the model has to be set-up using the well-established [Peterson matrix notation](http://en.wikipedia.org/wiki/Petersen_matrix). All ingredients of a model (i. e. the ODE's right hand sides, declarations, and documentation) are in tabular form and they can be imported from delimited text files or spreadsheets.
 
