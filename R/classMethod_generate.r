@@ -1,7 +1,9 @@
 #' Code Generator
 #'
-#' Translate the ODE-model specification into a function that computes process
-#' rates and the state variables derivatives (either in R or Fortran).
+#' This is a low-level method to translate the ODE-model specification into a
+#' function that computes process rates and the state variables derivatives
+#' (either in R or Fortran). You probably want to use the high-level method
+#' \code{\link{compile}} instead, which uses \code{generate} internally.
 #'
 #' @name generate
 #'
@@ -14,15 +16,7 @@
 #' @return The generated source code as a string. Must be written to
 #'   disk, e.g. using \code{\link[base]{write}}, prior to compilation.
 #'
-#' @note Fortran code requires compilation but typically runs much faster than
-#'   the generated R code (typically by a factor between 2 and 100). The
-#'   generation of R code is recommended for simple demo applications and
-#'   testing only where performance is not an issue.
-#'
-#' If generated Fortran code is to be used with the numerical solvers from the
-#'   \code{\link[deSolve]{deSolve-package}} or
-#'   \code{\link[rootSolve]{rootSolve-package}} a wrapper is required and all
-#'   generated code needs to be compiled. See \code{\link{compile}}.
+#' @note Details of this low-level method may change in the future.
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'

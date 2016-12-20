@@ -169,21 +169,18 @@ The stoichiometry matrix is also a good means to communicate a model because it 
 
 In order to use the model for simulation, we need to generate source code to be passed to numerical solvers. Specifically, the generated function code shall return the derivatives of the state variables with respect to time plus additional diagnostic information (here: the process rates).
 
-In this example, R code is generated (Fortran code generation is described [elsewhere](#fortranGeneration)). To make the R code executable, a combination of `eval` and `parse` is used. Alternatively, the generated code could be exported to a file using `write` and then loaded with `source`. The latter method allows for inspection of the generated code which may be helpful in debugging.
+In this example, R code is generated (Fortran code generation is described [elsewhere](#fortranGeneration)). The R code is not 'compiled' in a strict sense but it is made executable through a combination of the functions `eval` and `parse`.
 
 ```{r generateSingleBoxR, echo=TRUE, eval=TRUE}
-code <- model$generate(name="derivs",lang="r")
-derivs <- eval(parse(text=code))
+model$compile(fortran=FALSE)
 ```
 
 ## Numerical integration
 
-We are now ready to compute the evolution of the state variables over time by means of numerical integration. Note that the initial values (argument `y` of `deSolve::ode`) and parameters (argument `p`) are set to the output of the model object's `getVars` and `getPars` methods, respectively. This is to make sure that the order of values in the two arrays is consistent with the generated code.
+We are now ready to compute the evolution of the state variables over time by means of numerical integration. The call below employs the `ode` function from package `deSolve`.
 
 ```{r solveSingleBoxR, echo=TRUE, eval=FALSE, results='hide'}
-out <- deSolve::ode(y=model$getVars(useNames=TRUE), times=0:96,
-  func=derivs, parms=model$getPars())
-colnames(out) <- c("time", model$namesVars(), model$namesPros())
+out <- model$dynamics(times=0:96, fortran=FALSE)
 plot(out)  # plot method for 'deSolve' objects
 ```
 
@@ -225,11 +222,10 @@ model <- rodeo$new(vars=vars, pars=pars, funs=funs,
   pros=pros, stoi=stoi, dim=c(nBox))
 ```
 
-Second, the code needs to be re-generated to reflect the altered number of boxes.
+Second, the function returning the state variables' derivatives needs to be re-generated to reflect the altered number of boxes.
  
 ```{r generateMultiBoxR, echo=TRUE, eval=TRUE}
-code <- model$generate(name="derivs",lang="r")
-derivs <- eval(parse(text=code))
+model$compile(fortran=FALSE)
 ```
 ```{r ref.label='defNormalFunctions', echo=TRUE, eval=TRUE}
 ```
@@ -250,7 +246,7 @@ model$setPars(p)
 Finally, the integration method is called as usual.
 
 ```{r solveMultiBoxR, echo=TRUE, eval=TRUE}
-out <- ode(y=model$getVars(useNames=TRUE), times=0:120, func=derivs, parms=model$getPars())
+out <- model$dynamics(times=0:120, fortran=FALSE)
 ```
 
 The dynamics of the state variables in all boxes are conveniently plotted with `matplot`. Note that the box index is appended to the state variables' names and the two parts are separated by a period. For example, the bacteria density in the first box is found in column 'bac.1' of the matrix `out`.
@@ -401,9 +397,7 @@ The complete code to run the 'no-interactions' model from a previous section usi
 ```{r ref.label='compileMultiBox', echo=TRUE, eval=TRUE}
 ```
 ```{r solveMultiBoxF, echo=TRUE, eval=TRUE}
-out <- ode(y=model$getVars(useNames=TRUE), times=0:120,
-  func=model$libFunc(), parms=model$getPars(), dllname=model$libName(),
-  nout=model$lenPros()*prod(model$getDim()))
+out <- model$dynamics(times=0:120)
 ```
 
 ```{r ref.label='plotMultiBox', echo=TRUE, eval=FALSE}

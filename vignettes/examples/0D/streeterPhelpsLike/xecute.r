@@ -27,14 +27,11 @@ DOsat <- function(t) {
   14.652 - 0.41022*t + 7.991e-3*(t**2) - 7.7774e-5*(t**3)
 }
 
-# Generate code and parse
-code <- model$generate(name="derivs", lang="r")
-derivs <- eval(parse(text=code))
+# Generate R code
+model$compile(fortran=FALSE)
 
 # Integrate
-out <- deSolve::ode(y=model$getVars(), times=times, func=derivs,
-  parms=model$getPars())
-colnames(out) <- c("days", model$namesVars(), model$namesPros())
+out <- model$dynamics(times=times, fortran=FALSE)
 
 # Plot, using the method for objects of class deSolve
 plot(out)   

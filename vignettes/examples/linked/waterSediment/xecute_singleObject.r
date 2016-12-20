@@ -27,8 +27,7 @@ model$setPars(pars)
 model$compile("functions.f95")              
 
 # Integrate
-out <- ode(y=model$getVars(), times=times, func=model$libFunc(), parms=model$getPars(),
-  dllname=model$libName(), nout=model$lenPros(), outnames=model$namesPros())
+out <- model$dynamics(times=times)
 
 # Plot method for deSolve objects
 plot(out)

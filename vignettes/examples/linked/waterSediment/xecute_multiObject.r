@@ -79,15 +79,10 @@ updatePars <- function (objPar, src, links) {
 # Wrapper for integration methods
 integr <- function(obj, t0, t1, models, internal, check) {
   if (internal) {
-    tmp <- models[[obj]]$step(t0, h=t1-t0, check=check)
+    return(models[[obj]]$step(t0, h=t1-t0, check=check))
   } else {
-    tmp <- deSolve::ode(y=models[[obj]]$getVars(), times=c(t0, t1),
-      func=models[[obj]]$libFunc(), parms=models[[obj]]$getPars(),
-      dllname=models[[obj]]$libName(), outnames=models[[obj]]$namesPros(),
-      nout=models[[obj]]$lenPros())
-    tmp <- tmp[2,2:ncol(tmp)]
+    return(models[[obj]]$dynamics(times=c(t0, t1))[2,-1])
   }
-  tmp
 }
 
 # Simulate coupled models over a single time step

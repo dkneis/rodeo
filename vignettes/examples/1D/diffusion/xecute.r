@@ -30,10 +30,7 @@ model$setPars(cbind(d=d, dx=dx,cb=cb,
 model$compile(NULL)              
 
 # Numeric solution
-solNum <- ode(y=model$getVars(), times=times, func=model$libFunc(),
-  parms=model$getPars(), dllname=model$libName(),
-  nout=model$lenPros()*prod(model$getDim()),
-  jactype="bandint", bandup=1, banddown=1)
+solNum <- model$dynamics(times=times, jactype="bandint", bandup=1, banddown=1)
 
 # Function providing the analytical solution
 erfc <- function(x) { 2 * pnorm(x * sqrt(2), lower=FALSE) }

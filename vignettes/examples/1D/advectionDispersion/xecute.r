@@ -44,10 +44,8 @@ model$setPars(cbind(
 model$compile(fileFun)              
 
 # Numeric solution
-solNum <- ode(y=model$getVars(), times=times, func=model$libFunc(),
-  parms=model$getPars(), dllname=model$libName(),
-  nout=model$lenPros()*prod(model$getDim()),
-  jactype="bandint", bandup=1, banddown=1, atol=1e-9)
+solNum <- model$dynamics(times=times, jactype="bandint", bandup=1, banddown=1,
+  atol=1e-9)
 
 # Function providing the analytical solution
 solAna <- function (x,t,mass,area,disp,velo) {
