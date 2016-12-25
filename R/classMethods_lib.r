@@ -2,7 +2,7 @@
 #' Return library name
 #'
 #' Return the pure name of the shared library for use with
-#    \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}} methods.
+#'  \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}} methods.
 #'
 #' @name libName
 #'
@@ -25,7 +25,7 @@ rodeo$set("public", "libName", function() {
 #' Return name of library function
 #'
 #' Return the name of the library function for use with
-#    \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}} methods.
+#'  \code{\link[deSolve]{deSolve}} or \code{\link[rootSolve]{rootSolve}} methods.
 #'
 #' @name libFunc
 #'
