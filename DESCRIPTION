@@ -16,11 +16,11 @@ URL: https://github.com/dkneis/rodeo
 License: GPL (>= 2)
 Imports:
     R6,
-    deSolve,
-    rootSolve
+    deSolve
 VignetteBuilder: knitr
 Suggests:
     knitr,
     rmarkdown,
-    xtable
+    xtable,
+    rootSolve
 RoxygenNote: 5.0.1
