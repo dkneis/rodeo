@@ -1,7 +1,7 @@
 ---
 title: 'R package rodeo: Basic Use and Sample Applications'
 author: "david.kneis @ tu-dresden.de"
-date: '2016-12-11'
+date: "`r Sys.Date()`"
 output:
   rmarkdown::pdf_document:
     fig_caption: no
