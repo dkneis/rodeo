@@ -79,6 +79,8 @@ undeclared <- function(expr, knownNames) {
 
 # Substitute identifiers in a mathematical expression (given as a string)
 substituteIdentifiers <- function(expr, sub, all=TRUE) {
+  if ((length(expr) != 1) || (!is.character(expr)))
+    stop("expression is not a scalar character string")
   # Check vector of substitutes
   if (is.null(names(sub)) || any(names(sub) == ""))
     stop("missing element name(s) in vector of substitutes")
