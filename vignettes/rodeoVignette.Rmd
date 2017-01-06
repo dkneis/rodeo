@@ -100,11 +100,11 @@ $$
 \dot{y} = S^T \cdot r
 $$
 
-but in the first form, $\dot{y}$ is a row vector whereas it is a column vector in the second form which involves the transpose of $S$. Adopting the first form, the above set of ODE can be written as
+In the first form, $\dot{y}$ and $r$ are row vectors. In the second form which involves the transpose of $S$, $\dot{y}$ and $r$ are column vectors. Adopting the first form, the above set of ODE can be written as
 
 $$
-\begin{bmatrix} \dfrac{d}{d t}bac , \dfrac{d}{d t}sub \end{bmatrix} =
-\begin{bmatrix} mu \cdot \dfrac{sub}{sub+half} \cdot bac \\ \dfrac{flow}{vol} \end{bmatrix} \cdot
+\begin{bmatrix} \dfrac{d}{d t}bac & \dfrac{d}{d t}sub \end{bmatrix} =
+\begin{bmatrix} mu \cdot \dfrac{sub}{sub+half} \cdot bac & \dfrac{flow}{vol} \end{bmatrix} \cdot
 \begin{bmatrix} 1 & -bac \\ -\dfrac{1}{yield} & sub_{in}-sub \end{bmatrix}
 $$
 
