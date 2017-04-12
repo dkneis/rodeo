@@ -62,7 +62,8 @@ rodeo$set("public", "step",
       hmin=as.double(hmin),
       nmax=as.integer(maxsteps),
       par=as.numeric(private$pars),
-      pro=rep(as.double(0), nrow(private$prosTbl)*prod(private$dim))
+      pro=rep(as.double(0), nrow(private$prosTbl)*prod(private$dim)),
+      NAOK=TRUE
     )
     if (as.logical(res$error))
       stop("integration from t0=",t0," over dt=",dt," using method '",method,"' failed")
