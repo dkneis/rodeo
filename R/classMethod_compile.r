@@ -13,9 +13,10 @@
 #'   library. If \code{FALSE}, R code is generated.
 #' @param target Name of a 'target environment'. Currently, 'deSolve' is the
 #'    only supported value.
-#' @param lib Absolute file path to be used for the generated library (without
-#'   the platform specific extension). A relative path can't be used here!
-#'   By default, the file is created in R's temporary folder under a random name.
+#' @param lib File path to be used for the generated library (without
+#'   the platform specific extension). Note that any uppercase characters will
+#'   be converted to lowercase. By default, the file is created in R's
+#'   temporary folder under a random name.
 #' @param reuse If \code{TRUE}, an already existing library file will be loaded.
 #'   Use this to prevent
 #'   unnecessary re-compilation but note that R is likely to crash in case
@@ -66,7 +67,7 @@
 rodeo$set("public", "compile", function(sources=NULL, fortran=TRUE,
   target="deSolve", lib=NULL, reuse=FALSE
 ) {
-  tmpdir <- gsub(pattern="\\", replacement="/", x=tempdir(), fixed=TRUE)
+  tmpdir <- gsub("\\", "/", tempdir(), fixed=TRUE)
   funcname <- "drvs"
   if (identical(target, "deSolve")) {
     # Generation of Fortran library
@@ -76,7 +77,7 @@ rodeo$set("public", "compile", function(sources=NULL, fortran=TRUE,
           tempfile(pattern="rodeo", tmpdir=tmpdir)
         } else {
           gsub(pattern="\\", replacement="/",
-            x=suppressWarnings(normalizePath(lib)), fixed=TRUE)
+            x=suppressWarnings(normalizePath(tolower(lib))), fixed=TRUE)
         }
       libName <- basename(libFile)
       libFile <- gsub("\\", "/", paste0(libFile,.Platform$dynlib.ext), fixed=TRUE)
@@ -86,17 +87,21 @@ rodeo$set("public", "compile", function(sources=NULL, fortran=TRUE,
           wrapper= tempfile(pattern="rodeo", tmpdir=tmpdir, fileext=".f95"))
         srcFiles <- gsub("\\", "/", srcFiles, fixed=TRUE)
         write(self$generate(name=funcname, lang="f95"), file=srcFiles["derivs"])
-        write(solverInterface(prod(private$dim), libName, funcname, libFunc), file=srcFiles["wrapper"])
+        write(solverInterface(prod(private$dim), libName, funcname, libFunc),
+          file=srcFiles["wrapper"])
+        tmpfl <- gsub("\\", "/",tempfile(pattern="rodeo", tmpdir=tmpdir), fixed=TRUE)
         wd <- getwd()
         setwd(tmpdir)
         command <- paste0("R CMD SHLIB ",paste(srcFiles, collapse=" "),
-          " --preclean --clean -o ",libFile)
+          " --preclean --clean -o ",tmpfl)
         if (system(command) != 0) {
           setwd(wd)
           stop("Compilation failed.")
         }
         invisible(file.remove(list.files(path=tmpdir, pattern=".+[.]mod$")))
         setwd(wd)
+        file.copy(from=tmpfl, to=libFile)
+        file.remove(tmpfl)
       }
       # Load library
       if (!file.exists(libFile))

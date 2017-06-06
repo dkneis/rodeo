@@ -15,9 +15,10 @@ library. If \code{FALSE}, R code is generated.}
 \item{target}{Name of a 'target environment'. Currently, 'deSolve' is the
 only supported value.}
 
-\item{lib}{Absolute file path to be used for the generated library (without
-the platform specific extension). A relative path can't be used here!
-By default, the file is created in R's temporary folder under a random name.}
+\item{lib}{File path to be used for the generated library (without
+the platform specific extension). Note that any uppercase characters will
+be converted to lowercase. By default, the file is created in R's
+temporary folder under a random name.}
 
 \item{reuse}{If \code{TRUE}, an already existing library file will be loaded.
 Use this to prevent
