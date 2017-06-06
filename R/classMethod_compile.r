@@ -13,6 +13,14 @@
 #'   library. If \code{FALSE}, R code is generated.
 #' @param target Name of a 'target environment'. Currently, 'deSolve' is the
 #'    only supported value.
+#' @param lib Absolute file path to be used for the generated library (without
+#'   the platform specific extension). A relative path can't be used here!
+#'   By default, the file is created in R's temporary folder under a random name.
+#' @param reuse If \code{TRUE}, an already existing library file will be loaded.
+#'   Use this to prevent
+#'   unnecessary re-compilation but note that R is likely to crash in case
+#'   of any mismatches between the object and the existing library. Default is
+#'   \code{FALSE}, i.e. the library is unconditionally build from scratch.
 #'
 #' @return \code{invisible(NULL)}
 #'
@@ -29,14 +37,18 @@
 #'   This module must contain all user-defined functions referenced in process
 #'   rates or stoichiometric factors.
 #'
-#'   If \code{fortran} is \code{TRUE}, a shared library is created. The name of
-#'   this library as well as the name of the function to compute the derivatives
-#'   are stored in the object. These names can be queried with
-#'   \code{\link{libName}} and \code{\link{libFunc}}, respectively. The library
-#'   is generally created in the folder returned by \code{\link[base]{tempdir}}
-#'   and it is loaded with \code{\link[base]{dyn.load}}. It is automatically
-#'   unloaded with \code{\link[base]{dyn.unload}} when the object's
-#'   \code{\link{finalize}} method is called.
+#'   If \code{fortran} is \code{TRUE}, a shared library is created. The library
+#'   is immediately loaded with \code{\link[base]{dyn.load}} and it is
+#'    automatically unloaded with \code{\link[base]{dyn.unload}} when the
+#'   object's \code{\link{finalize}} method is called.
+#'   
+#'   The name of the library (base name without extension) as well as the name
+#'   of the function to compute the  derivatives are stored in the object.
+#'   These names can be queried with the
+#'   \code{\link{libName}} and \code{\link{libFunc}} methods, respectively.
+#'   Unless a file path is specified via the \code{lib} argument, the library is
+#'   created in the folder returned by \code{\link[base]{tempdir}} under a
+#'   unique random name.
 #'
 #' @author \email{david.kneis@@tu-dresden.de}
 #'
@@ -51,36 +63,48 @@
 #' model$compile(sources="functionsCode.f95")
 #' }
 
-rodeo$set("public", "compile", function(sources=NULL, fortran=TRUE, target="deSolve") {
+rodeo$set("public", "compile", function(sources=NULL, fortran=TRUE,
+  target="deSolve", lib=NULL, reuse=FALSE
+) {
   tmpdir <- gsub(pattern="\\", replacement="/", x=tempdir(), fixed=TRUE)
   funcname <- "drvs"
   if (identical(target, "deSolve")) {
     # Generation of Fortran library
     if (fortran) {
-      srcFiles <- c(funcs=if (is.null(sources)) "" else normalizePath(sources),
-        derivs= tempfile(pattern="rodeo", tmpdir=tmpdir, fileext=".f95"),
-        wrapper= tempfile(pattern="rodeo", tmpdir=tmpdir, fileext=".f95"))
-      srcFiles <- gsub("\\", "/", srcFiles, fixed=TRUE)
-      write(self$generate(name=funcname, lang="f95"), file=srcFiles["derivs"])
       libFunc <- paste0(funcname,"_wrapped")
-      libFile <- tempfile(pattern="rodeo", tmpdir=tmpdir)
+      libFile <- if (is.null(lib)) {
+          tempfile(pattern="rodeo", tmpdir=tmpdir)
+        } else {
+          gsub(pattern="\\", replacement="/",
+            x=suppressWarnings(normalizePath(lib)), fixed=TRUE)
+        }
       libName <- basename(libFile)
       libFile <- gsub("\\", "/", paste0(libFile,.Platform$dynlib.ext), fixed=TRUE)
-      write(solverInterface(prod(private$dim), libName, funcname, libFunc), file=srcFiles["wrapper"])
-      wd <- getwd()
-      setwd(tmpdir)
-      command <- paste0("R CMD SHLIB ",paste(srcFiles, collapse=" "),
-        " --preclean --clean -o ",libFile)
-      if (system(command) != 0) {
+      if (!file.exists(libFile) || !reuse) {
+        srcFiles <- c(funcs=if (is.null(sources)) "" else normalizePath(sources),
+          derivs= tempfile(pattern="rodeo", tmpdir=tmpdir, fileext=".f95"),
+          wrapper= tempfile(pattern="rodeo", tmpdir=tmpdir, fileext=".f95"))
+        srcFiles <- gsub("\\", "/", srcFiles, fixed=TRUE)
+        write(self$generate(name=funcname, lang="f95"), file=srcFiles["derivs"])
+        write(solverInterface(prod(private$dim), libName, funcname, libFunc), file=srcFiles["wrapper"])
+        wd <- getwd()
+        setwd(tmpdir)
+        command <- paste0("R CMD SHLIB ",paste(srcFiles, collapse=" "),
+          " --preclean --clean -o ",libFile)
+        if (system(command) != 0) {
+          setwd(wd)
+          stop("Compilation failed.")
+        }
+        invisible(file.remove(list.files(path=tmpdir, pattern=".+[.]mod$")))
         setwd(wd)
-        stop("Compilation failed.")
       }
-      invisible(file.remove(list.files(path=tmpdir, pattern=".+[.]mod$")))
-      setwd(wd)
       # Load library
+      if (!file.exists(libFile))
+        stop("library file '",libFile,"' not found")
       dyn.load(libFile)
+      #print(dyn.load(libFile))  # for debugging
+      #print(getLoadedDLLs())    # for debugging
       if (!is.loaded(libFunc, PACKAGE=libName)) {
-    #    print(getLoadedDLLs())
         stop("failed to load fortran subroutine '",libFunc,"' (library '",libName,"')")
       }
       # Save names for use with the query methods and the finalize method

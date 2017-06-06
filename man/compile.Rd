@@ -14,6 +14,16 @@ library. If \code{FALSE}, R code is generated.}
 
 \item{target}{Name of a 'target environment'. Currently, 'deSolve' is the
 only supported value.}
+
+\item{lib}{Absolute file path to be used for the generated library (without
+the platform specific extension). A relative path can't be used here!
+By default, the file is created in R's temporary folder under a random name.}
+
+\item{reuse}{If \code{TRUE}, an already existing library file will be loaded.
+Use this to prevent
+unnecessary re-compilation but note that R is likely to crash in case
+of any mismatches between the object and the existing library. Default is
+\code{FALSE}, i.e. the library is unconditionally build from scratch.}
 }
 \value{
 \code{invisible(NULL)}
@@ -36,14 +46,18 @@ The expected language of the external code passed in \code{sources}
   This module must contain all user-defined functions referenced in process
   rates or stoichiometric factors.
 
-  If \code{fortran} is \code{TRUE}, a shared library is created. The name of
-  this library as well as the name of the function to compute the derivatives
-  are stored in the object. These names can be queried with
-  \code{\link{libName}} and \code{\link{libFunc}}, respectively. The library
-  is generally created in the folder returned by \code{\link[base]{tempdir}}
-  and it is loaded with \code{\link[base]{dyn.load}}. It is automatically
-  unloaded with \code{\link[base]{dyn.unload}} when the object's
-  \code{\link{finalize}} method is called.
+  If \code{fortran} is \code{TRUE}, a shared library is created. The library
+  is immediately loaded with \code{\link[base]{dyn.load}} and it is
+   automatically unloaded with \code{\link[base]{dyn.unload}} when the
+  object's \code{\link{finalize}} method is called.
+  
+  The name of the library (base name without extension) as well as the name
+  of the function to compute the  derivatives are stored in the object.
+  These names can be queried with the
+  \code{\link{libName}} and \code{\link{libFunc}} methods, respectively.
+  Unless a file path is specified via the \code{lib} argument, the library is
+  created in the folder returned by \code{\link[base]{tempdir}} under a
+  unique random name.
 }
 \examples{
 data(vars, pars, funs, pros, stoi)
