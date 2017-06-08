@@ -106,6 +106,8 @@ rodeo$set("public", "compile", function(sources=NULL, fortran=TRUE,
       # Load library
       if (!file.exists(libFile))
         stop("library file '",libFile,"' not found")
+      if (is.loaded(libFunc, PACKAGE=libName))
+        dyn.unload(libFile)
       dyn.load(libFile)
       #print(dyn.load(libFile))  # for debugging
       #print(getLoadedDLLs())    # for debugging
