@@ -47,7 +47,7 @@ See \code{\link{rodeo-class}} for the \code{rodeo} class
     for conservation of mass.
 }
 }
+
 \author{
 \email{david.kneis@tu-dresden.de}
 }
-

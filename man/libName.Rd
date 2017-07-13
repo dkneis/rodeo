@@ -17,4 +17,3 @@ Return the pure name of the shared library for use with
 \author{
 \email{david.kneis@tu-dresden.de}
 }
-

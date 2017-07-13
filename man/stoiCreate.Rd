@@ -98,11 +98,10 @@ pars <- list(nc=16/106, pc=1/106)
 stoi <- stoiCreate(reactions, eval=TRUE, env=pars, toRight="_f", toLeft="_b")
 print(stoi)
 }
-\author{
-David Kneis \email{david.kneis@tu-dresden.de}
-}
 \seealso{
 Use \code{\link[rodeo]{stoiCheck}} to validate the mass balance of
   the generated matrix.
 }
-
+\author{
+David Kneis \email{david.kneis@tu-dresden.de}
+}

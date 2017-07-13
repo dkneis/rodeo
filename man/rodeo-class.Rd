@@ -2,8 +2,8 @@
 % Please edit documentation in R/class.r
 \docType{data}
 \name{rodeo-class}
-\alias{rodeo}
 \alias{rodeo-class}
+\alias{rodeo}
 \title{\code{rodeo} Class}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
@@ -41,6 +41,7 @@ functions referenced in the expression fields of \code{prosTbl} or \code{stoiTbl
 
 \item{\code{pars}}{Numeric vector, holding values of parameters.}
 }}
+
 \section{Class methods}{
 
 
@@ -77,6 +78,7 @@ its arguments and usage.
     information.
 }
 }
+
 \examples{
 # Bacteria growth in a continuous flow culture
 library("deSolve")
@@ -109,4 +111,3 @@ See the \code{\link{rodeo-package}} main page or type
   methods contained in the \code{rodeo} package.
 }
 \keyword{datasets}
-

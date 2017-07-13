@@ -37,13 +37,12 @@ model$setPars(c(mu=0.8, half=0.1, yield= 0.1, vol=1000, flow=50, sub_in=1))
 monod <- function(c,h) {c/(c+h)}
 model$plotStoichiometry(box=c(1))
 }
-\author{
-\email{david.kneis@tu-dresden.de}
-}
 \seealso{
 See other methods of the \code{\link{rodeo-class}} or
   \code{\link{stoichiometry}} for computing the stoichiometric factors only.
   Alternative options for displaying stoichiometry information are described
   in the package vignette.
 }
-
+\author{
+\email{david.kneis@tu-dresden.de}
+}

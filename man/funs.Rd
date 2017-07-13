@@ -14,4 +14,3 @@
 Declaration of functions referenced at the ODE's right hand sides
 of the bacteria growth example model.
 }
-

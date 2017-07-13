@@ -63,11 +63,10 @@ model$setVars(x2)
 print(model$getVars())
 print(model$getVars(asArray=TRUE))
 }
-\author{
-\email{david.kneis@tu-dresden.de}
-}
 \seealso{
 The corresponding 'get' method is \code{\link{getVars}}. Use
   \code{\link{setPars}} to assign values to parameters rather than variables.
 }
-
+\author{
+\email{david.kneis@tu-dresden.de}
+}

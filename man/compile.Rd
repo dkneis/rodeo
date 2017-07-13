@@ -69,10 +69,9 @@ model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
 model$compile(sources="functionsCode.f95")
 }
 }
-\author{
-\email{david.kneis@tu-dresden.de}
-}
 \seealso{
 This method internally calls \code{\link{generate}}.
 }
-
+\author{
+\email{david.kneis@tu-dresden.de}
+}

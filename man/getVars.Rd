@@ -27,12 +27,11 @@ A numeric vector or array.
 \description{
 Query values of state variables of a \code{\link{rodeo}}-based model.
 }
-\author{
-\email{david.kneis@tu-dresden.de}
-}
 \seealso{
 The corresponding 'set' method is \code{\link{setVars}} and examples
  can be found there. Use \code{\link{getPars}} to query the values of
  parameters rather than variables.
 }
-
+\author{
+\email{david.kneis@tu-dresden.de}
+}

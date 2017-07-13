@@ -16,4 +16,3 @@ Return the name of the library function for use with
 \author{
 \email{david.kneis@tu-dresden.de}
 }
-

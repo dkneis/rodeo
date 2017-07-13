@@ -14,4 +14,3 @@
 \description{
 Definition of processes of the bacteria growth example model.
 }
-

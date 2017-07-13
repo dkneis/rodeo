@@ -83,11 +83,10 @@ bal <- stoiCheck(stoi, comp=comp, env=pars)
 print(bal)
 print(colSums(bal) == 0)
 }
-\author{
-David Kneis \email{david.kneis@tu-dresden.de}
-}
 \seealso{
 Use \code{\link[rodeo]{stoiCreate}} to create a stoichiometry matrix
   from a set of reactions in common notation.
 }
-
+\author{
+David Kneis \email{david.kneis@tu-dresden.de}
+}

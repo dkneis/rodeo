@@ -32,11 +32,10 @@ fortranCode <- model$generate(lang="f95")
 write(fortranCode, file="")
 }
 }
-\author{
-\email{david.kneis@tu-dresden.de}
-}
 \seealso{
 See other methods of the \code{\link{rodeo-class}}, especially
   \code{\link{compile}} which internally uses this method.
 }
-
+\author{
+\email{david.kneis@tu-dresden.de}
+}

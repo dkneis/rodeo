@@ -37,12 +37,11 @@ monod <- function(c,h) {c/(c+h)}
 print(model$stoichiometry(box=NULL))
 print(model$stoichiometry(box=c(1)))
 }
-\author{
-\email{david.kneis@tu-dresden.de}
-}
 \seealso{
 See other methods of the \code{\link{rodeo-class}} or
   \code{\link{plotStoichiometry}} for a graphical representation of the
   stoichiometric factors only.
 }
-
+\author{
+\email{david.kneis@tu-dresden.de}
+}

@@ -18,12 +18,11 @@ Assign values to parameters of a \code{\link{rodeo}}-based model.
 \note{
 Look at the notes and examples for the \code{\link{setVars}} method.
 }
-\author{
-\email{david.kneis@tu-dresden.de}
-}
 \seealso{
 The corresponding 'get' method is \code{\link{getPars}}. Use
   \code{\link{setVars}} to assign values to variables rather than parameters.
   Consult the help page of the latter function for examples.
 }
-
+\author{
+\email{david.kneis@tu-dresden.de}
+}

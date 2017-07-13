@@ -18,4 +18,3 @@ At present, the method just unloads the object-specific
 \author{
 \email{david.kneis@tu-dresden.de}
 }
-

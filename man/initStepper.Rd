@@ -24,12 +24,11 @@ prior to using \code{\link{step}}.
 After this method was called, \code{\link{step}} can be used to
   perform the integration.
 }
-\author{
-\email{david.kneis@tu-dresden.de}
-}
 \seealso{
 To perform integration with the solvers from package
   \code{\link[deSolve]{deSolve}} use \code{\link{compile}} instead of this
   method.
 }
-
+\author{
+\email{david.kneis@tu-dresden.de}
+}

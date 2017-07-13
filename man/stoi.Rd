@@ -14,4 +14,3 @@
 Definition of the links between simulated processes and state variables
 in the bacteria growth example model.
 }
-

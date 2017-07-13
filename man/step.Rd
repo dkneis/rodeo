@@ -36,11 +36,10 @@ of this method may change when support for other solvers is added.
 This method can only be used after a call to \code{\link{initStepper}}
   has been made.
 }
-\author{
-\email{david.kneis@tu-dresden.de}
-}
 \seealso{
 Use \code{\link[deSolve]{deSolve}} for advanced solvers with more
   options and capabilities to handle stiff problems.
 }
-
+\author{
+\email{david.kneis@tu-dresden.de}
+}

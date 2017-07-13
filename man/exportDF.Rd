@@ -89,9 +89,6 @@ write(x= exportDF(df, tex=FALSE,
   file.remove(tf)
 }
 }
-\author{
-David Kneis \email{david.kneis@tu-dresden.de}
-}
 \seealso{
 The \code{xtable} packages provides similar functionality with
   more sophisticated options. Consider the 'pandoc' software do convert
@@ -99,4 +96,6 @@ The \code{xtable} packages provides similar functionality with
   latex package 'datatools' for direct inclusion of delimited text files
   (e.g. produced by \code{write.table}) in tex documents.
 }
-
+\author{
+David Kneis \email{david.kneis@tu-dresden.de}
+}

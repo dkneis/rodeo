@@ -66,10 +66,9 @@ data(vars, pars, funs, pros, stoi)
 model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
 print(model)
 }
-\author{
-\email{david.kneis@tu-dresden.de}
-}
 \seealso{
 See the package vignette for examples.
 }
-
+\author{
+\email{david.kneis@tu-dresden.de}
+}

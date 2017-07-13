@@ -13,4 +13,3 @@
 \description{
 Declaration of variables of the bacteria growth example model.
 }
-

@@ -32,11 +32,10 @@ The \code{...} argument should \emph{not} be used to assign values to any of
   \code{nout}, or \code{outnames}. All these arguments of
   \code{\link[deSolve]{ode}} get their appropriate values automatically.
 }
-\author{
-\email{david.kneis@tu-dresden.de}
-}
 \seealso{
 Use \code{\link{step}} for integration over a single time step
   with a built-in, Fortran-based solver.
 }
-
+\author{
+\email{david.kneis@tu-dresden.de}
+}

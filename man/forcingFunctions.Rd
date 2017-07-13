@@ -105,4 +105,3 @@ In the two-argument version, the second argument is tested against \code{NaN}
 \author{
 David Kneis \email{david.kneis@tu-dresden.de}
 }
-
