@@ -65,7 +65,7 @@ rodeo$set("public", "step",
       pro=rep(as.double(0), nrow(private$prosTbl)*prod(private$dim))
     )
     if (as.logical(res$error))
-      stop("integration from t0=",t0," over dt=",dt," using method '",method,"' failed")
+      stop("integration from t0=",t0," over dt=",h," using method '",method,"' failed")
     return(setNames(c(res$var, res$pro),
       c(elNames(private$varsTbl$name,private$dim), elNames(private$prosTbl$name,private$dim))))
   } else {
