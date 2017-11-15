@@ -73,12 +73,13 @@ rodeo$set("public", "compile", function(sources=NULL, fortran=TRUE,
     # Generation of Fortran library
     if (fortran) {
       libFunc <- paste0(funcname,"_wrapped")
-      libFile <- if (is.null(lib)) {
-          tempfile(pattern="rodeo", tmpdir=tmpdir)
-        } else {
-          gsub(pattern="\\", replacement="/",
-            x=suppressWarnings(normalizePath(tolower(lib))), fixed=TRUE)
-        }
+      if (is.null(lib)) {
+        libFile <- tempfile(pattern="rodeo", tmpdir=tmpdir)
+      } else {
+        libFile <- gsub(pattern="\\", replacement="/",
+            x=suppressWarnings(normalizePath(lib)), fixed=TRUE)
+        libFile <- paste(dirname(libFile), tolower(basename(libFile)), sep="/")
+      }
       libName <- basename(libFile)
       libFile <- gsub("\\", "/", paste0(libFile,.Platform$dynlib.ext), fixed=TRUE)
       if (!file.exists(libFile) || !reuse) {
