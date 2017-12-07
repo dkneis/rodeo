@@ -18,7 +18,7 @@ rodeo$set("public", "finalize", function() {
   # library created with 'compile'
   if (length(private$lib) > 0) {
     if (file.exists(private$lib["file"])) {
-      if (private$lib["name"] %in% getLoadedDLLs()[["name"]]) {
+      if (private$lib["name"] %in% sapply(getLoadedDLLs(), "[[", "name")) {
         dyn.unload(private$lib["file"])
       }
     }
@@ -28,7 +28,7 @@ rodeo$set("public", "finalize", function() {
   if (length(private$steppers) > 0) {
     for (n in names(private$steppers)) {
       if (file.exists(private$steppers[[n]]$libFile)) {
-        if (private$steppers$libName %in% getLoadedDLLs()[["name"]]) {
+        if (private$steppers[[n]]$libName %in% sapply(getLoadedDLLs(), "[[", "name")) {
           dyn.unload(private$steppers[[n]]$libFile)
         }
       }
