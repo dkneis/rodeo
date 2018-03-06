@@ -149,9 +149,10 @@ rodeo$set("public", "initStepper",
   # Create library
   wd <- getwd()
   setwd(tempdir())
-  command <- paste0("R CMD SHLIB ",paste(srcFiles, collapse=" "),
+  command <- "R"
+  args <- paste0("CMD SHLIB ",paste(srcFiles, collapse=" "),
     " --preclean --clean -o ",private$steppers[[method]]$libFile)
-  if (system(command) != 0) {
+  if (system2(command, args) != 0) {
     setwd(wd)
     stop("Failed to build shared library.")
   }

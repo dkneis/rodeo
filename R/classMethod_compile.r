@@ -93,9 +93,10 @@ rodeo$set("public", "compile", function(sources=NULL, fortran=TRUE,
         tmpfl <- gsub("\\", "/",tempfile(pattern="rodeo", tmpdir=tmpdir), fixed=TRUE)
         wd <- getwd()
         setwd(tmpdir)
-        command <- paste0("R CMD SHLIB ",paste(srcFiles, collapse=" "),
+        command <- "R"
+        args <- paste0("CMD SHLIB ",paste(srcFiles, collapse=" "),
           " --preclean --clean -o ",tmpfl)
-        if (system(command) != 0) {
+        if (system2(command, args) != 0) {
           setwd(wd)
           stop("Compilation failed.")
         }
