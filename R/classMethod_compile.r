@@ -90,7 +90,8 @@ rodeo$set("public", "compile", function(sources=NULL, fortran=TRUE,
         write(self$generate(name=funcname, lang="f95"), file=srcFiles["derivs"])
         write(solverInterface(prod(private$dim), libName, funcname, libFunc),
           file=srcFiles["wrapper"])
-        tmpfl <- gsub("\\", "/",tempfile(pattern="rodeo", tmpdir=tmpdir), fixed=TRUE)
+        tmpfl <- gsub("\\", "/",tempfile(pattern="rodeo", tmpdir=tmpdir,
+          fileext=.Platform$dynlib.ext), fixed=TRUE)
         wd <- getwd()
         setwd(tmpdir)
         command <- "R"
