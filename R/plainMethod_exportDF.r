@@ -151,7 +151,7 @@ exportDF <- function(x,
     for (i in 1:nrow(x)) {
       out <- paste0(out,indent,'  ',
         paste0(paste0('',xapply(funCell,unlist(x[i,])),''),collapse=' & '),' \\\\',
-        ifelse(lines && (i == nrow(x)), ' \\hline', ''),'\n')
+        ifelse(lines && (i == nrow(x)), ' \n \\hline', ''),'\n')
     }
     out <- paste0(out,indent,'\\end{tabular}\n')
 
