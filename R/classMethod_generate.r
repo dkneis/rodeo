@@ -216,13 +216,13 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
     # Arguments of main method
     code <- paste0(code,"  ! Inputs",newline)
     code <- paste0(code,"  double precision, intent(in):: ",rodeoConst$reservedNames["time"],newline)
+    code <- paste0(code,"  integer, intent(in):: ",rodeoConst$genIdent$len["boxes"],newline)
     code <- paste0(code,"  double precision, dimension(",
       rodeoConst$genIdent$len["vars"],"*",rodeoConst$genIdent$len["boxes"],
       "), intent(in):: ",rodeoConst$genIdent$vec["vars"],newline)
     code <- paste0(code,"  double precision, dimension(",
       rodeoConst$genIdent$len["pars"],"*",rodeoConst$genIdent$len["boxes"],
       "), intent(in):: ",rodeoConst$genIdent$vec["pars"],newline)
-    code <- paste0(code,"  integer, intent(in):: ",rodeoConst$genIdent$len["boxes"],newline)
     code <- paste0(code,"  ! Outputs",newline)
     code <- paste0(code,"  double precision, dimension(",
       rodeoConst$genIdent$len["vars"],"*",rodeoConst$genIdent$len["boxes"],
