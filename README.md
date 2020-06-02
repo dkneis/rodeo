@@ -25,7 +25,7 @@ The package currently provides a single R6 class named just like the package (``
   - generate a stoichiometry matrix from a set of reaction equations.
   - validate a stoichiometry matrix (mass balance check).
 
-The [package vignette](https://github.com/dkneis/rodeo/blob/master/vignettes/rodeoVignette.pdf) provides further details.
+The package vignette provides further details.
 
 Requirements and installation
 ---------------------------------------------
