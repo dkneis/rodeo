@@ -4,8 +4,13 @@
 \alias{stoiCreate}
 \title{Stoichiometry Matrix from Reaction Equations}
 \usage{
-stoiCreate(reactions, eval = FALSE, env = globalenv(),
-  toRight = "_forward", toLeft = "_backward")
+stoiCreate(
+  reactions,
+  eval = FALSE,
+  env = globalenv(),
+  toRight = "_forward",
+  toLeft = "_backward"
+)
 }
 \arguments{
 \item{reactions}{A named vector of character strings, each representing

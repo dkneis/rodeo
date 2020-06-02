@@ -4,8 +4,17 @@
 \alias{exportDF}
 \title{Export a Data Frame as HTML/TEX Code}
 \usage{
-exportDF(x, tex = FALSE, colnames = NULL, width = NULL, align = NULL,
-  funHead = NULL, funCell = NULL, lines = TRUE, indent = 2)
+exportDF(
+  x,
+  tex = FALSE,
+  colnames = NULL,
+  width = NULL,
+  align = NULL,
+  funHead = NULL,
+  funCell = NULL,
+  lines = TRUE,
+  indent = 2
+)
 }
 \arguments{
 \item{x}{The data frame being exported.}
@@ -74,7 +83,7 @@ tex <- exportDF(df, tex=TRUE,
   funCell=c(name=function(x){paste0("\\\\textit{",x,"}")},
     expression=function(x){paste0("$",x,"$")})
 )
-cat(tex,"\\n")
+cat(tex,"\n")
 
 # Export as HTML: non-standard colors are used for all columns
 tf <- tempfile(fileext=".html")
