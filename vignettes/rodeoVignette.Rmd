@@ -41,14 +41,6 @@ options(xtable.caption.placement = 'top',
   )
 ```
 
-<style>
-  .htmlTableBackground table {
-    background-color:#F3F4E3;
-    font-family: monospace;
-    font-size: 90%;
-  }
-</style>
-
 # Main features of `rodeo`
 
 The `rodeo` package facilitates the implementation of ODE-based models in R. Such models describe the dynamics of a system with a set simultaneously differential equations. The package is particularly useful in conjunction with the R packages [`deSolve`](http://cran.r-project.org/package=deSolve) and [`rootSolve`](http://cran.r-project.org/package=rootSolve) providing numerical solvers for initial-value problems and steady-state estimation. The functionality of `rodeo` is summarized in the following figure. 
@@ -111,7 +103,6 @@ $$
 
 The vector $r$ and the matrix $S$, together with a declaration of all identifiers appearing in the expressions, can conveniently be stored in tables, i.e. R data frames. Appropriate data frames are shipped with the package and can be loaded with the R function `data`. Their contents is displayed below:
 
-<div class='htmlTableBackground'>
 ```{r, echo=FALSE}
 library(rodeo)
 data(vars, pars, funs, pros, stoi)
@@ -121,7 +112,6 @@ knitr::kable(funs, caption="Data set `funs`: Declaration of functions referenced
 knitr::kable(pros, caption="Data set `pros`: Definition of process rates.")
 knitr::kable(stoi, caption="Data set `stoi`: Definition of stoichiometric factors providing the relation between processes and state variables. Note the (optional) use of a tabular layout instead of the more common matrix layout.")
 ```
-</div>
 
 ## Creating a `rodeo` model object
 
@@ -803,7 +793,6 @@ In this example, integration is performed using generated R code (in contrast to
 
 The model's state variables, parameters, and functions are declared below, followed by the speficition of process rates and stoichiometric factors.
 
-<div class='htmlTableBackground'>
 ```{r, echo=FALSE, results='asis', comment=''}
 rd <- function(f) {read.table(f,sep="\t", header=TRUE)}
 knitr::kable(rd("vars.txt"), caption="Declaration of state variables (file 'vars.txt').")
@@ -812,7 +801,6 @@ knitr::kable(rd("funs.txt"), caption="Declaration of functions (file 'funs.txt')
 knitr::kable(rd("pros.txt"), caption="Definition of process rates (file 'pros.txt').")
 knitr::kable(rd("stoi.txt"), caption="Definition of stoichiometric factors (file 'stoi.txt').")
 ```
-</div>
 
 #### Implementation of functions
 
@@ -870,7 +858,6 @@ The `runsteady` method from the [`rootSolve`](http://cran.r-project.org/package=
 
 The model's state variables, parameters, and functions are declared below, followed by the speficition of process rates and stoichiometric factors.
 
-<div class='htmlTableBackground'>
 ```{r, echo=FALSE, results='asis', comment=''}
 rd <- function(f) {read.table(f ,sep="\t", header=TRUE)}
 knitr::kable(rd("vars.txt"), caption="Declaration of state variables (file 'vars.txt').")
@@ -879,7 +866,6 @@ knitr::kable(rd("pars.txt"), caption="Declaration of parameters (file 'pars.txt'
 knitr::kable(rd("pros.txt"), caption="Definition of process rates (file 'pros.txt').")
 knitr::kable(rd("stoi.txt"), caption="Definition of stoichiometric factors (file 'stoi.txt').")
 ```
-</div>
 
 #### Implementation of functions
 
@@ -935,7 +921,6 @@ The source code below computes the concentrations in all layers for selected tim
 
 The model's state variables and parameters are declared below, followed by the speficition of process rates and stoichiometric factors.
 
-<div class='htmlTableBackground'>
 ```{r, echo=FALSE, results='asis', comment=''}
 rd <- function(f) {read.table(f ,sep="\t", header=TRUE)}
 knitr::kable(rd("vars.txt"), caption="Declaration of state variables (file 'vars.txt').")
@@ -943,7 +928,6 @@ knitr::kable(rd("pars.txt"), caption="Declaration of parameters (file 'pars.txt'
 knitr::kable(rd("pros.txt"), caption="Definition of process rates (file 'pros.txt').")
 knitr::kable(rd("stoi.txt"), caption="Definition of stoichiometric factors (file 'stoi.txt').")
 ```
-</div>
 
 #### Implementation of functions
 
@@ -994,7 +978,6 @@ To verify the result of numerical integration, outputs are visually compared to 
 
 The model's state variables, parameters, and functions are declared below, followed by the speficition of process rates and stoichiometric factors.
 
-<div class='htmlTableBackground'>
 ```{r, echo=FALSE, results='asis', comment=''}
 rd <- function(f) {read.table(f,sep="\t", header=TRUE)}
 knitr::kable(rd("vars.txt"), caption="Declaration of state variables (file 'vars.txt').")
@@ -1003,7 +986,6 @@ knitr::kable(rd("funs.txt"), caption="Declaration of functions (file 'funs.txt')
 knitr::kable(rd("pros.txt"), caption="Definition of process rates (file 'pros.txt').")
 knitr::kable(rd("stoi.txt"), caption="Definition of stoichiometric factors (file 'stoi.txt').")
 ```
-</div>
 
 #### Implementation of functions
 
@@ -1066,7 +1048,6 @@ The governing equations can be found in @Bronstert1991. Details on the leakage a
 
 The model's state variables, parameters, and functions are declared below, followed by the speficition of process rates and stoichiometric factors.
 
-<div class='htmlTableBackground'>
 ```{r, echo=FALSE, results='asis', comment=''}
 rd <- function(f) {read.table(f ,sep="\t", header=TRUE)}
 knitr::kable(rd("vars.txt"), caption="Declaration of state variables (file 'vars.txt').")
@@ -1075,7 +1056,6 @@ knitr::kable(rd("funs.txt"), caption="Declaration of functions (file 'funs.txt')
 knitr::kable(rd("pros.txt"), caption="Definition of process rates (file 'pros.txt').")
 knitr::kable(rd("stoi.txt"), caption="Definition of stoichiometric factors (file 'stoi.txt').")
 ```
-</div>
 
 #### Implementation of functions
 
@@ -1130,12 +1110,10 @@ The tanks-in-series concept comes with two constraints: First, it is inefficient
 
 The model's state variables comprise the concentrations of 12 components listed in the table below. Each component in the water column (suffix `_w`) has its counterpart in the sediment (suffix `_s`). With regard to bacteria, two strains of E. coli are distinguished: a Tetracycline resistant strain and a susceptible one.
 
-<div class='htmlTableBackground'>
 ```{r, echo=FALSE, results='asis', comment=''}
 rd <- function(f) {read.table(f ,sep="\t", header=TRUE)}
 knitr::kable(rd("vars.txt"), caption="Declaration of state variables (file 'vars.txt').")
 ```
-</div>
 
 The values displayed in the rightmost column of the above table are used as initial values in the model application. Concentrations are generally specified as mass per bulk volume in units of mg/L. The mass of total suspended solids is quantified as dry weight; masses of biogenic organic matter, including bacteria, are expressed on a Carbon basis. For E. coli, biomass can be converted into cell numbers using a factor of roughly $1 \cdot 10^{-13}$ g Carbon / cell.
 
@@ -1143,7 +1121,6 @@ This conversion is based on information from the [bionumbers data base](http://b
 
 The state variables' dynamics are controlled by a variety of processes specified in tabular form below.
 
-<div class='htmlTableBackground'>
 ```{r, echo=FALSE, results='asis', comment=''}
 x <- read.table("pros.txt" ,sep="\t", header=TRUE)
 capt <- "Definition of process rates (file 'pros.txt')"
@@ -1163,7 +1140,6 @@ if (getOption("vignetteDocumentFormat") == "rmarkdown::pdf_document") {
 }
 
 ```
-</div>
 
 Besides the physical phenomena of advection and dispersion, the list of processes includes growth and respiration losses of bacteria, as well as gene transfer between the two strains of E. coli. Particularly, the model describes the horizontal transfer of Tetracycline resistance through the exchange of plasmids (conjugation) as well as the potential loss of the plasmid during cell division (segregational loss). While carriage of the resistance genes is clearly advantageous under exposure to the antibiotic, the synthesis of plasmids also has side effects to the cell, e. g. in the form of physiological costs. This phenomenon is described as a reduction of the growth rate of the Tetracycline-resistant E. coli strain but evolutionary reduction of plasmid costs [@Lenski1998] is neglected.
 
@@ -1171,7 +1147,6 @@ Tetracycline undergoes photolytic decay [@Wammer2011] which is modeled as a firs
 
 The stoichiometric factors linking the processes with the state variables' derivatives are provided in matrix format below.
 
-<div class='htmlTableBackground'>
 ```{r, echo=FALSE, results='asis', comment=''}
 x <- read.table("stoi.txt" ,sep="\t", header=TRUE)
 capt <- "Stoichiometric factors (file 'stoi.txt')"
@@ -1189,17 +1164,14 @@ if (getOption("vignetteDocumentFormat") == "rmarkdown::pdf_document") {
   stop("cannot figure out output document format for custom table formatting")
 }
 ```
-</div>
 
 The model specification is completed by the declaration of parameters and functions that appear in the process rate expressions (Tables below). Table numbers appearing in column 'references' refer to the supplement of the @Hellweger2011 paper.
 
-<div class='htmlTableBackground'>
 ```{r, echo=FALSE, results='asis', comment=''}
 rd <- function(f) {read.table(f ,sep="\t", header=TRUE)}
 knitr::kable(rd("pars.txt"), caption="Declaration of parameters (file 'pars.txt').")
 knitr::kable(rd("funs.txt"), caption="Declaration of functions (file 'funs.txt').")
 ```
-</div>
 
 #### Implementation of functions
 
@@ -1311,7 +1283,6 @@ knitr::kable(as.data.frame(x))
 
 The tabular model definition, function implementation, R source code, and output of the single-object version follows below.
 
-<div class='htmlTableBackground'>
 ```{r, echo=FALSE, results='asis', comment=''}
 rd <- function(f) {read.table(paste0("singleObject/",f) ,sep="\t", header=TRUE)}
 knitr::kable(rd("vars.txt"), caption="Declaration of state variables (file 'vars.txt').")
@@ -1320,7 +1291,6 @@ knitr::kable(rd("funs.txt"), caption="Declaration of functions (file 'funs.txt')
 knitr::kable(rd("pros.txt"), caption="Definition of process rates (file 'pros.txt').")
 knitr::kable(rd("stoi.txt"), caption="Definition of stoichiometric factors (file 'stoi.txt').")
 ```
-</div>
 
 ```{r echo=FALSE, eval=TRUE, comment=''}
 f <- "functions.f95"
@@ -1339,7 +1309,6 @@ knitr::read_chunk("xecute_singleObject.r")
 
 In the multi-object version, the objects need to be instantiated from a separate set of tables (shown below). The function implementation does not differ from the above single-object case.
 
-<div class='htmlTableBackground'>
 ```{r, echo=FALSE, results='asis', comment=''}
 rd <- function(f) {read.table(paste0("multiObject/",f) ,sep="\t", header=TRUE)}
 obj <- c(wat="water column", sed="sediment")
@@ -1360,7 +1329,6 @@ for (i in 1:length(obj))
   print(knitr::kable(rd(paste0(names(obj[i]),"_stoi.txt")),
     caption=paste0("Stoichiometry of the ",obj[i]," object (file '",names(obj)[i],"stoi.txt').")))
 ```
-</div>
 
 In the R source code (see below), the two objects are stored in a list to allow for convenient iteration using methods like `lapply`. The code section performing the actual simulation is wrapped into a `system.time()` construct. This can be used to compare the performance of the `deSolve`-based solution with the one based on `rodeo`'s internal ODE solver.
 
