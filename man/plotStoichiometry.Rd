@@ -11,11 +11,16 @@ the model.}
 
 \item{cex}{Character expansion factor.}
 
+\item{shade}{Logical. If \code{TRUE}, the dependence of process rates on
+state variables is indicated by shading.}
+
 \item{colPositive}{Color for positive stoichiometric factors.}
 
 \item{colNegative}{Color for negative stoichiometric factors.}
 
 \item{colGrid}{Color of a grid (can be identical to background color).}
+
+\item{colShade}{Shading color, if used.}
 }
 \description{
 Visualizes the stoichiometry matrix using standard plot methods. The sign

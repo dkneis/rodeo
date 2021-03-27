@@ -10,9 +10,12 @@
 #'   the model.
 #' @param time Time. The value is ignored in the case of autonomous models.
 #' @param cex Character expansion factor.
+#' @param shade Logical. If \code{TRUE}, the dependence of process rates on
+#'   state variables is indicated by shading.
 #' @param colPositive Color for positive stoichiometric factors.
 #' @param colNegative Color for negative stoichiometric factors.
 #' @param colGrid Color of a grid (can be identical to background color).
+#' @param colShade Shading color, if used.
 #'
 #' @return NULL
 #'
@@ -38,9 +41,27 @@
 #' model$plotStoichiometry(box=c(1))
 
 rodeo$set("public", "plotStoichiometry", function(box, time=0, cex=1,
-  colPositive="darkorange", colNegative="steelblue4", colGrid="grey"
+  shade=TRUE, colPositive="tomato3", colNegative="steelblue4",
+  colGrid="grey", colShade="lemonchiffon"
 ) {
   m <- self$stoichiometry(box=box, time=time)
+  if (!all(is.finite(m))) {
+    stop("non-finite elements in stoichiometry matrix")
+  }
+  s <- replace(m, 1:length(m), "white")
+  if (shade) {
+    for (pro in rownames(s)) {
+      expr <- private$prosTbl$expression[private$prosTbl$name==pro]
+      ident <- extractIdentifiers(expr)
+      print(expr)
+      print(ident)
+      print(colnames(s))
+      v <- colnames(s)[colnames(s) %in% ident]
+      if (length(v) > 0) {
+        s[pro, v] <- colShade
+      }
+    }
+  } 
   dx <- 0.2
   dy <- sqrt((dx**2)/2)
   mar <- 0.5
@@ -48,16 +69,18 @@ rodeo$set("public", "plotStoichiometry", function(box, time=0, cex=1,
     bty="n", xaxt="n", yaxt="n", xlab="", ylab="")
   mtext(side=3, at=1:ncol(m), colnames(m), line=0.5, las=2, cex=cex)
   mtext(side=2, at=nrow(m):1, rownames(m), line=0.5, las=2, cex=cex)
-  abline(h=c((1:nrow(m))-0.5,nrow(m)+0.5),
-    v=c((1:ncol(m))-0.5,ncol(m)+0.5), col=colGrid)
   for (ic in 1:ncol(m)) {
     for (ir in 1:nrow(m)) {
+      rect(xleft=ic-0.5, xright=ic+0.5, ybottom=nrow(m)+1-(ir-0.5), ytop=nrow(m)+1-(ir+0.5),
+        col=s[ir,ic], border=NA)
       if (m[ir,ic] > 0) polygon(x=c(ic-dx,ic+dx,ic,ic-dx),
         y=nrow(m)+1-c(ir+dy,ir+dy,ir-dy,ir+dy), col=colPositive, border=NA)
       if (m[ir,ic] < 0) polygon(x=c(ic-dx,ic+dx,ic,ic-dx),
         y=nrow(m)+1-c(ir-dy,ir-dy,ir+dy,ir-dy), col=colNegative, border=NA)
     }
   }
+  abline(h=c((1:nrow(m))-0.5,nrow(m)+0.5),
+    v=c((1:ncol(m))-0.5,ncol(m)+0.5), col=colGrid)
   return(invisible(NULL))
 })
 
