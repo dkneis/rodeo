@@ -4,12 +4,14 @@
 \name{funs}
 \alias{funs}
 \title{Declaration of Functions}
-\format{A data frame with the following fields:
+\format{
+A data frame with the following fields:
   \itemize{
     \item{name : }{Name of the function}
     \item{units : }{Unit of the return value}
     \item{description : }{Short description (text)}
-  }}
+  }
+}
 \description{
 Declaration of functions referenced at the ODE's right hand sides
 of the bacteria growth example model.

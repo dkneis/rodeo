@@ -67,7 +67,7 @@ extractIdentifiers <- function(expr, dropDuplicates=TRUE) {
     first <- tmp
     final <- tmp-1+attr(tmp,which="match.length",exact=TRUE)
     res <- substring(expr, first, final)
-    return(ifelse(dropDuplicates,unique(res),res))
+    return(if (dropDuplicates) unique(res) else res)
   }
 }
 

@@ -118,17 +118,17 @@ exportDF <- function(x,
   lines=TRUE,
   indent=2
 ) {
-  indent <- ifelse(indent <= 0, "", paste0(rep(" ",indent),collapse=""))
+  indent <- if (indent <= 0) "" else paste0(rep(" ",indent),collapse="")
   # Check input
   if (is.matrix(x))
     x <- as.data.frame(x, stringsAsFactors=FALSE)
   if (!is.data.frame(x))
     stop("'x' must be  data frame")
   # Set options
-  left <- ifelse(tex, "l", "left")
-  right <- ifelse(tex, "r", "right")
+  left <- if (tex) "l" else "left"
+  right <- if (tex) "r" else "right"
   none <- function(x) {x}
-  w <- ifelse(tex, 1/ncol(x), floor(100/ncol(x)))
+  w <- if (tex) 1/ncol(x) else floor(100/ncol(x))
   colnames <- setOpt(colnames, names(x), names(x))
   width <-    setOpt(width, rep(w, ncol(x)), names(x))
   align <-    setOpt(align, ifelse(unlist(lapply(x, FUN=is.numeric)),right,left), names(x))
@@ -144,20 +144,20 @@ exportDF <- function(x,
       align[i] <- paste0(align[i],"{",width[i],"\\textwidth}")
     }
     out <- paste0(out,indent,'\\begin{tabular}{',paste(align,collapse=""),
-      '}',ifelse(lines, '\\hline', ''),'\n')
+      '}',if (lines) '\\hline' else '','\n')
     out <- paste0(out,indent,'  ',
       paste0(paste0('',xapply(funHead,colnames),''),collapse=' & '),' \\\\',
-      ifelse(lines, ' \\hline', ''),'\n')
+      if (lines) ' \\hline' else '','\n')
     for (i in 1:nrow(x)) {
       out <- paste0(out,indent,'  ',
         paste0(paste0('',xapply(funCell,unlist(x[i,])),''),collapse=' & '),' \\\\',
-        ifelse(lines && (i == nrow(x)), ' \n \\hline', ''),'\n')
+        if (lines && (i == nrow(x))) ' \n \\hline' else '','\n')
     }
     out <- paste0(out,indent,'\\end{tabular}\n')
 
   # html
   } else {
-    out <- paste0(out,indent,'<table border=',ifelse(lines,1,0),'>\n')
+    out <- paste0(out,indent,'<table border=',if (lines) 1 else 0,'>\n')
     for (i in 1:length(width)) {
       out <- paste0(out,indent,'  <col width="',width[i],'%">\n')
     }

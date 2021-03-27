@@ -4,13 +4,15 @@
 \name{pros}
 \alias{pros}
 \title{Declaration of Processes}
-\format{A data frame with the following fields:
+\format{
+A data frame with the following fields:
   \itemize{
     \item{name : }{Name of the process}
     \item{units : }{Unit of the rate expression}
     \item{description : }{Short description (text)}
     \item{expression : }{Mathematical expression (as a string)}
-  }}
+  }
+}
 \description{
 Definition of processes of the bacteria growth example model.
 }

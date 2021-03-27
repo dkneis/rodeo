@@ -4,12 +4,14 @@
 \name{vars}
 \alias{vars}
 \title{Declaration of Variables}
-\format{A data frame with the following fields:
+\format{
+A data frame with the following fields:
   \itemize{
     \item{name : }{Name of the variable}
     \item{units : }{Unit}
     \item{description : }{Short description (text)}
-  }}
+  }
+}
 \description{
 Declaration of variables of the bacteria growth example model.
 }

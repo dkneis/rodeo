@@ -211,7 +211,7 @@ rodeo$set("public", "generate", function(lang, name="derivs") {
       ", ",rodeoConst$genIdent$vec["pros"],
       ")",newline)
     code <- paste0(code,"  use dimensions_and_indices",newline)
-    code <- paste0(code,"  ",ifelse(nrow(private$funsTbl) > 0,"","!"),"use functions",newline)
+    code <- paste0(code,"  ",if (nrow(private$funsTbl) > 0) "" else "!","use functions",newline)
     code <- paste0(code,"  implicit none",newline)
     # Arguments of main method
     code <- paste0(code,"  ! Inputs",newline)

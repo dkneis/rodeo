@@ -119,7 +119,7 @@ rodeo$set("public", "initialize",
   if (length(bad) > 0)
     stop(paste0("names of variables, parameters, functions, and processes",
       " must be unique; the following ",
-      ifelse(length(bad)>1,"names were","name was"),
+      if (length(bad)>1) "names were" else "name was",
       " declared more than once: '",paste(bad,collapse="', '"),"'"))
   # Append columns with expressions translated to tex/html
   pros$expression_tex <- pros$expression
@@ -221,14 +221,14 @@ rodeo$set("public", "initialize",
     if (length(bad) > 0)
       stop(n," symbols of variables, parameters, and functions",
         " must be unique; the following ",
-        ifelse(length(bad)>1,"symbols are","symbol is"),
+        if (length(bad)>1) "symbols are" else "symbol is",
         " used more than once: '",paste(bad,collapse="', '"),"'")
     # (b) check for conflicts with item names (avoids errors when names in
     #     math expressions are replaced by symbols)
     bad <- all_symb[which((all_symb %in% all_names) & (all_symb != all_names))]
     if (length(bad) > 0) {
-      stop("the following ",n,ifelse(length(bad)>1," symbols are",
-        "symbol is")," cannot be assiged to the respective item (",
+      stop("the following ",if (length(bad)>1) "symbols" else "symbol",
+        " cannot be assiged to the respective item (",
         "i.e. variable, parameter, or function) because a different ",
         "item shares the name of the symbol: '",paste(bad,collapse="', '"),"'")
     }

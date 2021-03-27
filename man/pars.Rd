@@ -4,12 +4,14 @@
 \name{pars}
 \alias{pars}
 \title{Declaration of Parameters}
-\format{A data frame with the following fields:
+\format{
+A data frame with the following fields:
   \itemize{
     \item{name : }{Name of the parameter}
     \item{units : }{Unit}
     \item{description : }{Short description (text)}
-  }}
+  }
+}
 \description{
 Declaration of parameters of the bacteria growth example model.
 }
