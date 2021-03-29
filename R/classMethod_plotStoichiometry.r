@@ -53,9 +53,6 @@ rodeo$set("public", "plotStoichiometry", function(box, time=0, cex=1,
     for (pro in rownames(s)) {
       expr <- private$prosTbl$expression[private$prosTbl$name==pro]
       ident <- extractIdentifiers(expr)
-      print(expr)
-      print(ident)
-      print(colnames(s))
       v <- colnames(s)[colnames(s) %in% ident]
       if (length(v) > 0) {
         s[pro, v] <- colShade
