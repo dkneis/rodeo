@@ -4,28 +4,34 @@
 \alias{plotStoichiometry}
 \title{Plot Qualitative Stoichiometry Matrix}
 \arguments{
-\item{box}{A vector of positive integers pointing to a spatial sub-unit of
-the model.}
+\item{box}{A positive integer pointing to a spatial sub-unit of the model.}
 
 \item{time}{Time. The value is ignored in the case of autonomous models.}
 
 \item{cex}{Character expansion factor.}
 
-\item{shade}{Logical. If \code{TRUE}, the dependence of process rates on
-state variables is indicated by shading.}
-
 \item{colPositive}{Color for positive stoichiometric factors.}
 
 \item{colNegative}{Color for negative stoichiometric factors.}
 
-\item{colGrid}{Color of a grid (can be identical to background color).}
+\item{colInteract}{Color used to highlight dependencies.}
 
-\item{colShade}{Shading color, if used.}
+\item{colBack}{Color of background.}
+
+\item{colGrid}{Color of a grid.}
+
+\item{lwdGrid}{Grid line width.}
+
+\item{translateVars}{Optional function to recode variable labels.
+Must take the original vector as argument and return the altered version.}
+
+\item{translatePros}{Optional function to recode process labels.
+Must take the original vector as argument and return the altered version.}
 }
 \description{
 Visualizes the stoichiometry matrix using standard plot methods. The sign
 of stoichiometric factors is displayed as upward and downward pointing
-triangles, optionally colored.
+triangles. Also visualized are dependencies of process rates on variables.
 }
 \note{
 The values of state variables and parameters must have been set using

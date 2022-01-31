@@ -2,20 +2,23 @@
 #'
 #' Visualizes the stoichiometry matrix using standard plot methods. The sign
 #' of stoichiometric factors is displayed as upward and downward pointing
-#' triangles, optionally colored.
+#' triangles. Also visualized are dependencies of process rates on variables.
 #'
 #' @name plotStoichiometry
 #'
-#' @param box A vector of positive integers pointing to a spatial sub-unit of
-#'   the model.
+#' @param box A positive integer pointing to a spatial sub-unit of the model.
 #' @param time Time. The value is ignored in the case of autonomous models.
 #' @param cex Character expansion factor.
-#' @param shade Logical. If \code{TRUE}, the dependence of process rates on
-#'   state variables is indicated by shading.
 #' @param colPositive Color for positive stoichiometric factors.
 #' @param colNegative Color for negative stoichiometric factors.
-#' @param colGrid Color of a grid (can be identical to background color).
-#' @param colShade Shading color, if used.
+#' @param colInteract Color used to highlight dependencies.
+#' @param colBack Color of background.
+#' @param colGrid Color of a grid.
+#' @param lwdGrid Grid line width.
+#' @param translateVars Optional function to recode variable labels.
+#'   Must take the original vector as argument and return the altered version.
+#' @param translatePros Optional function to recode process labels.
+#'   Must take the original vector as argument and return the altered version.
 #'
 #' @return NULL
 #'
@@ -42,30 +45,38 @@
 
 rodeo$set("public", "plotStoichiometry", function(box, time=0, cex=1,
   shade=TRUE, colPositive="tomato3", colNegative="steelblue4",
-  colGrid="grey", colShade="lemonchiffon"
+  colInteract="grey", colBack="lightgrey", colGrid="white", lwdGrid=1,
+  translateVars=NULL, translatePros=NULL
 ) {
+  if (is.null(translateVars)) translateVars <- function(x) {x}
+  if (is.null(translatePros)) translatePros <- function(x) {x}
   m <- self$stoichiometry(box=box, time=time)
   if (!all(is.finite(m))) {
     stop("non-finite elements in stoichiometry matrix")
   }
-  s <- replace(m, 1:length(m), "white")
+  s <- replace(m, 1:length(m), colBack)
   if (shade) {
     for (pro in rownames(s)) {
       expr <- private$prosTbl$expression[private$prosTbl$name==pro]
       ident <- extractIdentifiers(expr)
       v <- colnames(s)[colnames(s) %in% ident]
       if (length(v) > 0) {
-        s[pro, v] <- colShade
+        s[pro, v] <- colInteract
       }
     }
   } 
   dx <- 0.2
   dy <- sqrt((dx**2)/2)
   mar <- 0.5
-  plot(0, 0, xlim=c(1-mar,(ncol(m)+mar)), ylim=c(1-mar,(nrow(m)+mar)), type="n",
+  xmin <- 1-mar
+  xmax <- ncol(m)+mar
+  ymin <- 1-mar
+  ymax <- nrow(m)+mar
+  plot(0, 0, xlim=c(xmin, xmax), ylim=c(ymin, ymax), type="n",
     bty="n", xaxt="n", yaxt="n", xlab="", ylab="")
-  mtext(side=3, at=1:ncol(m), colnames(m), line=0.5, las=2, cex=cex)
-  mtext(side=2, at=nrow(m):1, rownames(m), line=0.5, las=2, cex=cex)
+  rect(xleft=xmin, xright=xmax, ybottom=ymin, ytop=ymax, col=colBack, border=NA)
+  mtext(side=3, at=1:ncol(m), translateVars(colnames(m)), line=0.5, las=2, cex=cex)
+  mtext(side=2, at=nrow(m):1, translatePros(rownames(m)), line=0.5, las=2, cex=cex)
   for (ic in 1:ncol(m)) {
     for (ir in 1:nrow(m)) {
       rect(xleft=ic-0.5, xright=ic+0.5, ybottom=nrow(m)+1-(ir-0.5), ytop=nrow(m)+1-(ir+0.5),
@@ -77,7 +88,7 @@ rodeo$set("public", "plotStoichiometry", function(box, time=0, cex=1,
     }
   }
   abline(h=c((1:nrow(m))-0.5,nrow(m)+0.5),
-    v=c((1:ncol(m))-0.5,ncol(m)+0.5), col=colGrid)
+    v=c((1:ncol(m))-0.5,ncol(m)+0.5), lwd=lwdGrid, col=colGrid)
   return(invisible(NULL))
 })
 
