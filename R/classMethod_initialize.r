@@ -62,6 +62,16 @@
 rodeo$set("public", "initialize",
   function(vars, pars, funs, pros, stoi, asMatrix=FALSE, dim=c(1)
 ) {
+  # convert explicitly to data.frame; needed if tibbles are passed which
+  # identify themselves as data.frames (by "is.data.frame") in spite of
+  # changed functionality (e.g. no type simplification)
+  vars <- as.data.frame(vars)
+  pars <- as.data.frame(pars)
+  if (!is.null(funs))
+    funs <- as.data.frame(funs)
+  pros <- as.data.frame(pros)
+  if (!asMatrix)
+    stoi <- as.data.frame(stoi)
   # Set variables ##############################################################
   cn <- c("name","unit","description")
   checkTbl(tbl=vars, tblName="vars", colNames=cn, nameCol="name", emptyOK=FALSE)

@@ -20,6 +20,7 @@ library("rodeo")
 # Initialize rodeo object
 rd <- function(f, ...) {read.table(file=f,
   header=TRUE, sep="\t", stringsAsFactors=FALSE, ...) }
+
 model <- rodeo$new(vars=rd("vars.txt"), pars=rd("pars.txt"), funs=NULL,
   pros=rd("pros.txt"), stoi=as.matrix(rd("stoi.txt", row.names="process")),
   asMatrix=TRUE, dim=c(1))

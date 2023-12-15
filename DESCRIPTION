@@ -2,8 +2,8 @@ Package: rodeo
 Type: Package
 NeedsCompilation: yes
 Title: A Code Generator for ODE-Based Models
-Version: 0.7.7
-Date: 2021-03-27
+Version: 0.7.8
+Date: 2023-12-15
 Author: David Kneis <david.kneis@tu-dresden.de>
 Maintainer: David Kneis <david.kneis@tu-dresden.de>
 Description: Provides an R6 class and several utility methods to
@@ -27,5 +27,5 @@ SystemRequirements: The tools to run 'R CMD SHLIB' on 'Fortran' code.
   The used 'Fortran' compiler must support pointer initialization which
   is a feature of the 2008 standard. The compiler from Oracle Developer
   Studio 12.6 on Solaris 10 currently does not meet this requirement.
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 Roxygen: list(r6 = FALSE)
