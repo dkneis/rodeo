@@ -14,6 +14,7 @@ bibliography: references.bib
 vignette: >
   %\VignetteIndexEntry{R package rodeo: Basic Use and Sample Applications}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 <!-- ALTERNATIVE FOR HTML
