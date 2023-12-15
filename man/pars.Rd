@@ -6,7 +6,7 @@
 \title{Declaration of Parameters}
 \format{
 A data frame with the following fields:
-  \itemize{
+  \describe{
     \item{name : }{Name of the parameter}
     \item{units : }{Unit}
     \item{description : }{Short description (text)}

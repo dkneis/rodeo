@@ -8,9 +8,9 @@
 #' @docType data
 #' @name vars
 #' @format A data frame with the following fields:
-#'   \itemize{
+#'   \describe{
 #'     \item{name : }{Name of the variable}
-#'     \item{units : }{Unit}
+#'     \item{unit : }{Unit}
 #'     \item{description : }{Short description (text)}
 #'   }
 NULL
@@ -22,9 +22,9 @@ NULL
 #' @docType data
 #' @name pars
 #' @format A data frame with the following fields:
-#'   \itemize{
+#'   \describe{
 #'     \item{name : }{Name of the parameter}
-#'     \item{units : }{Unit}
+#'     \item{unit : }{Unit}
 #'     \item{description : }{Short description (text)}
 #'   }
 NULL
@@ -37,9 +37,9 @@ NULL
 #' @docType data
 #' @name funs
 #' @format A data frame with the following fields:
-#'   \itemize{
+#'   \describe{
 #'     \item{name : }{Name of the function}
-#'     \item{units : }{Unit of the return value}
+#'     \item{unit : }{Unit of the return value}
 #'     \item{description : }{Short description (text)}
 #'   }
 NULL
@@ -51,9 +51,9 @@ NULL
 #' @docType data
 #' @name pros
 #' @format A data frame with the following fields:
-#'   \itemize{
+#'   \describe{
 #'     \item{name : }{Name of the process}
-#'     \item{units : }{Unit of the rate expression}
+#'     \item{unit : }{Unit of the rate expression}
 #'     \item{description : }{Short description (text)}
 #'     \item{expression : }{Mathematical expression (as a string)}
 #'   }
@@ -67,7 +67,7 @@ NULL
 #' @docType data
 #' @name stoi
 #' @format A data frame with the following fields:
-#'   \itemize{
+#'   \describe{
 #'     \item{variable : }{Name of the state variable}
 #'     \item{process : }{Name of the process}
 #'     \item{expression : }{Mathematical expression (as a string)}

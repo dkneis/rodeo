@@ -6,7 +6,7 @@
 \title{Specification of Stoichiometry}
 \format{
 A data frame with the following fields:
-  \itemize{
+  \describe{
     \item{variable : }{Name of the state variable}
     \item{process : }{Name of the process}
     \item{expression : }{Mathematical expression (as a string)}

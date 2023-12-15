@@ -6,7 +6,7 @@
 \title{Declaration of Variables}
 \format{
 A data frame with the following fields:
-  \itemize{
+  \describe{
     \item{name : }{Name of the variable}
     \item{units : }{Unit}
     \item{description : }{Short description (text)}
