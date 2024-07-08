@@ -75,25 +75,46 @@ its arguments and usage.
 }
 
 \examples{
-# Bacteria growth in a continuous flow culture
-library("deSolve")
 
-# Creation of model object
+## Example using high-level functions: Epidemiological SEIR model
+
+# Import model from workbook shipped with this package 
+m <- buildFromWorkbook(system.file("models/SEIR.xlsx",
+  package="rodeo"))
+
+# Set parameters and initial state (defaults stored in workbook)
+p <- m$getParsTable()
+m$setPars(setNames(p$default, p$name))
+
+v <- m$getVarsTable()
+m$setVars(setNames(v$default, v$name))
+
+# Run a dynamic simulations and print parts of the result
+sim <- m$dynamics(time=1:30, fortran=FALSE)
+print(head(sim))
+print(tail(sim))
+
+
+### Example using low-level functions: Bacterial growth in bioreactor
+
+# Creation of model object (data frames shipped as package data)
 data(vars, pars, funs, pros, stoi)
 model <- rodeo$new(vars, pars, funs, pros, stoi, dim=c(1))
 
-# Parameters, initial values
-model$setPars(c(mu=0.8, half=0.1, yield= 0.1, vol=1000, flow=50, sub_in=1))
+# Assignment of parameters and initial values
+model$setPars(c(mu=0.8, half=0.1, yield= 0.1, vol=1000,
+  flow=50, sub_in=1))
 model$setVars(c(bac=0.01, sub=0))
 
 # Implementation of functions declared in 'funs'
 monod <- function(c,h) {c/(c+h)}
 
-# Creation of derivatives function
+# Creation of derivatives function in a low-level way; calling
+# the 'compile' method is a more convenient alternative
 code <- model$generate(name="derivs", lang="r")
 derivs <- eval(parse(text=code))
 
-# Integration
+# Explicit call of an integrator from the deSolve package
 times <- 0:96
 out <- deSolve::ode(y=model$getVars(), times=times, func=derivs,
   parms=model$getPars())

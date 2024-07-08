@@ -38,6 +38,8 @@ See \code{\link{rodeo-class}} for the \code{rodeo} class
   documentation of non-class methods contained in the package.
 
 \itemize{
+  \item{\code{\link{buildFromWorkbook}}} Builds and compiles a model
+    fully specified in a workbook (supports .xlsx and .ods format).
   \item{\code{\link{forcingFunctions}}} Generation of forcing functions
     in Fortran.
   \item{\code{\link{exportDF}}} Export of data frames as TEX or HTML code.
@@ -48,6 +50,13 @@ See \code{\link{rodeo-class}} for the \code{rodeo} class
 }
 }
 
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/dkneis/rodeo}
+}
+
+}
 \author{
 \email{david.kneis@tu-dresden.de}
 }

@@ -8,7 +8,7 @@
 A data frame with the following fields:
   \describe{
     \item{name : }{Name of the parameter}
-    \item{units : }{Unit}
+    \item{unit : }{Unit}
     \item{description : }{Short description (text)}
   }
 }

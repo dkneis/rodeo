@@ -2,6 +2,10 @@
 library("R6")
 #' @import deSolve
 library("deSolve")
+#' @import readxl
+library("readxl")
+#' @import readODS
+library("readODS")
 
 #' Package to Facilitate ODE-Based Modeling
 #'
@@ -23,9 +27,6 @@ library("deSolve")
 #'
 #' The current source code repository is \url{https://github.com/dkneis/rodeo}.
 #'
-#' @name rodeo-package
-#' @docType package
-#'
 #' @section Class and class methods:
 #'
 #' See \code{\link{rodeo-class}} for the \code{rodeo} class
@@ -37,6 +38,8 @@ library("deSolve")
 #'   documentation of non-class methods contained in the package.
 #'
 #' \itemize{
+#'   \item{\code{\link{buildFromWorkbook}}} Builds and compiles a model
+#'     fully specified in a workbook (supports .xlsx and .ods format).
 #'   \item{\code{\link{forcingFunctions}}} Generation of forcing functions
 #'     in Fortran.
 #'   \item{\code{\link{exportDF}}} Export of data frames as TEX or HTML code.
@@ -48,4 +51,4 @@ library("deSolve")
 #' 
 #' @author \email{david.kneis@@tu-dresden.de}
 
-NULL
+"_PACKAGE"
