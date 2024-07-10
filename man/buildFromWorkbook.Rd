@@ -54,16 +54,19 @@ The file provided as \code{workbook} must contain at least the four
      functions must be accessible in the environment where the model is
      run. If \code{fortran=TRUE}, the functions must be implemented in the
      file(s) listed in \code{sources} to be included in compilation.
+     In case functions are not used at all, you still need do declare a
+     dummy function (call it 'dummy', for example).
   \item{'eqns'} Specifies the model equations. Mandatory columns
-     are 'name', 'unit', 'description', 'expression' plus one column for
-     every state variable of the model. The 'expression' columns holds the
-     process rate expressions and columns named after state variables
-     contain the corresponding stoichiometric factors.
+     are 'name', 'unit', 'description', 'rate' plus one column for
+     every state variable of the model. The 'rate' columns holds math
+     expressions for the process rates and columns named after state
+     variables contain the corresponding expressions representing
+     stoichiometric factors.
 }
 The best way to understand the contents of a suitable workbook is to study
 the examples in the folder 'models' shipped with the package. Type
 \code{system.file("models", package="rodeo")} at the R prompt to see
-where this folder is installed on your system.
+where this folder is installed on your system. A full example is given below.
 }
 \examples{
 
