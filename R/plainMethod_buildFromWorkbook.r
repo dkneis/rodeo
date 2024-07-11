@@ -12,6 +12,11 @@
 #'   \code{dim=1} (default). For a one-dimensional model with 10 compartments
 #'   use, e.g., \code{dim=10}. See the \code{dim} argument of the method
 #'   \code{\link[rodeo]{initialize}} for further details.
+#' @param set_defaults If \code{TRUE}, parameters and initial values will be
+#'   set according to the contents of the 'default' columns of the workbook
+#'   sheets 'pars' and 'vars', respectively. If \code{FALSE}, values must be
+#'   set explicitly using the class methods \code{\link[rodeo]{setPars}} and
+#'   \code{\link[rodeo]{setVars}}.
 #' @param fortran Controls the language of code generation. The default
 #'   (\code{FALSE}) produces R code. Use \code{TRUE} if you want to use
 #'   compiled Fortran code for better performance. In the latter case, you will
@@ -60,23 +65,22 @@
 #'
 #' @examples
 #'
-#' # Build a SEIR type epidemic model
+#' # Build and run a SEIR type epidemic model
 #' m <- buildFromWorkbook(
 #'   system.file("models/SEIR.xlsx", package="rodeo")
 #' )
-#' m$setPars(setNames(m$getParsTable()$default,
-#'   m$getParsTable()$name))
-#' m$setVars(setNames(m$getVarsTable()$default,
-#'   m$getVarsTable()$name))
 #' x <- m$dynamics(times=0:30, fortran=FALSE)
 #' print(head(x))
 
-buildFromWorkbook <- function(workbook, dim=1, fortran=FALSE, sources=NULL, ...) {
+buildFromWorkbook <- function(workbook, dim=1, set_defaults=TRUE,
+  fortran=FALSE, sources=NULL, ...) {
   # check inputs
   if (length(workbook) != 1 || !is.character(workbook))
     stop("'workbook' must be a character string")
   if (!is.integer(as.integer(dim)))
     stop("'dim' must be an integer vector")
+  if (length(set_defaults) != 1 || !is.logical(set_defaults))
+    stop("'set_defaults' must be TRUE or FALSE")
   if (length(fortran) != 1 || !is.logical(fortran))
     stop("'fortran' must be TRUE or FALSE")
   if (!is.null(sources) && !is.character(sources))
@@ -132,7 +136,15 @@ buildFromWorkbook <- function(workbook, dim=1, fortran=FALSE, sources=NULL, ...)
     dim=dim
   ))
   m$compile(fortran=fortran, sources=sources)
-  
+  # attempt to set parameters and initial values
+  if (set_defaults) {
+    if (sum(dim) > 1) {
+      warning("ignoring 'set_defaults' because 'dim' is not equal to 1") 
+    } else {
+      m$setPars(setNames(m$getParsTable()$default, m$getParsTable()$name))
+      m$setVars(setNames(m$getVarsTable()$default, m$getVarsTable()$name))
+    }
+  }
   # return object
   m
 }

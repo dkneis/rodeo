@@ -4,7 +4,14 @@
 \alias{buildFromWorkbook}
 \title{Build a model from the contents of a workbook}
 \usage{
-buildFromWorkbook(workbook, dim = 1, fortran = FALSE, sources = NULL, ...)
+buildFromWorkbook(
+  workbook,
+  dim = 1,
+  set_defaults = TRUE,
+  fortran = FALSE,
+  sources = NULL,
+  ...
+)
 }
 \arguments{
 \item{workbook}{File path of the workbook. The file type is guessed from
@@ -16,6 +23,12 @@ dimensions. For single-box models without spatial resolution, use
 \code{dim=1} (default). For a one-dimensional model with 10 compartments
 use, e.g., \code{dim=10}. See the \code{dim} argument of the method
 \code{\link[rodeo]{initialize}} for further details.}
+
+\item{set_defaults}{If \code{TRUE}, parameters and initial values will be
+set according to the contents of the 'default' columns of the workbook
+sheets 'pars' and 'vars', respectively. If \code{FALSE}, values must be
+set explicitly using the class methods \code{\link[rodeo]{setPars}} and
+\code{\link[rodeo]{setVars}}.}
 
 \item{fortran}{Controls the language of code generation. The default
 (\code{FALSE}) produces R code. Use \code{TRUE} if you want to use
@@ -70,14 +83,10 @@ where this folder is installed on your system. A full example is given below.
 }
 \examples{
 
-# Build a SEIR type epidemic model
+# Build and run a SEIR type epidemic model
 m <- buildFromWorkbook(
   system.file("models/SEIR.xlsx", package="rodeo")
 )
-m$setPars(setNames(m$getParsTable()$default,
-  m$getParsTable()$name))
-m$setVars(setNames(m$getVarsTable()$default,
-  m$getVarsTable()$name))
 x <- m$dynamics(times=0:30, fortran=FALSE)
 print(head(x))
 }
