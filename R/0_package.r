@@ -4,8 +4,6 @@ library("R6")
 library("deSolve")
 #' @import readxl
 library("readxl")
-#' @import readODS
-library("readODS")
 
 #' Package to Facilitate ODE-Based Modeling
 #'

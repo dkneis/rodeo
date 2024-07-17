@@ -2,7 +2,7 @@ Package: rodeo
 Type: Package
 NeedsCompilation: yes
 Title: A Code Generator for ODE-Based Models
-Version: 0.8.3
+Version: 0.8.4
 Date: 2024-07-17
 Author: David Kneis <david.kneis@tu-dresden.de>
 Maintainer: David Kneis <david.kneis@tu-dresden.de>
@@ -17,8 +17,7 @@ License: GPL (>= 2)
 Imports:
     R6,
     deSolve,
-    readxl,
-    readODS
+    readxl
 VignetteBuilder: knitr
 Suggests:
     knitr,

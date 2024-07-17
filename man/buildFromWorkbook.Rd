@@ -14,8 +14,8 @@ buildFromWorkbook(
 )
 }
 \arguments{
-\item{workbook}{File path of the workbook. The file type is guessed from
-the extension which must be '.xlsx' or '.ods'. See below for the mandatory
+\item{workbook}{File path of the workbook with extension '.xlsx'.
+See below for the mandatory
 worksheets that must be present in the workbook.}
 
 \item{dim}{The number of spatial compartments, possibly in multiple

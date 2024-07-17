@@ -4,8 +4,8 @@
 #' all declarations and equations from a workbook established with common
 #' spreadsheet software.
 #'
-#' @param workbook File path of the workbook. The file type is guessed from
-#'   the extension which must be '.xlsx' or '.ods'. See below for the mandatory
+#' @param workbook File path of the workbook with extension '.xlsx'.
+#'   See below for the mandatory
 #'   worksheets that must be present in the workbook.
 #' @param dim The number of spatial compartments, possibly in multiple
 #'   dimensions. For single-box models without spatial resolution, use
@@ -89,8 +89,8 @@ buildFromWorkbook <- function(workbook, dim=1, set_defaults=TRUE,
     tryCatch({
       if (grepl(workbook, pattern=".+[.]xlsx$")) {
         x[[s]] <- as.data.frame(readxl::read_excel(workbook, sheet=s, ...=...))
-      } else if (grepl(workbook, pattern=".+[.]ods$")) {
-        x[[s]] <- as.data.frame(readODS::read_ods(workbook, sheet=s, ...=...))
+#      } else if (grepl(workbook, pattern=".+[.]ods$")) {
+#        x[[s]] <- as.data.frame(readODS::read_ods(workbook, sheet=s, ...=...))
       } else {
         stop(paste0("file '",workbook,"' not in '.xlsx' or '.ods' format")) 
       }
