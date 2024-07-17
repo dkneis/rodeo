@@ -43,8 +43,7 @@ in \code{sources} must implement a module with the fixed name 'functions'.
 This module must contain all user-defined functions referenced in any
 process rate expressions or any cell of the stoichiometry matrix.}
 
-\item{...}{Optional arguments passed to \code{\link[readxl]{read_excel}}
-or \code{\link[readODS]{read_ods}}, respectively.}
+\item{...}{Optional arguments passed to \code{\link[readxl]{read_excel}}.}
 }
 \value{
 An object of class \code{\link[rodeo]{rodeo}}.
