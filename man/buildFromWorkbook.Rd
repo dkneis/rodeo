@@ -26,9 +26,10 @@ use, e.g., \code{dim=10}. See the \code{dim} argument of the method
 
 \item{set_defaults}{If \code{TRUE}, parameters and initial values will be
 set according to the contents of the 'default' columns of the workbook
-sheets 'pars' and 'vars', respectively. If \code{FALSE}, values must be
+sheets 'declarations', respectively. If \code{FALSE}, values must be
 set explicitly using the class methods \code{\link[rodeo]{setPars}} and
-\code{\link[rodeo]{setVars}}.}
+\code{\link[rodeo]{setVars}}. An attempt to use \code{set_defaults=TRUE}
+when \code{dim != 1} will be ignored (with a warning).}
 
 \item{fortran}{Controls the language of code generation. The default
 (\code{FALSE}) produces R code. Use \code{TRUE} if you want to use
@@ -54,22 +55,17 @@ all declarations and equations from a workbook established with common
 spreadsheet software.
 }
 \note{
-The file provided as \code{workbook} must contain at least the four
-  mandatory sheets:
+The file provided as \code{workbook} must contain two sheets:
 \itemize{
-  \item{'vars'} Declares the state variables of the model. Mandatory columns
-     are 'name', 'unit', 'description'.
-  \item{'pars'} Declares the parameters of the model. Mandatory columns
-     are the same as for sheet 'vars'.
-  \item{'funs'} Declares user-defined functions appearing in any equations of
-     the model. Mandatory columns are the same as for sheet 'vars'. If
-     source code is generated for R (\code{fortran=FALSE}), the declared
+  \item{'declarations'} Declares the identifiers of state variables,
+    parameters, and functions used in the model equations. Mandatory columns
+     are 'type', 'name', 'unit', 'description', and 'default'. Entries in
+     the type column must be one of 'variable', 'parameter', or 'function'.
+     If source code is generated for R (\code{fortran=FALSE}), any declared
      functions must be accessible in the environment where the model is
      run. If \code{fortran=TRUE}, the functions must be implemented in the
      file(s) listed in \code{sources} to be included in compilation.
-     In case functions are not used at all, you still need do declare a
-     dummy function (call it 'dummy', for example).
-  \item{'eqns'} Specifies the model equations. Mandatory columns
+  \item{'equations'} Specifies the model equations. Mandatory columns
      are 'name', 'unit', 'description', 'rate' plus one column for
      every state variable of the model. The 'rate' columns holds math
      expressions for the process rates and columns named after state

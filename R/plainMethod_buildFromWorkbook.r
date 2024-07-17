@@ -14,9 +14,10 @@
 #'   \code{\link[rodeo]{initialize}} for further details.
 #' @param set_defaults If \code{TRUE}, parameters and initial values will be
 #'   set according to the contents of the 'default' columns of the workbook
-#'   sheets 'pars' and 'vars', respectively. If \code{FALSE}, values must be
+#'   sheets 'declarations', respectively. If \code{FALSE}, values must be
 #'   set explicitly using the class methods \code{\link[rodeo]{setPars}} and
-#'   \code{\link[rodeo]{setVars}}.
+#'   \code{\link[rodeo]{setVars}}. An attempt to use \code{set_defaults=TRUE}
+#'   when \code{dim != 1} will be ignored (with a warning).
 #' @param fortran Controls the language of code generation. The default
 #'   (\code{FALSE}) produces R code. Use \code{TRUE} if you want to use
 #'   compiled Fortran code for better performance. In the latter case, you will
@@ -32,22 +33,17 @@
 #' 
 #' @return An object of class \code{\link[rodeo]{rodeo}}.
 #'
-#' @note The file provided as \code{workbook} must contain at least the four
-#'   mandatory sheets:
+#' @note The file provided as \code{workbook} must contain two sheets:
 #' \itemize{
-#'   \item{'vars'} Declares the state variables of the model. Mandatory columns
-#'      are 'name', 'unit', 'description'.
-#'   \item{'pars'} Declares the parameters of the model. Mandatory columns
-#'      are the same as for sheet 'vars'.
-#'   \item{'funs'} Declares user-defined functions appearing in any equations of
-#'      the model. Mandatory columns are the same as for sheet 'vars'. If
-#'      source code is generated for R (\code{fortran=FALSE}), the declared
+#'   \item{'declarations'} Declares the identifiers of state variables,
+#'     parameters, and functions used in the model equations. Mandatory columns
+#'      are 'type', 'name', 'unit', 'description', and 'default'. Entries in
+#'      the type column must be one of 'variable', 'parameter', or 'function'.
+#'      If source code is generated for R (\code{fortran=FALSE}), any declared
 #'      functions must be accessible in the environment where the model is
 #'      run. If \code{fortran=TRUE}, the functions must be implemented in the
 #'      file(s) listed in \code{sources} to be included in compilation.
-#'      In case functions are not used at all, you still need do declare a
-#'      dummy function (call it 'dummy', for example).
-#'   \item{'eqns'} Specifies the model equations. Mandatory columns
+#'   \item{'equations'} Specifies the model equations. Mandatory columns
 #'      are 'name', 'unit', 'description', 'rate' plus one column for
 #'      every state variable of the model. The 'rate' columns holds math
 #'      expressions for the process rates and columns named after state
@@ -87,16 +83,9 @@ buildFromWorkbook <- function(workbook, dim=1, set_defaults=TRUE,
     stop("'sources' should be NULL or a vector of character strings")
   if (!file.exists(workbook))
     stop(paste0("file provided as 'workbook' not found: '",workbook,"'"))
-  # needed sheets and columns
-  sheets.needed <- list(
-    vars = c("name","unit","description","default"),
-    pars = c("name","unit","description","default"),
-    funs = c("name","unit","description"),
-    eqns = c("name","unit","description","rate")
-  )
   # import sheets
   x <- list()
-  for (s in names(sheets.needed)) {
+  for (s in c("declarations","equations")) {
     tryCatch({
       if (grepl(workbook, pattern=".+[.]xlsx$")) {
         x[[s]] <- as.data.frame(readxl::read_excel(workbook, sheet=s, ...=...))
@@ -109,40 +98,54 @@ buildFromWorkbook <- function(workbook, dim=1, set_defaults=TRUE,
       stop(paste0("failed to read required sheet '",s,"' from '",workbook,"'"))
     })
   }
-  # update needed columns in sheet with equations
-  sheets.needed[["eqns"]] <- c(sheets.needed[["eqns"]], x[["vars"]][,"name"])
-  # check sheets
-  for (s in names(sheets.needed)) {
-    missing <- sheets.needed[[s]][! sheets.needed[[s]] %in% names(x[[s]])]
-    if (length(missing) > 0) {
-      stop(paste0("table in sheet '",s,"' of '",workbook,
-        "' is lacking mandatory column(s): '",paste(missing, collapse="', '"),"'"))
-    }
-  }
+  decl <- x[["declarations"]]
+  eqns <- x[["equations"]]
+  rm(x)
+  # check declarations
+  needed <- c("type","name","unit","description","default")
+  missing <- needed[! needed %in% names(decl)]
+  if (length(missing) > 0)
+    stop(paste0("sheet 'declarations' is lacking mandatory column(s): '",
+      paste(missing, collapse="', '"),"'"))
+  if (!all(decl[,"type"] %in% c("variable","parameter","function")))
+    stop("'type' in sheet 'declarations' must be one of 'variable', 'parameter',
+      or 'function'")
+  if (!any(decl[,"type"] == "variable"))
+    stop('not a single state variable has been declared')
+  if (!any(decl[,"type"] == "parameter"))
+    stop('not a single parameter has been declared')
+  # check equations
+  vnames <- decl[decl[,"type"] == "variable", "name"]
+  needed <- c("name","unit","description","rate", vnames)
+  missing <- needed[! needed %in% names(eqns)]
+  if (length(missing) > 0)
+    stop(paste0("sheet 'equations' is lacking mandatory column(s): '",
+      paste(missing, collapse="', '"),"'"))
   # separate processes and stoichiometry
-  x[["stoi"]] <- with(x, as.matrix(eqns[,vars[,"name"],drop=FALSE]))
-  rownames(x[["stoi"]]) <- with(x, eqns[,"name"])
-  x[["pros"]] <- with(x, eqns[,c("name","unit","rate","description")])
-  names(x[["pros"]])[names(x[["pros"]]) == "rate"] <- "expression"
-  x[["eqns"]] <- NULL
+  stoi <- as.matrix(eqns[, vnames, drop=FALSE])
+  rownames(stoi) <- eqns[,"name"]
+  pros <- eqns[,c("name","unit","rate","description")]
+  names(pros)[names(pros) == "rate"] <- "expression"
+  eqns <- NULL
   # build and compile model object
-  m <- with(x, rodeo$new(
-    vars=vars,
-    pars=pars,
-    funs=if (fortran && is.null(sources)) NULL else funs,
+  m <- rodeo$new(
+    vars=decl[decl[,"type"]=="variable", names(decl) != "type"],
+    pars=decl[decl[,"type"]=="parameter", names(decl) != "type"],
+    funs=if (!any(decl[,"type"]=="function")) NULL else
+      decl[decl[,"type"]=="function", names(decl) != "type"],
     pros=pros,
     stoi=stoi,
     asMatrix=T,
     dim=dim
-  ))
+  )
   m$compile(fortran=fortran, sources=sources)
   # attempt to set parameters and initial values
   if (set_defaults) {
     if (sum(dim) > 1) {
       warning("ignoring 'set_defaults' because 'dim' is not equal to 1") 
     } else {
-      m$setPars(setNames(m$getParsTable()$default, m$getParsTable()$name))
-      m$setVars(setNames(m$getVarsTable()$default, m$getVarsTable()$name))
+      m$setPars(stats::setNames(m$getParsTable()$default, m$getParsTable()$name))
+      m$setVars(stats::setNames(m$getVarsTable()$default, m$getVarsTable()$name))
     }
   }
   # return object
