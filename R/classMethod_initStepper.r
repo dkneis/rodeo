@@ -2,7 +2,7 @@
 #' Initialize Internal ODE Solver
 #'
 #' Initializes \code{rodeo}'s built-in ODE solver. This method must be called
-#' prior to using \code{\link{step}}.
+#' prior to using \code{\link{step}}. Only works with Fortran, not plain R.
 #'
 #' @name initStepper
 #'
