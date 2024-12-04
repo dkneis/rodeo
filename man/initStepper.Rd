@@ -18,7 +18,7 @@ value (Runge-Kutta method of Cash and Karp).}
 }
 \description{
 Initializes \code{rodeo}'s built-in ODE solver. This method must be called
-prior to using \code{\link{step}}.
+prior to using \code{\link{step}}. Only works with Fortran, not plain R.
 }
 \note{
 After this method was called, \code{\link{step}} can be used to
