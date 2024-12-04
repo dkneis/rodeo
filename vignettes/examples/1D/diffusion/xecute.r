@@ -27,10 +27,11 @@ model$setPars(cbind(d=d, dx=dx,cb=cb,
 ))
 
 # Generate code, compile into shared library, load library
-model$compile(NULL)              
+model$compile(NULL, fortran=TRUE)              
 
 # Numeric solution
-solNum <- model$dynamics(times=times, jactype="bandint", bandup=1, banddown=1)
+solNum <- model$dynamics(times=times, jactype="bandint", bandup=1,
+  banddown=1, fortran=TRUE)
 
 # Function providing the analytical solution
 erfc <- function(x) { 2 * pnorm(x * sqrt(2), lower=FALSE) }

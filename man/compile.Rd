@@ -10,7 +10,8 @@ if no external functions are required, the name of a single file, or a
 vector of file names. See notes below.}
 
 \item{fortran}{If \code{TRUE}, Fortran code is generated and compiled into a shared
-library. If \code{FALSE}, R code is generated.}
+library. If \code{FALSE}, R code is generated. The default was changed from
+\code{TRUE} to \code{FALSE} in package version 0.8.6).}
 
 \item{target}{Name of a 'target environment'. Currently, 'deSolve' is the
 only supported value.}

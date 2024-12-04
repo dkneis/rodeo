@@ -372,7 +372,8 @@ To make the use of Fortran as simple as possible, `rodeo` provides a high-level 
 4. loading of the library
 
 ```{r compileMultiBox, echo=TRUE, eval=FALSE}
-model$compile(sources="vignetteData/fortran/functionsCode.f95")
+model$compile(sources="vignetteData/fortran/functionsCode.f95",
+  fortran=TRUE)
 ```
 
 The `compile` method takes as argument the name of a file holding the Fortran implementation of functions being referenced in the particular model's mathematical expressions. This argument can actually be a vector if the source code is split across several files. Consult the section on [Fortran functions](#fortranFunctions) for coding guidelines and take a look at the [collection of examples](#examples).
@@ -399,7 +400,7 @@ The complete code to run the 'no-interactions' model from a previous section usi
 ```{r ref.label='compileMultiBox', echo=TRUE, eval=TRUE}
 ```
 ```{r solveMultiBoxF, echo=TRUE, eval=TRUE}
-out <- model$dynamics(times=0:120)
+out <- model$dynamics(times=0:120, fortran=TRUE)
 ```
 
 ```{r ref.label='plotMultiBox', echo=TRUE, eval=FALSE}

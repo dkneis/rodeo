@@ -28,7 +28,7 @@ model <- rodeo$new(vars=rd("vars.txt"), pars=rd("pars.txt"), funs=rd("funs.txt")
   asMatrix=TRUE, dim=c(nTanks))
 
 # Generate code, compile into shared library, load library
-model$compile(sources="functions.f95")
+model$compile(sources="functions.f95", fortran=TRUE)
 
 # Assign initial values
 vars <- matrix(rep(as.numeric(model$getVarsTable()$initial), each=nTanks),

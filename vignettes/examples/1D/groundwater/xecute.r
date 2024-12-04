@@ -26,10 +26,11 @@ model$setPars(cbind( dx=rep(dx, nx), kf=rep(5., nx), ne=rep(0.17, nx),
   tBed=rep(0.1, nx), leaky=c(1, rep(0, nx-1)) ))
 
 # Generate code, compile into shared library, load library
-model$compile(fileFun)              
+model$compile(fileFun, fortran=TRUE)              
 
 # Integrate
-out <- model$dynamics(times=times, jactype="bandint", bandup=1, banddown=1)
+out <- model$dynamics(times=times, jactype="bandint", bandup=1,
+  banddown=1, fortran=TRUE)
 
 # Plot results
 filled.contour(x=out[,"time"]/365.25, y=(1:nx)*dx-dx/2,

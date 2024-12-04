@@ -24,10 +24,10 @@ model$setVars(vars)
 model$setPars(pars)
 
 # Generate code, compile into shared library, load library
-model$compile("functions.f95")              
+model$compile("functions.f95", fortran=TRUE)              
 
 # Integrate
-out <- model$dynamics(times=times)
+out <- model$dynamics(times=times, fortran=TRUE)
 
 # Plot method for deSolve objects
 plot(out)

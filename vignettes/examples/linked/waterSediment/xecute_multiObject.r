@@ -51,7 +51,7 @@ if (internal) {
     models[[obj]]$initStepper("functions.f95", method="rk5")
 } else {
   for (obj in objects) {
-    models[[obj]]$compile("functions.f95")
+    models[[obj]]$compile("functions.f95", fortran=TRUE)
   }
 }
 
@@ -81,7 +81,7 @@ integr <- function(obj, t0, t1, models, internal, check) {
   if (internal) {
     return(models[[obj]]$step(t0, h=t1-t0, check=check))
   } else {
-    return(models[[obj]]$dynamics(times=c(t0, t1))[2,-1])
+    return(models[[obj]]$dynamics(times=c(t0, t1), fortan=TRUE)[2,-1])
   }
 }
 

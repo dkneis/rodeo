@@ -41,11 +41,11 @@ model$setPars(cbind(
 ))
 
 # Generate code, compile into shared library, load library
-model$compile(fileFun)              
+model$compile(fileFun, fortran=TRUE)              
 
 # Numeric solution
 solNum <- model$dynamics(times=times, jactype="bandint", bandup=1, banddown=1,
-  atol=1e-9)
+  atol=1e-9, fortran=TRUE)
 
 # Function providing the analytical solution
 solAna <- function (x,t,mass,area,disp,velo) {

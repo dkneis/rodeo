@@ -30,7 +30,7 @@ model$setVars(vars)
 model$setPars(pars)
 
 # Generate code, compile into shared library, load library
-model$compile(NULL)
+model$compile(NULL, fortran=TRUE)
 
 # Function to return the steady-state solution for specific parameters
 f <- function(x) {

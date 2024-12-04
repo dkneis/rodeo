@@ -7,7 +7,7 @@
 #'
 #' @param times Times of interest (numeric vector).
 #' @param fortran Switch between compiled Fortran and R code (logical). Default
-#'   is \code{TRUE}.
+#'   is \code{FALSE} (was \code{TRUE} until package version 0.8.5).
 #' @param proNames Assign names to output columns holding the process rates?
 #'   Default is \code{TRUE}.
 #' @param ... Auxiliary arguments passed to \code{\link[deSolve]{ode}}.
@@ -30,7 +30,7 @@
 #'   with a built-in, Fortran-based solver.
 
 rodeo$set("public", "dynamics",
-  function(times, fortran=TRUE, proNames=TRUE, ...)
+  function(times, fortran=FALSE, proNames=TRUE, ...)
 {
   if (any(c(!is.numeric(times), length(times) < 2)))
     stop("'times' must be a numeric vector of length > 1")

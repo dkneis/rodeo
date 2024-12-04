@@ -7,7 +7,7 @@
 \item{times}{Times of interest (numeric vector).}
 
 \item{fortran}{Switch between compiled Fortran and R code (logical). Default
-is \code{TRUE}.}
+is \code{FALSE} (was \code{TRUE} until package version 0.8.5).}
 
 \item{proNames}{Assign names to output columns holding the process rates?
 Default is \code{TRUE}.}
