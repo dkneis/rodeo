@@ -1,12 +1,13 @@
 #' Run a zero-dimensional model, possibly for multiple scenarios
 #'
-#' The function executes a 0D model for one to many scenarios and optionally
-#' visualizes the outcome. Individual scenarios can differ by the initial state
-#' or the values of parameters.
+#' Triggers dynamic simulation(s) of a 0D model for one to many scenarios. The
+#' individual scenarios can differ by the initial state or the values of
+#' parameters. Optionally produces basic plots.
 #'
-#' @param model A model object of class \code{rodeo} as returned, for example,
-#'   by the \code{\link{buildFromWorkbook}} function. The model must be
-#'   zero-dimensional (typical simultaneous ODE). See the examples below.
+#' @name scenarios
+#'
+#' @param times Numeric vector defining the times for which the future
+#'   state of the system is computed.
 #' @param scenarios Either \code{NULL} or a named list, each element of which
 #'   defines a scenario to be considered. In the latter case, list elements must
 #'   be (named) numeric vectors used to update the initial values and parameters
@@ -15,8 +16,8 @@
 #'   length could also be consistent across scenarios.
 #'   If \code{scenarios} is set to \code{NULL}, only the
 #'   default scenario will be run. See details and examples.
-#' @param times Numeric vector defining the times for which the future
-#'   state of the system is computed.
+#' @param fortran Logical. Passed to the respective argument of
+#'   \code{\link{dynamics}}.
 #' @param plot.vars Logical. Plot the dynamics of all state variables?
 #' @param plot.pros Logical. Plot the dynamics of process rates?
 #' @param leg Keyword to set the position of the legend (if plots are created).
@@ -39,12 +40,10 @@
 #'   The same is true for the initial values of variables. See the examples
 #'   below.
 #'
-#' @seealso Look at \code{\link{buildFromWorkbook}} for how to create the
-#'   necessary input for the \code{model} argument.
+#' @seealso Look at \code{\link{buildFromWorkbook}} for how to create a
+#'   suitable model object.
 #'
 #' @author David Kneis \email{david.kneis@@tu-dresden.de}
-#'
-#' @export
 #'
 #' @examples
 #'
@@ -52,20 +51,18 @@
 #' m <- buildFromWorkbook(system.file("models/SEIR.xlsx", package="rodeo"))
 #' 
 #' # run with defaults
-#' x <- scenarios(model=m, times=0:30, scenarios=NULL)
+#' x <- m$scenarios(times=0:30, scenarios=NULL)
 #' 
 #' # run with updated values 
-#' x <- scenarios(model=m, times=0:30,
+#' x <- m$scenarios(times=0:30,
 #'   scenarios=list(default=c(t=1, i=0.2, r=0.4), fast=c(t=1, i=0.5, r=0.1))
 #' )
 
-scenarios <- function(model, times, scenarios=NULL,
+rodeo$set("public", "scenarios", function(times, scenarios=NULL, fortran=FALSE,
   plot.vars=TRUE, plot.pros=FALSE, leg="topright",
   mar=c(4.5, 4.1, 1, 1), ...) {
   # check inputs
-  if (class(model)[1] != "rodeo")
-    stop("object passed as 'model' must be of class 'rodeo'")
-  if (!identical(model$getDim(), as.integer(1)))
+  if (!identical(self$getDim(), as.integer(1)))
     stop("only zero-dimensional models are currently supported")
   if (!(is.null(scenarios) || is.list(scenarios)))
     stop("'scenarios' must be a list or NULL")
@@ -79,16 +76,16 @@ scenarios <- function(model, times, scenarios=NULL,
   if ((length(times) < 2) || (!is.numeric(times)))
     stop("'times' must be a numeric vector of length >= 2")  
   # get defaults
-  v.def <- stats::setNames(model$getVarsTable()[,"default"], model$getVarsTable()[,"name"])
-  p.def <- stats::setNames(model$getParsTable()[,"default"], model$getParsTable()[,"name"])
+  v.def <- stats::setNames(self$getVarsTable()[,"default"], self$getVarsTable()[,"name"])
+  p.def <- stats::setNames(self$getParsTable()[,"default"], self$getParsTable()[,"name"])
   # initialize results
   out <- NULL
   # process scenarios
   if (is.null(scenarios)) {
-    model$setVars(v.def)
-    model$setPars(p.def)
+    self$setVars(v.def)
+    self$setPars(p.def)
     out <- rbind(out, data.frame(scenario="default",
-      model$dynamics(times=times, fortran=FALSE, ...)))
+      self$dynamics(times=times, fortran=FALSE, ...)))
   } else {
     for (s in names(scenarios)) {
       # set defaults first
@@ -106,18 +103,18 @@ scenarios <- function(model, times, scenarios=NULL,
             "variable of that name"))
         }
       }
-      model$setVars(v.scn)
-      model$setPars(p.scn)
+      self$setVars(v.scn)
+      self$setPars(p.scn)
       out <- rbind(out, data.frame(scenario=s,
-        model$dynamics(times=times, fortran=FALSE, ...)))
+        self$dynamics(times=times, fortran=FALSE, ...)))
     }
   }
   # plot if requested
   if (plot.vars || plot.pros) {
     omar <- graphics::par("mar")
     graphics::par(mar=mar)
-    items <- c(if (plot.vars) model$namesVars() else c(),
-      if (plot.pros) model$namesPros() else c())
+    items <- c(if (plot.vars) self$namesVars() else c(),
+      if (plot.pros) self$namesPros() else c())
     nc <- if (length(items) == 1) 1 else if (length(items) <= 6) 2 else 3
     nr <- ceiling(length(items) / nc)
     graphics::par(mfrow=c(nr, nc))
@@ -140,4 +137,4 @@ scenarios <- function(model, times, scenarios=NULL,
   }
   # return simulation output for further processing
   out
-}
+})
