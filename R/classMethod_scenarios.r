@@ -85,7 +85,7 @@ rodeo$set("public", "scenarios", function(times, scenarios=NULL, fortran=FALSE,
     self$setVars(v.def)
     self$setPars(p.def)
     out <- rbind(out, data.frame(scenario="default",
-      self$dynamics(times=times, fortran=FALSE, ...)))
+      self$dynamics(times=times, fortran=fortran, ...)))
   } else {
     for (s in names(scenarios)) {
       # set defaults first
@@ -106,7 +106,7 @@ rodeo$set("public", "scenarios", function(times, scenarios=NULL, fortran=FALSE,
       self$setVars(v.scn)
       self$setPars(p.scn)
       out <- rbind(out, data.frame(scenario=s,
-        self$dynamics(times=times, fortran=FALSE, ...)))
+        self$dynamics(times=times, fortran=fortran, ...)))
     }
   }
   # plot if requested
