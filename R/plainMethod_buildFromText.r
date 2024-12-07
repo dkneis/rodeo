@@ -1,12 +1,16 @@
-#' Build a model from the contents of a workbook
+#' Build a model from the contents of delimited textfiles
 #'
 #' The function builds a \code{\link[rodeo]{rodeo}}-based model by importing
-#' all declarations and equations from a workbook established with common
-#' spreadsheet software.
+#' all declarations and equations from tables stored as delimited text.
 #'
-#' @param workbook File path of the workbook with extension '.xlsx'.
-#'   See below for the mandatory
-#'   worksheets that must be present in the workbook.
+#' @param declarations File path of a delimited text file holding the
+#'   declaration of state variables, parameters, and functions. See below for
+#'   details about the expected file contents.
+#' @param equations File path of a delimited text file holding mathematical
+#'   expressions of process rates and stoichiometric factors forming the right
+#'   hand sides of a system of simultaneous ODE. See below for details about the
+#'   expected file contents.
+#' @param sep The column delimiter used in the input text files.
 #' @param dim The number of spatial compartments, possibly in multiple
 #'   dimensions. For single-box models without spatial resolution, use
 #'   \code{dim=1} (default). For a one-dimensional model with 10 compartments
@@ -28,11 +32,13 @@
 #'   in \code{sources} must implement a module with the fixed name 'functions'.
 #'   This module must contain all user-defined functions referenced in any
 #'   process rate expressions or any cell of the stoichiometry matrix.
-#' @param ... Optional arguments passed to \code{\link[readxl]{read_excel}}.
+#' @param ... Optional arguments passed to \code{\link{read.table}}.
 #' 
 #' @return An object of class \code{\link[rodeo]{rodeo}}.
 #'
-#' @note The file provided as \code{workbook} must contain two sheets:
+#' @note The delimited text files provided as input are parsed by
+#'   \code{\link{read.table}} with \code{header=TRUE} and the delimiter
+#'   specified by \code{sep}. The files must contain the following:
 #' \itemize{
 #'   \item{'declarations'} Declares the identifiers of state variables,
 #'     parameters, and functions used in the model equations. Mandatory columns
@@ -52,13 +58,13 @@
 #'      variables contain the corresponding expressions representing
 #'      stoichiometric factors. All columns are of type character.
 #' }
-#' The best way to understand the contents of a suitable workbook is to study
+#' The best way to understand the contents of the input files is to study
 #' the examples in the folder 'models' shipped with the package. Type
 #' \code{system.file("models", package="rodeo")} at the R prompt to see
 #' where this folder is installed on your system. A full example is given below.
 #'
-#' @seealso \code{\link{buildFromText}} provides similar functionality
-#'
+#' @seealso \code{\link{buildFromWorkbook}} provides similar functionality
+#' 
 #' @author David Kneis \email{david.kneis@@tu-dresden.de}
 #'
 #' @export
@@ -66,17 +72,21 @@
 #' @examples
 #'
 #' # Build and run a SEIR type epidemic model
-#' m <- buildFromWorkbook(
-#'   system.file("models/SEIR.xlsx", package="rodeo")
-#' )
+#' decl <- system.file("models/SEIR_declarations.txt", package="rodeo")
+#' eqns <- system.file("models/SEIR_equations.txt", package="rodeo")
+#' m <- buildFromText(decl, eqns)
 #' x <- m$dynamics(times=0:30, fortran=FALSE)
 #' print(head(x))
 
-buildFromWorkbook <- function(workbook, dim=1, set_defaults=TRUE,
-  fortran=FALSE, sources=NULL, ...) {
+buildFromText <- function(declarations, equations, sep="\t",
+  dim=1, set_defaults=TRUE, fortran=FALSE, sources=NULL, ...) {
   # check inputs
-  if (length(workbook) != 1 || !is.character(workbook))
-    stop("'workbook' must be a character string")
+  if (length(declarations) != 1 || !is.character(declarations))
+    stop("'declarations' must be a character string")
+  if (length(equations) != 1 || !is.character(equations))
+    stop("'equations' must be a character string")
+  if (length(sep) != 1 || !is.character(sep) || !nchar(sep) == 1)
+    stop("'sep' must be a single character")
   if (!is.integer(as.integer(dim)))
     stop("'dim' must be an integer vector")
   if (length(set_defaults) != 1 || !is.logical(set_defaults))
@@ -85,34 +95,29 @@ buildFromWorkbook <- function(workbook, dim=1, set_defaults=TRUE,
     stop("'fortran' must be TRUE or FALSE")
   if (!is.null(sources) && !is.character(sources))
     stop("'sources' should be NULL or a vector of character strings")
-  if (!file.exists(workbook))
-    stop(paste0("file provided as 'workbook' not found: '",workbook,"'"))
-  # import sheets
-  x <- list()
-  for (s in c("declarations","equations")) {
-    tryCatch({
-      if (grepl(workbook, pattern=".+[.]xlsx$")) {
-        x[[s]] <- as.data.frame(readxl::read_excel(workbook, sheet=s, ...=...))
-#      } else if (grepl(workbook, pattern=".+[.]ods$")) {
-#        x[[s]] <- as.data.frame(readODS::read_ods(workbook, sheet=s, ...=...))
-      } else {
-        stop(paste0("file '",workbook,"' not in '.xlsx' or '.ods' format")) 
-      }
-    }, error= function(e) {
-      stop(paste0("failed to read required sheet '",s,"' from '",workbook,"'"))
-    })
-  }
-  decl <- x[["declarations"]]
-  eqns <- x[["equations"]]
-  rm(x)
+  if (!file.exists(declarations))
+    stop(paste0("file with declarations not found: '",declarations,"'"))
+  if (!file.exists(equations))
+    stop(paste0("file with equations not found: '",equations,"'"))
+  # import tables
+  tryCatch({
+    decl <- utils::read.table(file=declarations, header=TRUE, sep="\t", ...=...)
+  }, error= function(e) {
+    stop(paste0("read.table failed to import the declarations from '",declarations,"'"))
+  })
+  tryCatch({
+    eqns <- utils::read.table(file=equations, header=TRUE, sep="\t", ...=...)
+  }, error= function(e) {
+    stop(paste0("read.table failed to import the equations from '",equations,"'"))
+  })
   # check declarations
   needed <- c("type","name","unit","description","default")
   missing <- needed[! needed %in% names(decl)]
   if (length(missing) > 0)
-    stop(paste0("sheet 'declarations' is lacking mandatory column(s): '",
+    stop(paste0("file 'declarations' is lacking mandatory column(s): '",
       paste(missing, collapse="', '"),"'"))
   if (!all(decl[,"type"] %in% c("variable","parameter","function")))
-    stop("'type' in sheet 'declarations' must be one of 'variable', 'parameter',
+    stop("'type' in file 'declarations' must be one of 'variable', 'parameter',
       or 'function'")
   if (!any(decl[,"type"] == "variable"))
     stop('not a single state variable has been declared')
@@ -123,7 +128,7 @@ buildFromWorkbook <- function(workbook, dim=1, set_defaults=TRUE,
   needed <- c("name","unit","description","rate", vnames)
   missing <- needed[! needed %in% names(eqns)]
   if (length(missing) > 0)
-    stop(paste0("sheet 'equations' is lacking mandatory column(s): '",
+    stop(paste0("file 'equations' is lacking mandatory column(s): '",
       paste(missing, collapse="', '"),"'"))
   # separate processes and stoichiometry
   stoi <- as.matrix(eqns[, vnames, drop=FALSE])

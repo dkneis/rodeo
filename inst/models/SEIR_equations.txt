@@ -1,0 +1,4 @@
+name	unit	description	rate	S	E	I	R
+transm	ind./day	transmission	t * I/(S+E+I+R) * S	-1	1	0	0
+infect	ind./day	infection	i * E	0	-1	1	0
+recover	ind./day	recovery	r * I	0	0	-1	1

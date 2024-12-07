@@ -1,0 +1,8 @@
+type	name	unit	description	default
+variable	S	individuals	susceptible	8.00E+07
+variable	E	individuals	carrier, not yet infectious	8.00E+05
+variable	I	individuals	infectious	0
+variable	R	individuals	recovered, immune	0
+parameter	t	1/time	transmission rate constant	1
+parameter	i	1/time	incubation rate constant	0.2
+parameter	r	1/time	recovery rate constant	0.4
