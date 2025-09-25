@@ -98,55 +98,364 @@
 #' }
 
 forcingFunctions <- function(x) {
-  # check args
-  if (!is.data.frame(x))
-    stop("expecting a data frame as input")
-  cols <- c("name","column","mode","file","default")
-  if (!all(cols %in% names(x)))
-    stop("provided data must have columns '",paste(cols, collapse="', '"),"'")
-  if (any(duplicated(x$name)))
-    stop("duplicate names of forcing functions")
-  # process
-  code <- "! GENERATED CODE -- YOU PROBABLY DO NOT WANT TO EDIT THIS\n"
-  code <- paste0(code, "\n")
-  code <- paste0(code,"include '",
-    system.file('fortran/forcingsGenericMethods.f95',package='rodeo'),"'")
-  code <- paste0(code, "\n", "module forcings")
-  code <- paste0(code, "\n", "use forcings_generic")
-  code <- paste0(code, "\n", "implicit none")
-  code <- paste0(code, "\n", "private TSeries, readTS, interpol")
-  code <- paste0(code, "\n", "contains")
-  code <- paste0(code, "\n")
-  for (i in 1:nrow(x)) {
-    if (x$default[i]) {
-      code <- paste0(code,"\n","function ",x$name[i]," (time, dflt) result (res)")
-      code <- paste0(code,"\n","  double precision, intent(in):: time, dflt")
-    } else {
-      code <- paste0(code,"\n","  function ",x$name[i]," (time) result (res)")
-      code <- paste0(code,"\n","  double precision, intent(in):: time")
-    }
-    code <- paste0(code,"\n","  character(len=256), parameter:: file='",x$file[i],"'")
-    code <- paste0(code,"\n","  character(len=256), parameter:: col='",x$column[i],"'")
-    code <- paste0(code,"\n","  integer, parameter:: lweight= ",x$mode[i])
-    code <- paste0(code,"\n","  logical, save:: firstCall= .TRUE.")
-    code <- paste0(code,"\n","  integer, save:: latest= 1")
-    code <- paste0(code,"\n","  type(TSeries), save:: x")
-    code <- paste0(code,"\n","  double precision, parameter:: NA= huge(0d0)")
-    code <- paste0(code,"\n","  character(len=512):: errmsg")
-    code <- paste0(code,"\n","  double precision:: res")
-    if (x$default[i]) {
-      code <-  paste0(code,"\n","  if (isnan(dflt)) then")
-    }
-    code <- paste0(code,"\n","  include '",
-      system.file('fortran/forcingsInclude.f95',package='rodeo'),"'")
-    if (x$default[i]) {
-      code <- paste0(code,"\n","  else")
-      code <- paste0(code,"\n","    res= dflt")
-      code <- paste0(code,"\n","  end if")
-    }
-    code <- paste0(code,"\n","end function")
-  }
-  code <- paste0(code, "\n", "end module")
+
+# check args
+if (!is.data.frame(x))
+  stop("expecting a data frame as input")
+cols <- c("name","column","mode","file","default")
+if (!all(cols %in% names(x)))
+  stop("provided data must have columns '",paste(cols, collapse="', '"),"'")
+if (any(duplicated(x$name)))
+  stop("duplicate names of forcing functions")
+
+# generate code
+  
+# function to create the query functions  
+makeQueryFunctions <- function(name, mode, default) {
+  code <- paste0(
+"function ",name," (time", ifelse(default,", dflt",""),") result (res)
+use forcingdata
+use internals
+double precision, intent(in):: time", ifelse(default,", dflt",""),"
+integer, parameter:: lweight= ",mode,"
+double precision, parameter:: NA= huge(0d0)
+character(len=512):: errmsg
+double precision:: res","\n",
+ifelse(default, "if (isnan(dflt)) then", ""),"
+  if (allocated(data_",name,"%times)) then
+    res= interpol(time=time, x=data_",name,", latest=latest_",name,", lweight=lweight, na=NA)
+    if (res .eq. NA) then
+      write(errmsg,'(a, f0.5)')\"failed to retrieve data for forcing '",name,"' at time \",time
+      call rexit(trim(adjustl(errmsg)))
+    end if
+  else
+    call rexit(\"forcing data not initialized: did you call myRodeoObject$forcings_init() ?\")
+  end if","\n",
+ifelse(default, "else\n  res = dflt\nend if", ""),"
+end function",
+collapse="\n\n"
+)
+code
+}
+  
+code <- paste0("! GENERATED CODE -- YOU PROBABLY DO NOT WANT TO EDIT THIS
+
+!#######################################################################
+! dedicated type for time series data
+!#######################################################################
+
+module types
+
+implicit none
+
+type TSeries
+  double precision, dimension(:), allocatable:: times, values
+end type TSeries
+
+end module
+
+!#######################################################################
+! module to hold data
+!#######################################################################
+
+module forcingdata
+
+use types
+
+implicit none
+
+! time series
+",
+paste0("type(TSeries):: data_",x[,"name"], collapse="\n"),
+"
+
+! indices of most recent access
+",
+paste0("integer:: latest_",x[,"name"]," = 1", collapse="\n"),
+"
+
+end module
+
+!#######################################################################
+! module with static routines used internally only
+!#######################################################################
+
+module internals
+
+implicit none
+
+contains
+
+! Finds the index of a column name in a header line. The very first column name
+! is not analyzed (first column is reserved for time data anyway). On error
+! the function returns zero.
+integer function pos(string, x)
+  ! args
+  character(len=*), intent(in):: string, x
+  ! local
+  character(len=len(string)):: garbage, value
+  character(len=512):: errmsg
+  integer:: i, nskip, ioresult
+  ! algorithm
+  value= \"\"
+  nskip= 0
+  do
+    nskip= nskip + 1
+    read(unit=string, fmt=*, iostat=ioresult, end=1000)(garbage, i=1, nskip), value
+    if (ioresult .ne. 0) then
+      write(errmsg,'(3(a))')\"failed to analyze header string '\",trim(adjustl(string)),\"'\"
+      call rwarn(errmsg)
+      exit
+    end if
+    if (trim(adjustl(value)) .eq. trim(adjustl(x))) then
+      pos= nskip + 1
+      return
+    end if
+  end do
+  1000 continue
+  pos= 0
+end function
+
+! Function to read time series data from an ASCII text file.
+logical function readTS(file, col, x)
+  use types
+  ! args
+  character(len=*), intent(in):: file    ! name of data file
+  character(len=*), intent(in):: col     ! name of column with data
+  type(TSeries), intent(out):: x         ! object of type TSeries
+  ! const
+  integer, parameter:: un=10
+  integer, parameter:: n_ini=1, n_fac=2
+  double precision, parameter:: ZERO=0d0
+  ! locals
+  type(TSeries):: tmp
+  integer:: line, ioresult, n, skipcols
+  character(len=512):: errmsg
+  character(len=256):: string
+  character(len=1), parameter:: comment=\"#\"
+  double precision, dimension(:), allocatable:: garbage
+  !Open file
+  open(unit=un, file=file, status=\"old\", action=\"read\", iostat=ioresult)
+  if (ioresult .ne. 0) then
+    write(errmsg,'(3(a))')\"cannot open file '\",trim(adjustl(file)),\"'\"
+    call rwarn(errmsg)
+    goto 1
+  end if
+  !Initial allocations
+  allocate(tmp%times(n_ini))
+  allocate(tmp%values(n_ini))
+  !Read data
+  n= 0
+  line= 1
+  skipcols= -1
+  do
+    read(unit=un, fmt='(a)', iostat=ioresult, end=1000) string
+    if (ioresult .ne. 0) then
+      write(errmsg,'(a,i0,3(a))')\"read error at line \",line,\" of file '\", &
+        trim(adjustl(file)),\"'\"
+      call rwarn(errmsg)
+      goto 1
+    end if
+    string= adjustl(string)
+    ! Skip blank lines and comments
+    if ((len_trim(string) .eq. 0) .or. (scan(string(1:1), comment) .ne. 0)) then
+      continue
+    ! Column headers
+    else if (skipcols .lt. 0) then
+      skipcols= pos(string, col) - 2
+      if (skipcols .lt. 0) then
+        write(errmsg,'(5(a))')\"expecting to find column name '\", &
+          trim(adjustl(col)),\"' in file '\", &
+          trim(adjustl(file)),\"' at position 2 or higher\"
+        call rwarn(errmsg)
+        goto 1
+      end if
+      allocate(garbage(skipcols))
+    ! Numeric records
+    else
+      ! Increase array lengths, if necessary
+      if ((n + 1) .gt. size(tmp%times)) then
+        allocate(x%times(n))
+        allocate(x%values(n))
+        x%times= tmp%times
+        x%values= tmp%values
+        deallocate(tmp%times)
+        deallocate(tmp%values)
+        allocate(tmp%times(n*n_fac))
+        allocate(tmp%values(n*n_fac))
+        tmp%times(1:n)= x%times
+        tmp%values(1:n)= x%values
+        deallocate(x%times)
+        deallocate(x%values)
+      end if
+      ! Extract the numbers
+      n= n + 1
+      read(unit=string, fmt=*, iostat=ioresult) tmp%times(n), garbage, tmp%values(n)
+      if (ioresult .ne. 0) then
+        write(errmsg,'(a,i0,3(a))')\"read error at line \",line,\" of file '\", &
+          trim(adjustl(file)),\"'\"
+        call rwarn(errmsg)
+        goto 1
+      end if
+    end if
+    ! Update line counter
+    line= line + 1
+  end do
+  1000 continue
+  if (n .lt. 2) then
+    write(errmsg,'(3(a))')\"found less than two records in file '\", &
+      trim(adjustl(file)),\"'\"
+    call rwarn(errmsg)
+    goto 1
+  end if
+  close(un)
+  ! Set output data
+  allocate(x%times(n))
+  allocate(x%values(n))
+  x%times= tmp%times(1:n)
+  x%values= tmp%values(1:n)
+  deallocate(tmp%times)
+  deallocate(tmp%values)
+  ! Check data
+  if (any(x%times(2:n)-x%times(1:(n-1)) .le. ZERO)) then
+    write(errmsg,'(3(a))')\"times not strictly ascending in file '\", &
+      trim(adjustl(file)),\"'\"
+    call rwarn(errmsg)
+    goto 1
+  end if
+  ! Return
+  readTS= .TRUE.
+  return
+  1 readTS= .FALSE.
+  if (allocated(x%times)) deallocate(x%times)
+  if (allocated(x%values)) deallocate(x%values)
+  if (allocated(garbage)) deallocate(garbage)
+end function
+
+!###############################################################################
+! Function to perform interpolation in a time series
+! Argument 'lweight' is used as follows:
+!  1: constant interpolation, full weight given to value at begin of interval
+!  0: constant interpolation, full weight given to value at end of interval
+!  <0 or >1: linear interpolation, weights set automatically
+
+double precision function interpol(time, x, latest, lweight, na)
+  use types
+  ! args
+  double precision, intent(in):: time ! query time
+  type(TSeries), intent(in):: x       ! object of type TSeries
+  integer, intent(inout):: latest     ! index of latest access (inout)
+  integer, intent(in):: lweight       ! weight for begin of time interval
+  double precision, intent(in):: na   ! return value on failure
+  ! locals
+  character(len=256):: errmsg
+  integer:: i
+  logical:: ok
+  ! interpolation
+  if (time .lt. x%times(1)) then
+    call rwarn(\"interpolation failed: query time < time stamp of first record\")
+    interpol= na
+  else if (time .gt. x%times(size(x%times))) then
+    call rwarn(\"interpolation failed: query time > time stamp of final record\")
+    interpol= na
+  else
+    ok= .FALSE.
+    ! Forward search
+    if (time .ge. x%times(latest)) then
+      do i=min(max(1,latest),size(x%times)-1), (size(x%times)-1)
+        if ((time .ge. x%times(i)) .and. (time .le. x%times(i+1))) then
+          if ((lweight .lt. 0) .or. (lweight .gt. 1)) then
+            interpol= x%values(i) * (x%times(i+1) - time) / &
+              (x%times(i+1) - x%times(i)) + &
+              x%values(i+1) * (time - x%times(i)) / &
+              (x%times(i+1) - x%times(i))
+          else
+            interpol= x%values(i) * dble(lweight) + &
+              x%values(i+1) * dble(1 - lweight)
+          end if
+          latest= i
+          ok= .TRUE.
+          exit
+        end if
+      end do
+    ! Backward search
+    else
+      do i=max(min(latest,size(x%times)), 2), 2, -1
+        if ((time .ge. x%times(i-1)) .and. (time .le. x%times(i))) then
+          if ((lweight .lt. 0) .or. (lweight .gt. 1)) then
+            interpol= x%values(i-1) * (x%times(i) - time) / &
+              (x%times(i) - x%times(i-1)) + &
+              x%values(i) * (time - x%times(i-1)) / &
+              (x%times(i) - x%times(i-1))
+          else
+            interpol= x%values(i-1) * dble(lweight) + &
+              x%values(i) * dble(1 - lweight)
+          end if
+          latest= i
+          ok= .TRUE.
+          exit
+        end if
+      end do
+    end if
+    if (.not. ok) then
+      call rwarn(\"interpolation failed: corrupted time series\")
+      interpol= na
+    end if
+  end if
+end function
+
+end module
+
+!#######################################################################
+! module with routines called by integrators implicitly,
+!#######################################################################
+
+module forcings
+
+implicit none
+
+public
+
+contains
+
+",
+makeQueryFunctions(x[,"name"], x[,"mode"], x[,"default"]),
+"
+
+end module
+
+!#######################################################################
+! public routines to load and flush data (called by user explicitly)
+!#######################################################################
+
+subroutine forcings_clear()
+use forcingdata
+use internals
+implicit none
+",
+paste0(paste0("if(allocated(data_",x[,"name"],"%times)) deallocate(data_",x[,"name"],"%times)"), collapse="\n"),"\n",
+paste0(paste0("if(allocated(data_",x[,"name"],"%values)) deallocate(data_",x[,"name"],"%values)"), collapse="\n"),
+"
+end subroutine
+
+subroutine forcings_init()
+use forcingdata
+use internals
+implicit none
+",
+paste0("if(allocated(data_",x[1,"name"],"%times)) call forcings_clear()", collapse="\n"),
+"
+",
+paste0(paste0("if (.not. readTS(\"",x[,"file"],"\", \"",x[,"column"],"\", data_",x[,"name"],")) then\n",
+"  call rexit(\"failed to read forcing \'",x[,"name"],
+"\' from column \'",x[,"column"],"\' of file \'",x[,"file"],"\'\")","\nend if"), collapse="\n"),
+"
+end subroutine
+
+")
+
+code
+
 }
 
 
