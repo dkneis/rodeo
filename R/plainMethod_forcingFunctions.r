@@ -448,7 +448,7 @@ paste0("if(allocated(data_",x[1,"name"],"%times)) call forcings_clear()", collap
 ",
 paste0(paste0("if (.not. readTS(\"",x[,"file"],"\", \"",x[,"column"],"\", data_",x[,"name"],")) then\n",
 "  call rexit(\"failed to read forcing \'",x[,"name"],
-"\' from column \'",x[,"column"],"\' of file \'",x[,"file"],"\'\")","\nend if"), collapse="\n"),
+"\' from column \'",x[,"column"],"\' of file \'",basename(x[,"file"]),"\'\")","\nend if"), collapse="\n"),
 "
 end subroutine
 
