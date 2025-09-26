@@ -46,7 +46,9 @@ The expected language of the external code passed in \code{sources}
   If \code{fortran} is \code{TRUE}, the external code passed in 
   \code{sources} must implement a module with the fixed name 'functions'.
   This module must contain all user-defined functions referenced in process
-  rates or stoichiometric factors.
+  rates or stoichiometric factors. The file names passed to the
+  \code{sources} argument must carry an extension which is recognized by
+  the compiler as a source file. Something like ".f95" should work.
 
   If \code{fortran} is \code{TRUE}, a shared library is created. The library
   is immediately loaded with \code{\link[base]{dyn.load}} and it is
