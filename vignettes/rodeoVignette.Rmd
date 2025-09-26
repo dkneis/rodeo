@@ -466,6 +466,98 @@ text <- paste(text,"\n")
 cat(text)
 ```
 
+Finally, below is a fully self-contained minimum working example showing how time-varying external forcings are implemented in a Fortran-based model.
+
+```{r eval=TRUE, echo=TRUE}
+local({
+
+# Simulation of heat exchange to demonstrate the implementation of
+# time-varying external forcings in a Fortran-compiled rodeo model.
+#
+#                  +-------------+
+#                  |             |
+#         Tamb  <=====>  Tsys    |
+#                  |             |
+#                  +-------------+
+#
+# d/dt Tsys = k * (Tamb(time) - Tsys)
+# 
+# Note that using rodeo (and Fortran code in particular) for this
+# very basic example is nothing but overkill.
+
+library("rodeo")
+
+# Creation of the model object
+vars <- data.frame(
+  name="Tsys", unit="°C", description="System temperature")
+pars <- data.frame(
+  name="k", unit="1/s", description="Heat exchange coefficient")
+funs <- data.frame(
+  name="Tamb", unit="°C", description="Variable ambient temperature")
+pros <- data.frame(
+  name="transfer", unit="°C/s", description="Heat transfer",
+  expression="k * (Tamb(time) - Tsys)")
+stoi <- data.frame(
+  variable="Tsys", process="transfer", expression=1)
+M <- rodeo$new(vars=vars, pars=pars, funs=funs, pros=pros, stoi=stoi)
+
+# Assumed time series of ambient temperature; written to disk
+file_data <- tempfile()
+Tamb_data <- data.frame(time=c(0, 60, 120, 1000), celsius=c(0, 20, 0 ,0))
+write.table(Tamb_data, file=file_data, sep="\t", col.names=T, row.names=F)
+
+# Create table connecting external forcings to data files
+x <- data.frame(name="Tamb", file=file_data, column="celsius",
+  mode=-1, default=F)
+
+# Generate fortran code providing routines to import/query external forcings
+file_code1 <- tempfile(fileext=".f95")
+write(file=file_code1, forcingFunctions(x))
+
+# Write fortran code to import the just generated code
+file_code2 <- tempfile(fileext=".f95")
+write(file=file_code2, "
+module functions     ! mandatory if the model contains any functions \n
+use forcings         ! just created by call to 'forcingFunctions'    \n
+contains             ! nothing to add after 'contains' here          \n
+end module                                                           \n
+")
+
+# Compile the model
+M$compile(sources=c(file_code1, file_code2), fortran=T)
+
+# Initialize data
+M$setPars(c(k=0.01))   # Parameters
+M$setVars(c(Tsys=5))   # State variables
+M$forcings_init()      # Reads forcing data from disk into memory
+
+# Simulate dynamics
+times <- 0:240
+simul1 <- M$dynamics(times=times, fortran=T)
+
+# Reference simulation using plain R/deSolve
+derivs <- function(time, y, p) {
+  ddt <- with(as.list(c(y,p)), {
+    c(Tsys = k * (Tamb(time) - Tsys))
+  })
+  list(ddt)
+}
+Tamb <- approxfun(x=Tamb_data[,"time"], y=Tamb_data[,"celsius"])
+simul2 <- deSolve::lsoda(y=c(Tsys=5), func=derivs, times=times,
+  parms=c(k=0.01))
+
+# Compare outcomes
+par(mfcol=c(1,2))
+plot(simul1[,c("time","Tsys")], type="l", main="fortran/rodeo")
+plot(simul2[,c("time","Tsys")], type="l", main="plain R")
+par(mfcol=c(1,1))
+
+# Explicit clean-up (not needed in typical settings)
+M$forcings_clear()
+
+}) # end local
+```
+
 ## Generating model documentation
 
 ### Exporting formatted tables
